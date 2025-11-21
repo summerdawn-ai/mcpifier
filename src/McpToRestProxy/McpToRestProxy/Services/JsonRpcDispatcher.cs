@@ -1,7 +1,7 @@
-using Summerdawn.Mcp.RestProxy.Handlers;
-using Summerdawn.Mcp.RestProxy.Models;
+using Summerdawn.McpToRestProxy.Handlers;
+using Summerdawn.McpToRestProxy.Models;
 
-namespace Summerdawn.Mcp.RestProxy.Services;
+namespace Summerdawn.McpToRestProxy.Services;
 
 public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogger<JsonRpcDispatcher> logger)
 {

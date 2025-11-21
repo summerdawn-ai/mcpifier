@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Summerdawn.Mcp.RestProxy.Models;
+namespace Summerdawn.McpToRestProxy.Models;
 
 /// <summary>
 /// Represents the resource metadata for OAuth authorization as defined in RFC 9396.

@@ -1,8 +1,8 @@
 using System.Text.Json;
 
-using Summerdawn.Mcp.RestProxy.Models;
+using Summerdawn.McpToRestProxy.Models;
 
-namespace Summerdawn.Mcp.RestProxy.Handlers;
+namespace Summerdawn.McpToRestProxy.Handlers;
 
 public interface IRpcHandler
 {

@@ -1,8 +1,8 @@
 using System.Text.Json;
 
-using Summerdawn.Mcp.RestProxy.Models;
+using Summerdawn.McpToRestProxy.Models;
 
-namespace Summerdawn.Mcp.RestProxy.Services;
+namespace Summerdawn.McpToRestProxy.Services;
 
 public static class ToolValidator
 {

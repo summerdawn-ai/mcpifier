@@ -2,9 +2,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-using Summerdawn.Mcp.RestProxy.Configuration;
+using Summerdawn.McpToRestProxy.Configuration;
 
-namespace Summerdawn.Mcp.RestProxy.Services;
+namespace Summerdawn.McpToRestProxy.Services;
 
 public class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> logger)
 {
