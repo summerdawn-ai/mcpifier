@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="src/Summerdawn.Mcpify/Summerdawn.Mcpify.csproj" />
+</Solution>
