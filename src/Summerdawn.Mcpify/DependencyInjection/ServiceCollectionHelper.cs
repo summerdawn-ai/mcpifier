@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Summerdawn.Mcpify.Configuration;
@@ -7,26 +6,12 @@ using Summerdawn.Mcpify.Services;
 
 namespace Summerdawn.Mcpify.DependencyInjection;
 
-public static class ServiceCollectionExtensions
+public static class ServiceCollectionHelper
 {
-    public static IServiceCollection AddMcpify(this IServiceCollection services, Action<McpifyOptions> configureOptions)
-    {
-        // Configure options from action.
-        services.Configure(configureOptions);
-
-        return services.AddMcpifyCore();
-    }
-
-
-    public static IServiceCollection AddMcpify(this IServiceCollection services, IConfiguration proxyConfiguration)
-    {
-        // Configure options from provided config section.
-        services.Configure<McpifyOptions>(proxyConfiguration);
-
-        return services.AddMcpifyCore();
-    }
-
-    private static IServiceCollection AddMcpifyCore(this IServiceCollection services)
+    /// <summary>
+    /// Adds core Mcpify services and JSON-RPC handlers, but no handler for HTTP routing.
+    /// </summary>
+    public static IServiceCollection AddMcpifyCore(IServiceCollection services)
     {
         // Add REST API http client.
         services.AddHttpClient<RestProxyService>((provider, client) =>
@@ -40,11 +25,6 @@ public static class ServiceCollectionExtensions
                 client.DefaultRequestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
         });
-
-        services.AddHttpContextAccessor();
-
-        // Add routing handler.
-        services.AddSingleton<McpRouteHandler>();
 
         // Add JSON-RPC dispatcher, handlers and factory.
         services.AddSingleton<JsonRpcDispatcher>();

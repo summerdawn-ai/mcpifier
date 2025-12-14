@@ -1,5 +1,7 @@
 using System.Text.Json;
 
+using Microsoft.AspNetCore.Http;
+
 using Summerdawn.Mcpify.Configuration;
 using Summerdawn.Mcpify.Models;
 using Summerdawn.Mcpify.Services;
@@ -30,7 +32,8 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpC
             return JsonRpcResponse.ErrorResponse(request.Id, 400, message);
         }
 
-        var authHeader = httpContextAccessor.HttpContext?.Request.Headers.Authorization.FirstOrDefault();
+        // Get auth header from HTTP context, if there is an HTTP context.
+        var authHeader = httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault();
 
         var (success, statusCode, responseBody) = await proxyService.ExecuteToolAsync(tool, parameters.Arguments, authHeader);
         if (!success)

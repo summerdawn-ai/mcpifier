@@ -32,6 +32,8 @@ internal class McpRouteHandler(IOptions<McpifyOptions> options, JsonRpcDispatche
         // Otherwise dispatch the request to the dispatcher.
         var rpcRequest = await context.Request.ReadFromJsonAsync<JsonRpcRequest>();
 
+        // TODO: Extract header from HTTP request and add to rpcRequest (??)
+
         var rpcResponse = await dispatcher.DispatchAsync(rpcRequest!, CancellationToken.None);
 
         if (rpcResponse.IsEmpty())

@@ -27,7 +27,7 @@ public static class EndpointRouteBuilderExtensions
 
         var handler = services.GetService<McpRouteHandler>() ??
                       throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpify() in application startup code.");
-
+        
         var proxyOptions = services.GetRequiredService<IOptions<McpifyOptions>>().Value;
 
         // Log tool information
