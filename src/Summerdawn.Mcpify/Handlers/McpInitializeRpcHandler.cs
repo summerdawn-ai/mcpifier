@@ -3,12 +3,14 @@ using Summerdawn.Mcpify.Models;
 
 namespace Summerdawn.Mcpify.Handlers;
 
-public sealed class McpInitializeRpcHandler(IOptions<McpifyOptions> options) : IRpcHandler
+public sealed class McpInitializeRpcHandler(IOptions<McpifyOptions> options, ILogger<McpInitializeRpcHandler> logger) : IRpcHandler
 {
     public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default)
     {
         // Deserialize, but ignore, params.
         rpcRequest.DeserializeParams<McpInitializeParams>();
+
+        logger.LogDebug("Handling initialize request with id {RequestId}", rpcRequest.Id);
 
         var response = JsonRpcResponse.Success(rpcRequest.Id, BuildInitializeResult());
         return Task.FromResult(response);

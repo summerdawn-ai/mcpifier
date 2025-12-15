@@ -22,7 +22,14 @@ public static class ServiceCollectionExtensions
     public static McpifyBuilder AddMcpify(this IServiceCollection services, IConfiguration mcpifyConfiguration)
     {
         // Configure options from provided config section.
-        services.Configure<McpifyOptions>(mcpifyConfiguration);
+        try
+        {
+            services.Configure<McpifyOptions>(mcpifyConfiguration);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Failed to bind Mcpify configuration. Check the configuration section format and values.", ex);
+        }
 
         return services.AddMcpifyCore();
     }
@@ -71,7 +78,15 @@ public static class ServiceCollectionExtensions
     {
         var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
 
-        var baseAddress = new Uri(options.Value.Rest.BaseAddress, UriKind.RelativeOrAbsolute);
+        Uri baseAddress;
+        try
+        {
+            baseAddress = new Uri(options.Value.Rest.BaseAddress, UriKind.RelativeOrAbsolute);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Invalid base address '{options.Value.Rest.BaseAddress}' in Mcpify configuration. Ensure it is a valid URI.", ex);
+        }
 
         // Return configured base address if absolute.
         if (baseAddress.IsAbsoluteUri) return baseAddress;
@@ -85,7 +100,14 @@ public static class ServiceCollectionExtensions
         serverAddress = NormalizeHost(serverAddress);
 
         // And build absolute URI based on server address.
-        return new Uri(serverAddress, baseAddress);
+        try
+        {
+            return new Uri(serverAddress, baseAddress);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to build absolute URI from server address '{serverAddress}' and base address '{baseAddress}'.", ex);
+        }
     }
 
     private static Uri NormalizeHost(Uri uri)
