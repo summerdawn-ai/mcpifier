@@ -26,29 +26,8 @@ public  class Program
     {
         if (mode == "http")
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Load tool mappings from separate file.
-            // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
-            builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: true);
-
-            // Configure HTTP MCP proxy.
-            builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify")).AddAspNetCore();
-
-            // Configure CORS to allow any connection.
-            builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy =>
-                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
-
-            var app = builder.Build();
-
-            app.UseHttpsRedirection();
-
-            // Use HTTP MCP proxy.
-            app.MapMcpify();
-
-            // Use CORS.
-            app.UseCors();
-
+            // Delegate to HTTP-only entry point for WebApplicationFactory compatibility.
+            var app = ProgramHttp.CreateHostBuilder(args).Build();
             app.Run();
         }
         else
