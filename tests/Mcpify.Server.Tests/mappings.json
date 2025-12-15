@@ -1,0 +1,30 @@
+{
+  "Mcpify": {
+    "Rest": {
+      "BaseAddress": "http://example.com"
+    },
+    "Tools": [
+      {
+        "mcp": {
+          "name": "test_tool",
+          "description": "A test tool for integration testing.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "Test message."
+              }
+            },
+            "required": [ "message" ]
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/test",
+          "body": "{ \"message\": {message} }"
+        }
+      }
+    ]
+  }
+}

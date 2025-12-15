@@ -4,6 +4,7 @@ namespace Summerdawn.Mcpify.Server;
 
 /// <summary>
 /// HTTP-only entry point for use with WebApplicationFactory in tests.
+/// This class provides a CreateHostBuilder method that WebApplicationFactory can discover.
 /// </summary>
 public class ProgramHttp
 {
@@ -13,9 +14,6 @@ public class ProgramHttp
             {
                 webBuilder.ConfigureServices((context, services) =>
                 {
-                    // Load tool mappings from separate file.
-                    // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
-                    
                     // Configure HTTP MCP proxy.
                     services.AddMcpify(context.Configuration.GetSection("Mcpify")).AddAspNetCore();
 
@@ -39,6 +37,8 @@ public class ProgramHttp
                 
                 webBuilder.ConfigureAppConfiguration((context, config) =>
                 {
+                    // Load tool mappings from separate file.
+                    // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
                     config.AddJsonFile("mappings.json", optional: false, reloadOnChange: true);
                 });
             });
