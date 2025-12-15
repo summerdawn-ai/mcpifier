@@ -39,12 +39,11 @@ This audit evaluated each public type and member based on:
 |------|---------|----------|-----------|
 | `JsonRpcDispatcher` | public | **internal** | Implementation detail - users interact via DI/handlers, not directly with dispatcher |
 | `RestProxyService` | public | **internal** | Implementation detail - users don't call this directly |
-| `McpStdioServer` | public | **public** | Must remain public - users call `Activate()` when using without DI |
+| `McpStdioServer` | public | **internal** | Implementation detail - retrieved from DI via UseMcpify(), never constructed directly |
 | `ToolValidator` | public | **internal** | Implementation detail - validation happens internally |
 
 **Verdict**: 
-- ✅ **SAFE TO INTERNALIZE**: `JsonRpcDispatcher`, `RestProxyService`, `ToolValidator` - these are implementation details
-- ❌ **KEEP PUBLIC**: `McpStdioServer` - required for non-DI usage pattern
+- ✅ **SAFE TO INTERNALIZE**: All service implementations - these are registered and retrieved via DI, not constructed directly by consumers
 
 ---
 
@@ -202,7 +201,6 @@ These types are essential for library consumers:
 3. **MCP Server Info**: `McpServerInfo` (used in configuration)
 4. **DI Extensions**: `ServiceCollectionExtensions`, `HostExtensions`, `McpifyBuilder`
 5. **ASP.NET Core Extensions**: `EndpointRouteBuilderExtensions`, `McpifyBuilderExtensions`
-6. **Background Service**: `McpStdioServer` (for non-DI usage)
 
 ---
 
@@ -230,12 +228,14 @@ app.Run();
 ```
 ✅ **Works** - All required types remain public
 
-### Pattern 3: Non-DI Usage
+### Pattern 3: Non-DI Usage (Theoretical - Not Recommended)
 ```csharp
+// This pattern is NOT used in the codebase and is not a supported scenario
+// McpStdioServer should always be retrieved from DI, not directly instantiated
 var server = new McpStdioServer(dispatcher, logger);
 server.Activate();
 ```
-✅ **Works** - `McpStdioServer` remains public
+⚠️ **Note**: This pattern is not used anywhere in the codebase. All actual usage retrieves McpStdioServer from DI via the `UseMcpify()` extension method. Making McpStdioServer internal does not break any actual usage patterns.
 
 ### Pattern 4: Configuration
 ```csharp
