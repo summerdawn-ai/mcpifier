@@ -1,0 +1,22 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode http",
+      "externalUrlConfiguration": true, // Use "Kestrel" section from appsettings
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "stdio": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode stdio",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json"
+}
