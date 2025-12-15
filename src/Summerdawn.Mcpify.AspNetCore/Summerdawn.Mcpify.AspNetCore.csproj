@@ -8,6 +8,17 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- NuGet properties -->
+  <PropertyGroup>
+    <PackageId>Summerdawn.Mcpify.AspNetCore</PackageId>
+    <Description>ASP.NET Core integration for Mcpify MCP-to-REST proxy, providing middleware and routing extensions.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
