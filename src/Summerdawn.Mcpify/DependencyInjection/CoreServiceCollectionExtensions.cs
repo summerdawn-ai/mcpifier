@@ -6,7 +6,7 @@ using Summerdawn.Mcpify.Services;
 
 namespace Summerdawn.Mcpify.DependencyInjection;
 
-public static class ServiceCollectionHelper
+public static class CoreServiceCollectionExtensions
 {
     /// <summary>
     /// Adds core Mcpify services and JSON-RPC handlers, but no handler for HTTP routing.
@@ -17,13 +17,24 @@ public static class ServiceCollectionHelper
         services.AddHttpClient<RestProxyService>((provider, client) =>
         {
             var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
+            var baseAddress = provider.GetRequiredKeyedService<Uri>("Mcpify:Rest:BaseAddress");
 
-            client.BaseAddress = new Uri(options.Value.Rest.BaseAddress);
+            client.BaseAddress = baseAddress;
 
             foreach (var defaultHeader in options.Value.Rest.DefaultHeaders)
             {
                 client.DefaultRequestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
+        });
+
+        // Add plain base address creator as explicit service.
+        // This allows it to be overridden for AspNetCore with support
+        // for base addresses relative to the server's address.
+        services.AddKeyedSingleton<Uri>("Mcpify:Rest:BaseAddress", (provider, _) =>
+        {
+            var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
+
+            return new Uri(options.Value.Rest.BaseAddress, UriKind.RelativeOrAbsolute);
         });
 
         // Add JSON-RPC dispatcher, handlers and factory.
