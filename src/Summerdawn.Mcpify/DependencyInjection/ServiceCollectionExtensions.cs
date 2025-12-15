@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 using Summerdawn.Mcpify.Configuration;
 using Summerdawn.Mcpify.Handlers;
@@ -9,7 +10,7 @@ namespace Summerdawn.Mcpify.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddMcpify(this IServiceCollection services, Action<McpifyOptions> configureOptions)
+    public static McpifyBuilder AddMcpify(this IServiceCollection services, Action<McpifyOptions> configureOptions)
     {
         // Configure options from action.
         services.Configure(configureOptions);
@@ -17,34 +18,32 @@ public static class ServiceCollectionExtensions
         return services.AddMcpifyCore();
     }
 
-
-    public static IServiceCollection AddMcpify(this IServiceCollection services, IConfiguration proxyConfiguration)
+    public static McpifyBuilder AddMcpify(this IServiceCollection services, IConfiguration mcpifyConfiguration)
     {
         // Configure options from provided config section.
-        services.Configure<McpifyOptions>(proxyConfiguration);
+        services.Configure<McpifyOptions>(mcpifyConfiguration);
 
         return services.AddMcpifyCore();
     }
 
-    private static IServiceCollection AddMcpifyCore(this IServiceCollection services)
+    /// <summary>
+    /// Adds Mcpify proxy, JSON-RPC handlers, and stdio server.
+    /// </summary>
+    private static McpifyBuilder AddMcpifyCore(this IServiceCollection services)
     {
         // Add REST API http client.
         services.AddHttpClient<RestProxyService>((provider, client) =>
         {
             var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
+            var baseAddress = GetBaseAddress(provider);
 
-            client.BaseAddress = new Uri(options.Value.ApiBaseUrl);
+            client.BaseAddress = baseAddress;
 
-            foreach (var defaultHeader in options.Value.ApiDefaultHeaders)
+            foreach (var defaultHeader in options.Value.Rest.DefaultHeaders)
             {
                 client.DefaultRequestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
         });
-
-        services.AddHttpContextAccessor();
-
-        // Add routing handler.
-        services.AddSingleton<McpRouteHandler>();
 
         // Add JSON-RPC dispatcher, handlers and factory.
         services.AddSingleton<JsonRpcDispatcher>();
@@ -57,6 +56,42 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<Func<string, IRpcHandler?>>(serviceProvider => serviceProvider.GetKeyedService<IRpcHandler>);
 
-        return services;
+        // Add stdio MCP proxy.
+        services.AddSingleton<McpStdioServer>();
+        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpStdioServer>());
+
+        return new McpifyBuilder(services);
+    }
+
+    private static Uri GetBaseAddress(IServiceProvider provider)
+    {
+        var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
+
+        var baseAddress = new Uri(options.Value.Rest.BaseAddress, UriKind.RelativeOrAbsolute);
+
+        // Return configured base address if absolute.
+        if (baseAddress.IsAbsoluteUri) return baseAddress;
+
+        // Otherwise, get server address from an extension, e.g. Mcpify.AspNetCore.
+        var serverAddress = provider.GetKeyedService<Uri>("Mcpify:ServerAddress") ??
+                            throw new InvalidOperationException("REST base address is relative, but no server address is available. Either configure an absolute " +
+                                                                "base address, or ensure than the Mcpify service builder registers a server address.");
+
+        // Normalize "0.0.0.0" host to "localhost".
+        serverAddress = NormalizeHost(serverAddress);
+
+        // And build absolute URI based on server address.
+        return new Uri(serverAddress, baseAddress);
+    }
+
+    private static Uri NormalizeHost(Uri uri)
+    {
+        if (uri.Host is "0.0.0.0" or "::")
+        {
+            var builder = new UriBuilder(uri) { Host = "localhost" };
+            return builder.Uri;
+        }
+
+        return uri;
     }
 }

@@ -3,5 +3,7 @@
     <File Path=".gitignore" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="src/Summerdawn.Mcpify.AspNetCore/Summerdawn.Mcpify.AspNetCore.csproj" Id="a800ffd4-08de-409c-bfaf-0d1d03fde519" />
+  <Project Path="src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj" />
   <Project Path="src/Summerdawn.Mcpify/Summerdawn.Mcpify.csproj" />
 </Solution>

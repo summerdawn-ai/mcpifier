@@ -1,12 +1,14 @@
 using System.Text.Json;
 
+using Microsoft.AspNetCore.Http;
+
 using Summerdawn.Mcpify.Configuration;
 using Summerdawn.Mcpify.Models;
 using Summerdawn.Mcpify.Services;
 
 namespace Summerdawn.Mcpify.Handlers;
 
-public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpContextAccessor httpContextAccessor, IOptions<McpifyOptions> options, ILogger<McpToolsCallRpcHandler> logger) : IRpcHandler
+public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IOptions<McpifyOptions> options, ILogger<McpToolsCallRpcHandler> logger, IHttpContextAccessor? httpContextAccessor = null) : IRpcHandler
 {
     public async Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request, CancellationToken cancellationToken = default)
     {
@@ -30,9 +32,9 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpC
             return JsonRpcResponse.ErrorResponse(request.Id, 400, message);
         }
 
-        var authHeader = httpContextAccessor.HttpContext?.Request.Headers.Authorization.FirstOrDefault();
+        var forwardedHeaders = GetForwardedHeaders(httpContextAccessor?.HttpContext?.Request);
 
-        var (success, statusCode, responseBody) = await proxyService.ExecuteToolAsync(tool, parameters.Arguments, authHeader);
+        var (success, statusCode, responseBody) = await proxyService.ExecuteToolAsync(tool, parameters.Arguments, forwardedHeaders);
         if (!success)
         {
             logger.LogWarning("REST API returned error {StatusCode} for tool {ToolName}", statusCode, parameters.Name);
@@ -58,6 +60,35 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpC
         };
 
         return JsonRpcResponse.Success(request.Id, result);
+    }
+
+    private Dictionary<string, string> GetForwardedHeaders(HttpRequest? request)
+    {
+        var forwardedHeaderNames = options.Value.Rest.ForwardedHeaders.Where(h => h.Value == true).Select(h => h.Key).ToList();
+        var requestHeaders = request?.Headers;
+
+        if (forwardedHeaderNames.Any() && requestHeaders is null)
+        {
+            logger.LogWarning("Header forwarding is configured for {count} headers, but no HTTP context is available.", forwardedHeaderNames.Count);
+        }
+
+        if (requestHeaders is null)
+        {
+            return [];
+        }
+
+        var forwardedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string headerName in forwardedHeaderNames)
+        {
+            string? headerValue = requestHeaders[headerName].FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(headerValue))
+            {
+                forwardedHeaders[headerName] = headerValue;
+            }
+        }
+
+        return forwardedHeaders;
     }
 
     private static List<object> CreateContent(string responseBody) =>

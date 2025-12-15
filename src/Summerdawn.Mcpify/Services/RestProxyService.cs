@@ -10,7 +10,7 @@ public class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> l
 {
     private static readonly Regex PlaceholderRegex = new Regex(@"\{(\w+)\}");
 
-    public async Task<(bool success, int statusCode, string responseBody)> ExecuteToolAsync(ProxyToolDefinition tool, Dictionary<string, JsonElement> arguments, string? authorizationHeader)
+    public async Task<(bool success, int statusCode, string responseBody)> ExecuteToolAsync(ProxyToolDefinition tool, Dictionary<string, JsonElement> arguments, Dictionary<string, string> forwardedHeaders)
     {
         // Build the URL with path interpolation
         var path = InterpolatePath(tool.Rest.Path, arguments);
@@ -31,11 +31,11 @@ public class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> l
         // Create the HTTP request
         var request = new HttpRequestMessage(new HttpMethod(tool.Rest.Method), path);
 
-        // Forward Authorization header
-        if (!string.IsNullOrEmpty(authorizationHeader))
+        // Forward headers
+        foreach (var (headerName, headerValue) in forwardedHeaders)
         {
-            logger.LogDebug("Forwarding Authorization header");
-            request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
+            logger.LogDebug("Forwarding header {HeaderName}", headerName);
+            request.Headers.TryAddWithoutValidation(headerName, headerValue);
         }
 
         // Add body if present
