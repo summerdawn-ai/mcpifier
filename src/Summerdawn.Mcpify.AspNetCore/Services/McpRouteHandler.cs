@@ -35,9 +35,7 @@ internal class McpRouteHandler(JsonRpcDispatcher dispatcher, IOptions<McpifyOpti
                 context.Response.Headers["WWW-Authenticate"] =
                     $"Bearer resource_metadata=\"{url.Scheme}://{url.Authority}/.well-known/oauth-protected-resource{url.AbsolutePath}\"";
 
-                logger.LogInformation("MCP request: {Method} {Path} -> {StatusCode} in {ElapsedMs}ms [TraceId: {TraceId}]",
-                    method, path, context.Response.StatusCode, (DateTime.UtcNow - startTime).TotalMilliseconds, traceId);
-
+                LogRequestCompleted(method, path, context.Response.StatusCode, startTime, traceId);
                 return;
             }
 
@@ -53,9 +51,7 @@ internal class McpRouteHandler(JsonRpcDispatcher dispatcher, IOptions<McpifyOpti
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await context.Response.WriteAsJsonAsync(new { error = "Invalid JSON-RPC request format" });
 
-                logger.LogInformation("MCP request: {Method} {Path} -> {StatusCode} in {ElapsedMs}ms [TraceId: {TraceId}]",
-                    method, path, context.Response.StatusCode, (DateTime.UtcNow - startTime).TotalMilliseconds, traceId);
-
+                LogRequestCompleted(method, path, context.Response.StatusCode, startTime, traceId);
                 return;
             }
 
@@ -65,9 +61,7 @@ internal class McpRouteHandler(JsonRpcDispatcher dispatcher, IOptions<McpifyOpti
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await context.Response.WriteAsJsonAsync(new { error = "Request body is required" });
 
-                logger.LogInformation("MCP request: {Method} {Path} -> {StatusCode} in {ElapsedMs}ms [TraceId: {TraceId}]",
-                    method, path, context.Response.StatusCode, (DateTime.UtcNow - startTime).TotalMilliseconds, traceId);
-
+                LogRequestCompleted(method, path, context.Response.StatusCode, startTime, traceId);
                 return;
             }
 
@@ -93,8 +87,7 @@ internal class McpRouteHandler(JsonRpcDispatcher dispatcher, IOptions<McpifyOpti
                 await context.Response.WriteAsJsonAsync(rpcResponse);
             }
 
-            logger.LogInformation("MCP request: {Method} {Path} -> {StatusCode} in {ElapsedMs}ms [TraceId: {TraceId}]",
-                method, path, context.Response.StatusCode, (DateTime.UtcNow - startTime).TotalMilliseconds, traceId);
+            LogRequestCompleted(method, path, context.Response.StatusCode, startTime, traceId);
         }
         catch (Exception ex)
         {
@@ -102,9 +95,15 @@ internal class McpRouteHandler(JsonRpcDispatcher dispatcher, IOptions<McpifyOpti
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             await context.Response.WriteAsJsonAsync(new { error = "Internal server error" });
 
-            logger.LogInformation("MCP request: {Method} {Path} -> {StatusCode} in {ElapsedMs}ms [TraceId: {TraceId}]",
-                method, path, context.Response.StatusCode, (DateTime.UtcNow - startTime).TotalMilliseconds, traceId);
+            LogRequestCompleted(method, path, context.Response.StatusCode, startTime, traceId);
         }
+    }
+
+    private void LogRequestCompleted(string method, string path, int statusCode, DateTime startTime, string traceId)
+    {
+        var elapsedMs = (DateTime.UtcNow - startTime).TotalMilliseconds;
+        logger.LogInformation("MCP request: {Method} {Path} -> {StatusCode} in {ElapsedMs}ms [TraceId: {TraceId}]",
+            method, path, statusCode, elapsedMs, traceId);
     }
 
     /// <summary>

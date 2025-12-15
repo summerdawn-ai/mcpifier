@@ -33,12 +33,12 @@ public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogge
         catch (JsonException ex)
         {
             logger.LogWarning(ex, "Invalid request parameters for JSON-RPC method {Method}", rpcRequest.Method);
-            return JsonRpcResponse.ErrorResponse(rpcRequest.Id, -32602, $"Invalid params: {ex.Message}");
+            return JsonRpcResponse.InvalidParams(rpcRequest.Id, $"Invalid params: {ex.Message}");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error handling JSON-RPC method {Method}", rpcRequest.Method);
-            return JsonRpcResponse.ErrorResponse(rpcRequest.Id, -32603, $"Internal error: {ex.Message}");
+            return JsonRpcResponse.InternalError(rpcRequest.Id, $"Internal error: {ex.Message}");
         }
     }   
 }

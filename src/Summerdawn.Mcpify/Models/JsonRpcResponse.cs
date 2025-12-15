@@ -7,6 +7,12 @@ public sealed class JsonRpcResponse
 {
     public static readonly IReadOnlyDictionary<string, object?> EmptyResult = new Dictionary<string, object?>();
 
+    // JSON-RPC 2.0 error codes
+    private const int InvalidRequestCode = -32600;
+    private const int MethodNotFoundCode = -32601;
+    private const int InvalidParamsCode = -32602;
+    private const int InternalErrorCode = -32603;
+
     [JsonPropertyName("jsonrpc")]
     public string Version { get; init; } = "2.0";
 
@@ -34,9 +40,13 @@ public sealed class JsonRpcResponse
         Result = result ?? EmptyResult
     };
 
-    public static JsonRpcResponse InvalidRequest(JsonElement id) => ErrorResponse(id, -32600, "Invalid Request");
+    public static JsonRpcResponse InvalidRequest(JsonElement id) => ErrorResponse(id, InvalidRequestCode, "Invalid Request");
 
-    public static JsonRpcResponse MethodNotFound(JsonElement id, string methodName) => ErrorResponse(id, -32601, $"Method '{methodName}' not found");
+    public static JsonRpcResponse MethodNotFound(JsonElement id, string methodName) => ErrorResponse(id, MethodNotFoundCode, $"Method '{methodName}' not found");
+
+    public static JsonRpcResponse InvalidParams(JsonElement id, string message) => ErrorResponse(id, InvalidParamsCode, message);
+
+    public static JsonRpcResponse InternalError(JsonElement id, string message) => ErrorResponse(id, InternalErrorCode, message);
 
     public static JsonRpcResponse ErrorResponse(JsonElement id, int code, string message, object? data = null) => new()
     {
