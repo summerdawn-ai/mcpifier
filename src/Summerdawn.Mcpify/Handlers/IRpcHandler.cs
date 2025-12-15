@@ -4,6 +4,9 @@ using Summerdawn.Mcpify.Models;
 
 namespace Summerdawn.Mcpify.Handlers;
 
+/// <summary>
+/// Defines a handler for JSON-RPC requests in the MCP protocol.
+/// </summary>
 public interface IRpcHandler
 {
     /// <summary>

@@ -3,8 +3,12 @@ using Summerdawn.Mcpify.Models;
 
 namespace Summerdawn.Mcpify.Handlers;
 
+/// <summary>
+/// Handles the MCP tools/list request.
+/// </summary>
 public sealed class McpToolsListRpcHandler(IOptions<McpifyOptions> options, ILogger<McpToolsListRpcHandler> logger) : IRpcHandler
 {
+    /// <inheritdoc/>
     public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default)
     {
         // Deserialize, but ignore, params.

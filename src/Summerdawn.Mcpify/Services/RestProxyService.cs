@@ -6,10 +6,20 @@ using Summerdawn.Mcpify.Configuration;
 
 namespace Summerdawn.Mcpify.Services;
 
+/// <summary>
+/// Service for executing REST API calls as proxy for MCP tools.
+/// </summary>
 public class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> logger)
 {
     private static readonly Regex PlaceholderRegex = new Regex(@"\{(\w+)\}");
 
+    /// <summary>
+    /// Executes a tool by making a REST API call with the specified arguments and headers.
+    /// </summary>
+    /// <param name="tool">The tool definition containing REST API configuration.</param>
+    /// <param name="arguments">The arguments to interpolate into the REST API call.</param>
+    /// <param name="forwardedHeaders">HTTP headers to forward to the REST API.</param>
+    /// <returns>A tuple containing success status, HTTP status code, and response body.</returns>
     public async Task<(bool success, int statusCode, string responseBody)> ExecuteToolAsync(ProxyToolDefinition tool, Dictionary<string, JsonElement> arguments, Dictionary<string, string> forwardedHeaders)
     {
         // Build the URL with path interpolation

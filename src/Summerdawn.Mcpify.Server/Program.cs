@@ -4,8 +4,16 @@ using Summerdawn.Mcpify.DependencyInjection;
 
 namespace Summerdawn.Mcpify.Server;
 
+/// <summary>
+/// Main program class for the Mcpify server.
+/// </summary>
 public  class Program
 {
+    /// <summary>
+    /// Entry point for the Mcpify server application.
+    /// </summary>
+    /// <param name="args">Command-line arguments.</param>
+    /// <returns>Exit code.</returns>
     public static int Main(string[] args)
     {
         var modeOption = new Option<string>("--mode", "The server mode to use")

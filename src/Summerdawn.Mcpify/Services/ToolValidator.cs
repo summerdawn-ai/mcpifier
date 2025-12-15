@@ -4,8 +4,17 @@ using Summerdawn.Mcpify.Models;
 
 namespace Summerdawn.Mcpify.Services;
 
+/// <summary>
+/// Provides validation for MCP tool arguments.
+/// </summary>
 public static class ToolValidator
 {
+    /// <summary>
+    /// Validates that the provided arguments match the tool's input schema.
+    /// </summary>
+    /// <param name="mcpTool">The MCP tool definition containing the input schema.</param>
+    /// <param name="arguments">The arguments to validate.</param>
+    /// <returns>A tuple indicating whether validation succeeded and an optional error message.</returns>
     public static (bool isValid, string? errorMessage) ValidateArguments(McpToolDefinition mcpTool, Dictionary<string, JsonElement> arguments)
     {
         var schema = mcpTool.InputSchema;
