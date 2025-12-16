@@ -9,8 +9,17 @@ using Summerdawn.Mcpify.Services;
 
 namespace Summerdawn.Mcpify.DependencyInjection;
 
+/// <summary>
+/// Extension methods for <see cref="IServiceCollection"/> to configure Mcpify services.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds Mcpify services to the service collection with the specified configuration action.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="configureOptions">An action to configure Mcpify options.</param>
+    /// <returns>A <see cref="McpifyBuilder"/> that can be used to further configure Mcpify.</returns>
     public static McpifyBuilder AddMcpify(this IServiceCollection services, Action<McpifyOptions> configureOptions)
     {
         // Configure options from action.
@@ -19,6 +28,12 @@ public static class ServiceCollectionExtensions
         return services.AddMcpifyCore();
     }
 
+    /// <summary>
+    /// Adds Mcpify services to the service collection with configuration from the specified configuration section.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="mcpifyConfiguration">The configuration section containing Mcpify settings.</param>
+    /// <returns>A <see cref="McpifyBuilder"/> that can be used to further configure Mcpify.</returns>
     public static McpifyBuilder AddMcpify(this IServiceCollection services, IConfiguration mcpifyConfiguration)
     {
         // Configure options from provided config section.

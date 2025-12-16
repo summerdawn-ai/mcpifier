@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 
@@ -9,7 +8,10 @@ using Summerdawn.Mcpify.Models;
 
 namespace Summerdawn.Mcpify.Services;
 
-public sealed class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
+/// <summary>
+/// Background service that handles MCP JSON-RPC communication over stdio.
+/// </summary>
+public class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
 {
     /// <summary>
     /// Defines JSON serialization options for stdio communication.
@@ -22,11 +24,19 @@ public sealed class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, I
 
     private readonly TaskCompletionSource<object?> activation = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+    /// <summary>
+    /// Activates the stdio server to begin processing MCP requests.
+    /// </summary>
     public void Activate()
     {
         activation.TrySetResult(null);
     }
 
+    /// <summary>
+    /// Executes the stdio server to process MCP requests.
+    /// </summary>
+    /// <param name="stoppingToken">A cancellation token that indicates when the service should stop.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Use BOM-less encoding
