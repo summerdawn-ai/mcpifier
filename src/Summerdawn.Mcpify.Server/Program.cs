@@ -7,7 +7,7 @@ namespace Summerdawn.Mcpify.Server;
 /// <summary>
 /// Main program class for the Mcpify server.
 /// </summary>
-public  class Program
+public class Program
 {
     /// <summary>
     /// Entry point for the Mcpify server application.
@@ -25,18 +25,24 @@ public  class Program
             args = ["--mode=http"];
         }
 
-        var modeOption = new Option<string>("--mode", "The server mode to use")
+        var modeOption = new Option<string>("--mode", "-m")
         {
-            IsRequired = true
+            Description = "The server mode to use.",
+            Required = true
+        }.AcceptOnlyFromAmong("http", "stdio");
+
+        var rootCommand = new RootCommand("MCP server that can run in HTTP or stdio mode")
+        {
+            modeOption
         };
-        modeOption.AddAlias("-m");
-        modeOption.FromAmong("http", "stdio");
+        rootCommand.SetAction(parseResult =>
+        {
+            string mode = parseResult.GetValue(modeOption)!;
 
-        var rootCommand = new RootCommand("MCP server that can run in HTTP or stdio mode");
-        rootCommand.AddOption(modeOption);
-        rootCommand.SetHandler(mode => MainWithMode(args, mode), modeOption);
+            MainWithMode(args, mode);
+        });
 
-        return rootCommand.Invoke(args);
+        return rootCommand.Parse(args).Invoke();
     }
 
     private static void MainWithMode(string[] args, string mode)
