@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Summerdawn.Mcpify.Handlers;
 using Summerdawn.Mcpify.Models;
 
@@ -28,9 +30,15 @@ public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogge
 
             return await handler.HandleAsync(rpcRequest, cancellationToken);
         }
-        catch (Exception e)
+        catch (JsonException ex)
         {
-            return JsonRpcResponse.ErrorResponse(rpcRequest.Id, -32600, e.Message);
+            logger.LogWarning(ex, "Invalid request parameters for JSON-RPC method {Method}", rpcRequest.Method);
+            return JsonRpcResponse.InvalidParams(rpcRequest.Id, $"Invalid params: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error handling JSON-RPC method {Method}", rpcRequest.Method);
+            return JsonRpcResponse.InternalError(rpcRequest.Id, $"Internal error: {ex.Message}");
         }
     }   
 }
