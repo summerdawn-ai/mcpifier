@@ -19,17 +19,8 @@ public class StdioIntegrationTests
 /// <summary>
 /// Test implementation of IStdio using in-memory streams.
 /// </summary>
-public class TestStdio : IStdio
+public class TestStdio(Stream input, Stream output) : IStdio
 {
-    private readonly Stream _input;
-    private readonly Stream _output;
-
-    public TestStdio(Stream input, Stream output)
-    {
-        _input = input;
-        _output = output;
-    }
-
-    public Stream GetStandardInput() => _input;
-    public Stream GetStandardOutput() => _output;
+    public Stream GetStandardInput() => input;
+    public Stream GetStandardOutput() => output;
 }

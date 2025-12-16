@@ -7,11 +7,11 @@ namespace Summerdawn.Mcpify.Server.Tests;
 /// <summary>
 /// Custom WebApplicationFactory that uses ProgramHttp's CreateHostBuilder method.
 /// </summary>
-public class McpifyServerFactory : WebApplicationFactory<Summerdawn.Mcpify.Server.ProgramHttp>
+public class McpifyServerFactory : WebApplicationFactory<ProgramHttp>
 {
     protected override IHostBuilder? CreateHostBuilder()
     {
-        return Summerdawn.Mcpify.Server.ProgramHttp.CreateHostBuilder(Array.Empty<string>());
+        return ProgramHttp.CreateHostBuilder([]);
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

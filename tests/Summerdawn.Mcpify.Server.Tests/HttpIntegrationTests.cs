@@ -11,15 +11,8 @@ namespace Summerdawn.Mcpify.Server.Tests;
 /// <summary>
 /// Integration tests for HTTP mode using WebApplicationFactory.
 /// </summary>
-public class HttpIntegrationTests : IClassFixture<McpifyServerFactory>
+public class HttpIntegrationTests(McpifyServerFactory factory) : IClassFixture<McpifyServerFactory>
 {
-    private readonly McpifyServerFactory _factory;
-
-    public HttpIntegrationTests(McpifyServerFactory factory)
-    {
-        _factory = factory;
-    }
-
     [Fact]
     public async Task ToolsListRequest_ReturnsExpectedTools()
     {
@@ -32,7 +25,7 @@ public class HttpIntegrationTests : IClassFixture<McpifyServerFactory>
             });
         });
 
-        var client = _factory.WithWebHostBuilder(builder =>
+        var client = factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureServices(services =>
             {
@@ -84,7 +77,7 @@ public class HttpIntegrationTests : IClassFixture<McpifyServerFactory>
             });
         });
 
-        var client = _factory.WithWebHostBuilder(builder =>
+        var client = factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureServices(services =>
             {
@@ -138,20 +131,13 @@ public class HttpIntegrationTests : IClassFixture<McpifyServerFactory>
 /// <summary>
 /// Mock HttpMessageHandler for testing outbound REST calls.
 /// </summary>
-public class MockHttpMessageHandler : HttpMessageHandler
+public class MockHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler) : HttpMessageHandler
 {
-    private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _handler;
-    
     public bool WasCalled { get; private set; }
-
-    public MockHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler)
-    {
-        _handler = handler;
-    }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         WasCalled = true;
-        return await _handler(request, cancellationToken);
+        return await handler(request, cancellationToken);
     }
 }
