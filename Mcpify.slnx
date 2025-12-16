@@ -9,7 +9,9 @@
     <Project Path="src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj" />
     <Project Path="src/Summerdawn.Mcpify/Summerdawn.Mcpify.csproj" />
   </Folder>
+  <Folder Name="/src/" />
   <Folder Name="/Tests/">
     <Project Path="tests/Summerdawn.Mcpify.Server.Tests/Summerdawn.Mcpify.Server.Tests.csproj" />
+    <Project Path="tests/Summerdawn.Mcpify.Tests/Summerdawn.Mcpify.Tests.csproj" />
   </Folder>
 </Solution>
