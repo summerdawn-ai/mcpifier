@@ -1,23 +1,13 @@
-name: Test Summerdawn.Mcpify.Server
+name: Test test-mcpify-server
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'src/Summerdawn.Mcpify/**'
       - 'src/Summerdawn.Mcpify.AspNetCore/**'
       - 'src/Summerdawn.Mcpify.Server/**'
       - 'tests/Summerdawn.Mcpify.Server.Tests/**'
-      - '.github/workflows/test-mcpify-server.yml'
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/Summerdawn.Mcpify/**'
-      - 'src/Summerdawn.Mcpify.AspNetCore/**'
-      - 'src/Summerdawn.Mcpify.Server/**'
-      - 'tests/Summerdawn.Mcpify.Server.Tests/**'
-      - '.github/workflows/test-mcpify-server.yml'
-  workflow_dispatch:
 
 jobs:
   test:

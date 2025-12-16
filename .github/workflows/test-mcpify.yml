@@ -1,19 +1,11 @@
-name: Test Summerdawn.Mcpify
+name: Test test-mcpify
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'src/Summerdawn.Mcpify/**'
       - 'tests/Summerdawn.Mcpify.Tests/**'
-      - '.github/workflows/test-mcpify.yml'
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/Summerdawn.Mcpify/**'
-      - 'tests/Summerdawn.Mcpify.Tests/**'
-      - '.github/workflows/test-mcpify.yml'
-  workflow_dispatch:
 
 jobs:
   test:
