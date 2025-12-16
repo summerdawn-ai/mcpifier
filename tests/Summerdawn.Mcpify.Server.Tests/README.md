@@ -1,4 +1,4 @@
-# Mcpify.Server.Tests
+# Summerdawn.Mcpify.Server.Tests
 
 This project contains integration tests for the Mcpify server, demonstrating testability improvements that allow both HTTP and stdio modes to be tested in-process.
 
