@@ -6,7 +6,7 @@ namespace Summerdawn.Mcpify.Models;
 /// <summary>
 /// Represents a JSON-RPC 2.0 response.
 /// </summary>
-internal sealed class JsonRpcResponse
+public sealed class JsonRpcResponse
 {
     /// <summary>
     /// Gets an empty result dictionary used for successful responses without a result.
@@ -90,6 +90,14 @@ internal sealed class JsonRpcResponse
     public static JsonRpcResponse InvalidParams(JsonElement id, string message) => ErrorResponse(id, InvalidParamsCode, message);
 
     /// <summary>
+    /// Creates an internal error response.
+    /// </summary>
+    /// <param name="id">The request identifier.</param>
+    /// <param name="message">The error message.</param>
+    /// <returns>An internal error response.</returns>
+    public static JsonRpcResponse InternalError(JsonElement id, string message) => ErrorResponse(id, InternalErrorCode, message);
+
+    /// <summary>
     /// Creates a method not found error response.
     /// </summary>
     /// <param name="id">The request identifier.</param>
@@ -121,7 +129,7 @@ internal sealed class JsonRpcResponse
 /// <summary>
 /// Represents a JSON-RPC error.
 /// </summary>
-internal sealed class JsonRpcError
+public sealed class JsonRpcError
 {
     /// <summary>
     /// Gets or sets the error code.

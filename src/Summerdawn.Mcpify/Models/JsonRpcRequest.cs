@@ -6,7 +6,7 @@ namespace Summerdawn.Mcpify.Models;
 /// <summary>
 /// Represents a JSON-RPC 2.0 request.
 /// </summary>
-internal sealed class JsonRpcRequest
+public sealed class JsonRpcRequest
 {
     /// <summary>
     /// Gets or sets the JSON-RPC version. Must be "2.0".

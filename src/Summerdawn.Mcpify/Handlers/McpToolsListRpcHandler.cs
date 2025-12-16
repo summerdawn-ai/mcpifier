@@ -6,7 +6,7 @@ namespace Summerdawn.Mcpify.Handlers;
 /// <summary>
 /// Handles the MCP tools/list request.
 /// </summary>
-internal sealed class McpToolsListRpcHandler(IOptions<McpifyOptions> options, ILogger<McpToolsListRpcHandler> logger) : IRpcHandler
+public sealed class McpToolsListRpcHandler(IOptions<McpifyOptions> options, ILogger<McpToolsListRpcHandler> logger) : IRpcHandler
 {
     /// <inheritdoc/>
     public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default)

@@ -11,7 +11,7 @@ namespace Summerdawn.Mcpify.Handlers;
 /// <summary>
 /// Handles the MCP tools/call request.
 /// </summary>
-internal sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IOptions<McpifyOptions> options, ILogger<McpToolsCallRpcHandler> logger, IHttpContextAccessor? httpContextAccessor = null) : IRpcHandler
+public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IOptions<McpifyOptions> options, ILogger<McpToolsCallRpcHandler> logger, IHttpContextAccessor? httpContextAccessor = null) : IRpcHandler
 {
     /// <inheritdoc/>
     public async Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request, CancellationToken cancellationToken = default)

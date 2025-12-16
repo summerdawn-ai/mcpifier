@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 
@@ -12,7 +11,7 @@ namespace Summerdawn.Mcpify.Services;
 /// <summary>
 /// Background service that handles MCP JSON-RPC communication over stdio.
 /// </summary>
-internal sealed class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
+public class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
 {
     /// <summary>
     /// Defines JSON serialization options for stdio communication.
