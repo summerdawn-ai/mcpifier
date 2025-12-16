@@ -17,13 +17,10 @@ public class HttpIntegrationTests(McpifyServerFactory factory) : IClassFixture<M
     public async Task ToolsListRequest_ReturnsExpectedTools()
     {
         // Arrange
-        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) =>
+        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("{\"status\":\"ok\"}")
-            });
-        });
+            Content = new StringContent("{\"status\":\"ok\"}")
+        }));
 
         var client = factory.WithWebHostBuilder(builder =>
         {

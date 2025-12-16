@@ -1,6 +1,6 @@
+using System.Net;
 using System.Text.Json;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,13 +20,14 @@ public class McpToolsCallRpcHandlerTests
     {
         // Arrange
         var options = CreateOptions([]);
-        var mockHttpClient = new HttpClient();
+        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
         var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var mockProxyService = new Mock<RestProxyService>(mockHttpClient, mockLogger.Object);
+        var proxyService = new RestProxyService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
-            mockProxyService.Object,
+            proxyService,
             options,
             mockHandlerLogger.Object,
             null);
@@ -48,13 +49,14 @@ public class McpToolsCallRpcHandlerTests
         // Arrange
         var tool = CreateTestTool("test_tool", requiredProperties: ["message"]);
         var options = CreateOptions([tool]);
-        var mockHttpClient = new HttpClient();
+        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
         var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var mockProxyService = new Mock<RestProxyService>(mockHttpClient, mockLogger.Object);
+        var proxyService = new RestProxyService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
-            mockProxyService.Object,
+            proxyService,
             options,
             mockHandlerLogger.Object,
             null);
@@ -76,21 +78,17 @@ public class McpToolsCallRpcHandlerTests
         // Arrange
         var tool = CreateTestTool("test_tool", requiredProperties: ["message"]);
         var options = CreateOptions([tool]);
-        
-        var mockHttpClient = new HttpClient();
+        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError)
+        {
+            Content = new StringContent("Internal Server Error")
+        }));
+        var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
         var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var mockProxyService = new Mock<RestProxyService>(mockHttpClient, mockLogger.Object);
-        mockProxyService
-            .Setup(x => x.ExecuteToolAsync(
-                It.IsAny<ProxyToolDefinition>(),
-                It.IsAny<Dictionary<string, JsonElement>>(),
-                It.IsAny<Dictionary<string, string>>()))
-            .ReturnsAsync((false, 500, "Internal Server Error"));
-        
+        var proxyService = new RestProxyService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
-            mockProxyService.Object,
+            proxyService,
             options,
             mockHandlerLogger.Object,
             null);
@@ -122,22 +120,18 @@ public class McpToolsCallRpcHandlerTests
         // Arrange
         var tool = CreateTestTool("test_tool", requiredProperties: ["message"]);
         var options = CreateOptions([tool]);
-        
         var jsonResponse = "{\"status\":\"success\",\"data\":\"test\"}";
-        var mockHttpClient = new HttpClient();
+        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(jsonResponse)
+        }));
+        var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
         var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var mockProxyService = new Mock<RestProxyService>(mockHttpClient, mockLogger.Object);
-        mockProxyService
-            .Setup(x => x.ExecuteToolAsync(
-                It.IsAny<ProxyToolDefinition>(),
-                It.IsAny<Dictionary<string, JsonElement>>(),
-                It.IsAny<Dictionary<string, string>>()))
-            .ReturnsAsync((true, 200, jsonResponse));
-        
+        var proxyService = new RestProxyService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
-            mockProxyService.Object,
+            proxyService,
             options,
             mockHandlerLogger.Object,
             null);
@@ -225,5 +219,19 @@ public class McpToolsCallRpcHandlerTests
             Id = JsonSerializer.SerializeToElement(1),
             Params = JsonSerializer.SerializeToElement(paramsObj)
         };
+    }
+}
+
+/// <summary>
+/// Mock HttpMessageHandler for testing outbound REST calls.
+/// </summary>
+public class MockHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler) : HttpMessageHandler
+{
+    public bool WasCalled { get; private set; }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        WasCalled = true;
+        return await handler(request, cancellationToken);
     }
 }
