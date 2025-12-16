@@ -91,13 +91,6 @@ jobs:
       - name: Publish NuGet packages
         run: |
           dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-      
-      - name: Tag repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
-          git push origin "v${{ github.event.inputs.version }}"
 
   release-server:
     needs: [validate, build]
@@ -152,15 +145,6 @@ jobs:
           cd ./publish/osx-arm64
           zip -r ../../mcpify-${{ github.event.inputs.version }}-osx-arm64.zip .
       
-      - name: Tag repository if not already tagged
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git rev-parse "v${{ github.event.inputs.version }}" >/dev/null 2>&1; then
-            git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
-            git push origin "v${{ github.event.inputs.version }}"
-          fi
-      
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -177,3 +161,24 @@ jobs:
             mcpify-${{ github.event.inputs.version }}-osx-arm64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  tag-release:
+    needs: [validate, build, publish-nuget, release-server]
+    if: ${{ always() && (needs.publish-nuget.result == 'success' || needs.release-server.result == 'success') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Tag repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git rev-parse "v${{ github.event.inputs.version }}" >/dev/null 2>&1; then
+            git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
+            git push origin "v${{ github.event.inputs.version }}"
+          fi
