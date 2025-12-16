@@ -1,315 +1,437 @@
-# Mcpify MCP-to-REST Proxy
+# Mcpify
 
-Mcpify is a pure-proxy MCP (Model Context Protocol) server that forwards requests to REST APIs without validating JWT tokens. This server acts as a transparent pass-through, allowing MCP clients to interact with existing REST APIs while maintaining complete separation of concerns.
+**A zero-code MCP (Model Context Protocol) proxy for REST APIs**
+
+Mcpify enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoints in JSON, and Mcpify handles all the protocol translation between MCP clients and your REST services.
 
 ## Overview
 
-Mcpify:
-- **Does NOT validate** JWT tokens, signatures, audiences, issuers, or expiry
-- **Does NOT enforce** authentication on incoming calls
-- **Simply forwards** the `Authorization` header (if present) to the REST API unchanged
-- **Passes through** all REST API responses (success or error) to the caller
-- **Requires no code changes** to add new tools - only configuration updates
+### What is Mcpify?
 
-Authentication is handled **entirely by the REST API**, not by the MCP server.
+Mcpify is a configurable proxy that sits between MCP clients (like Claude Desktop, VS Code with MCP extensions, or other AI assistants) and REST APIs. It translates MCP tool calls into REST API requests and responses back into MCP format, all without requiring any code changes to your existing APIs.
 
-## Features
+### Key Benefits
 
-- ✅ HTTPS support via Kestrel
-- ✅ JSON-configured tool definitions
-- ✅ Pure proxy behavior (no token validation)
-- ✅ Authorization header pass-through
-- ✅ Error pass-through from REST API
-- ✅ Path parameter interpolation
-- ✅ Query parameter support
-- ✅ Request body support
-- ✅ Input schema validation (required fields, basic type checking)
-- ✅ Comprehensive logging (startup, tool calls, REST responses)
-- ✅ MCP protocol compliance
+- **Zero Code Required**: Define tools entirely through JSON configuration
+- **No API Changes**: Works with existing REST APIs without modifications
+- **Flexible Architecture**: Use as a library, ASP.NET Core middleware, or standalone server
+- **Standards-Based**: Implements MCP protocol and JSON-RPC 2.0
+- **Easy Integration**: Simple configuration for common scenarios
 
-## Quick Start
+### Use Cases
 
-### 1. Configure API Base URL
+- Expose internal REST APIs to AI assistants
+- Enable Claude Desktop or VS Code to interact with your services
+- Create MCP tools from OpenAPI/Swagger specifications
+- Build AI-powered workflows with existing backend services
+- Prototype MCP integrations quickly without custom code
 
-Edit `appsettings.json` to set your REST API endpoint (environment-specific):
+## Repository Structure
+
+- **[/src/Summerdawn.Mcpify](src/Summerdawn.Mcpify/README.md)** - Core library providing MCP protocol implementation, JSON-RPC handlers, and REST proxy service
+- **[/src/Summerdawn.Mcpify.AspNetCore](src/Summerdawn.Mcpify.AspNetCore/README.md)** - ASP.NET Core integration for hosting Mcpify in your web applications
+- **[/src/Summerdawn.Mcpify.Server](src/Summerdawn.Mcpify.Server/README.md)** - Standalone server for running Mcpify without coding
+- **/tests** - Test projects for all libraries
+
+## Key Technologies
+
+- **.NET 8.0** - Modern cross-platform framework
+- **ASP.NET Core** - For HTTP hosting scenarios
+- **Model Context Protocol (MCP)** - Anthropic's protocol for AI-tool integration
+- **JSON-RPC 2.0** - Standard RPC protocol used by MCP
+
+## Architecture
+
+```
+┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+│             │   MCP   │             │   HTTP  │             │
+│ MCP Client  │────────▶│   Mcpify    │────────▶│  REST API   │
+│ (Claude,    │◀────────│   Proxy     │◀────────│             │
+│  VS Code)   │         │             │         │             │
+└─────────────┘         └─────────────┘         └─────────────┘
+```
+
+### The Three Packages
+
+**Summerdawn.Mcpify (Core Library)**
+- JSON-RPC message handling
+- MCP protocol implementation
+- REST API proxy service
+- STDIO support for process-based communication
+
+**When to use**: Building custom integrations or need fine-grained control over the MCP implementation.
+
+**Summerdawn.Mcpify.AspNetCore (ASP.NET Core Integration)**
+- HTTP endpoint mapping
+- ASP.NET Core middleware
+- Easy integration with existing web apps
+
+**When to use**: Hosting Mcpify in your ASP.NET Core application (most common scenario).
+
+**Summerdawn.Mcpify.Server (Standalone Server)**
+- Pre-built executable
+- HTTP and stdio transport modes
+- Ready to run with just configuration files
+
+**When to use**: Quick deployment without writing code, or as a standalone MCP server process.
+
+## Configuration
+
+### McpifyOptions Structure
+
+Configuration is organized into several sections:
 
 ```json
 {
-  "ApiBaseUrl": "https://api.example.com"
+  "Mcpify": {
+    "Rest": {
+      "BaseAddress": "https://api.example.com",
+      "DefaultHeaders": { "User-Agent": "Mcpify/1.0" },
+      "ForwardedHeaders": { "Authorization": true }
+    },
+    "ServerInfo": {
+      "Name": "my-mcp-server",
+      "Title": "My MCP Server",
+      "Version": "1.0.0"
+    },
+    "Tools": [ /* tool definitions */ ]
+  }
 }
 ```
 
-### 2. Configure Tools
+### Tool Mappings Structure
 
-Edit `mappings.json` to define your tools (environment-independent). Note that the tools are nested under a `"mappings"` root element:
+Each tool maps an MCP tool definition to a REST API endpoint:
 
 ```json
 {
-  "mappings": {
-    "defaultHeaders": {
-      "User-Agent": "Summerdawn-MCP-RestProxy/1.0"
-    },
-    "tools": [
-      {
-        "name": "getUserProfile",
-        "description": "Get the profile for a user.",
-        "http": {
-          "method": "GET",
-          "path": "/users/{userId}",
-          "query": {},
-          "body": null
-        },
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "userId": {
-              "type": "string",
-              "description": "The unique identifier of the user"
-            }
-          },
-          "required": ["userId"]
-        },
-        "output": {
-          "mode": "rawJson"
+  "mcp": {
+    "name": "get_user",
+    "description": "Retrieve user information by ID",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The user's unique identifier"
         }
-      }
-    ]
-  }
-}
-```
-
-### 3. Run the Server
-
-```bash
-dotnet run --launch-profile https
-```
-
-The server will start on:
-- HTTPS: `https://localhost:7026`
-- HTTP: `http://localhost:5157` (fallback)
-
-## MCP Endpoints
-
-### Server Info
-```
-GET /
-```
-
-Returns server metadata including name, version, and protocol version.
-
-### List Tools
-```
-POST /tools/list
-Content-Type: application/json
-
-{}
-```
-
-Returns all available tools from the configuration file.
-
-### Call Tool
-```
-POST /tools/call
-Content-Type: application/json
-Authorization: Bearer <token>  # Optional, passed through to REST API
-
-{
-  "name": "getUserProfile",
-  "arguments": {
-    "userId": "user123"
-  }
-}
-```
-
-Executes the specified tool by forwarding the request to the REST API.
-
-## Configuration Schema
-
-### Configuration Structure
-
-The configuration is split between two files:
-
-**`appsettings.json`** - Environment-specific settings:
-```json
-{
-  "ApiBaseUrl": "https://api.example.com"  // REST API base URL
-}
-```
-
-**`mappings.json`** - Environment-independent tool definitions:
-```json
-{
-  "mappings": {                             // Root element for tool mappings
-    "defaultHeaders": {                     // Optional default headers
-      "User-Agent": "Summerdawn-MCP-RestProxy/1.0"
-    },
-    "tools": [                              // Array of tool definitions
-      { /* tool definition */ }
-    ]
-  }
-}
-```
-
-### Tool Definition
-
-```json
-{
-  "name": "toolName",           // Unique identifier for the tool
-  "description": "...",          // Human-readable description
-  "http": {
-    "method": "GET|POST|PUT|DELETE|PATCH",
-    "path": "/endpoint/{param}", // Path with {param} placeholders
-    "query": {                   // Optional query parameters
-      "key": "{value}"
-    },
-    "body": {                    // Optional request body
-      "field": "{value}"
+      },
+      "required": ["userId"]
     }
   },
-  "inputSchema": {               // JSON Schema for validation
-    "type": "object",
-    "properties": {
-      "param": {
-        "type": "string",
-        "description": "..."
-      }
-    },
-    "required": ["param"]
-  },
-  "output": {
-    "mode": "rawJson"            // Output mode (currently only rawJson)
+  "rest": {
+    "method": "GET",
+    "path": "/users/{userId}",
+    "query": "include=profile",
+    "body": null
   }
 }
 ```
 
 ### Parameter Interpolation
 
-Use `{paramName}` placeholders in:
-- Path: `/users/{userId}`
-- Query: `{"filter": "{status}"}`
-- Body: `{"name": "{userName}"}`
+Use `{paramName}` placeholders to inject tool arguments into REST requests:
 
-Arguments are automatically interpolated from the `arguments` object in the tool call request.
-
-## Error Handling
-
-The server passes through REST API errors unchanged:
-
-**REST API Returns:**
-```
-401 Unauthorized
-{ "error": "invalid_token" }
+**In Path:**
+```json
+"path": "/users/{userId}/posts/{postId}"
 ```
 
-**MCP Server Returns:**
+**In Query String:**
+```json
+"query": "from={startDate}&to={endDate}&limit={maxResults}"
+```
+
+**In Request Body:**
+```json
+"body": "{ \"name\": {userName}, \"email\": {userEmail}, \"tags\": {tags} }"
+```
+
+Parameters are automatically interpolated from the MCP tool call's `arguments` object.
+
+### Example: Complete mappings.json
+
+Here's an actual example from the server:
+
 ```json
 {
-  "error": {
-    "code": 401,
-    "message": "REST API error",
-    "data": {
-      "status": 401,
-      "body": {
-        "error": "invalid_token"
+  "Mcpify": {
+    "Tools": [
+      {
+        "mcp": {
+          "name": "create_measurement",
+          "description": "Create a new measurement entry.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "timestampLocal": {
+                "type": "string",
+                "description": "Measurement timestamp in local time (ISO 8601).",
+                "minLength": 1
+              },
+              "metrics": {
+                "type": "object",
+                "description": "Key/value metrics to record.",
+                "minProperties": 1,
+                "additionalProperties": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "required": ["timestampLocal", "metrics"]
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/vibe/measurements",
+          "body": "{ \"timestampLocal\": {timestampLocal}, \"metrics\": {metrics} }"
+        }
+      },
+      {
+        "mcp": {
+          "name": "get_measurements",
+          "description": "Retrieve measurements between two UTC timestamps.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "ISO 8601 start timestamp (inclusive).",
+                "format": "date-time"
+              },
+              "to": {
+                "type": "string",
+                "description": "ISO 8601 end timestamp (exclusive).",
+                "format": "date-time"
+              }
+            },
+            "required": ["from", "to"]
+          }
+        },
+        "rest": {
+          "method": "GET",
+          "path": "/vibe/measurements",
+          "query": "from={from}&to={to}"
+        }
       }
+    ]
+  }
+}
+```
+
+### Loading Mappings from Separate Files
+
+**Recommended approach** - Keep tool definitions separate from environment config:
+
+```csharp
+builder.Configuration.AddJsonFile("mappings.json");
+builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
+```
+
+This keeps your tool definitions environment-independent and version-controllable.
+
+### OpenAPI/Swagger Integration
+
+For REST APIs with OpenAPI specifications, see Microsoft's documentation on [Swagger/OpenAPI](https://learn.microsoft.com/en-us/aspnet/core/tutorials/web-api-help-pages-using-swagger).
+
+## Agent-Assisted Workflow
+
+### Generating Mappings from OpenAPI Specs
+
+Use an AI agent to convert OpenAPI/Swagger specifications into Mcpify mappings:
+
+**Sample Prompt:**
+```
+Convert this OpenAPI endpoint specification into an Mcpify tool mapping in JSON format.
+
+The output should have two sections:
+1. "mcp": containing name, description, and inputSchema (JSON Schema)
+2. "rest": containing method, path, query, and body
+
+Use {paramName} syntax for parameter interpolation in path, query, and body.
+
+OpenAPI Spec:
+[paste your swagger.json excerpt here]
+```
+
+**Example Input (Swagger snippet):**
+```json
+{
+  "/users/{id}": {
+    "get": {
+      "summary": "Get user by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ]
     }
   }
 }
 ```
 
-## Logging
+**Example Output (Mcpify mapping):**
+```json
+{
+  "mcp": {
+    "name": "get_user",
+    "description": "Get user by ID",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User identifier"
+        }
+      },
+      "required": ["id"]
+    }
+  },
+  "rest": {
+    "method": "GET",
+    "path": "/users/{id}"
+  }
+}
+```
 
-The server logs:
-- Startup configuration summary
-- Tool count and names
-- Each tool call (name, method, URL)
-- REST API response status codes
-- Authorization header presence (truncated for security)
+### Why Use Separate mappings.json?
 
-**Note:** Full JWT tokens are never logged. Authorization headers are truncated to first 30 characters.
+- **Environment Independence**: Same tool definitions work across dev, staging, production
+- **Version Control**: Track tool changes separately from environment config
+- **Reusability**: Share mappings across different deployment scenarios
+- **Clarity**: Cleaner separation of concerns
 
-## MCP Manifest
+## Limitations
 
-The MCP manifest file (`mcp/rest-proxy.mcp.json`) is provided for MCP clients to discover authentication requirements. The server itself does not enforce authentication.
+- **No Streaming Support**: Responses must be complete; streaming responses are not supported
+- **No Server-Sent Events (SSE)**: Only request-response patterns are supported
+- **JSON Only**: Binary data, file uploads, and non-JSON content types are not supported
+- **Synchronous Only**: All REST calls are synchronous; no async/await patterns in mappings
 
-Example:
+## Quick Start
+
+### For Library Users (ASP.NET Core)
+
+```csharp
+// Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+// Load tool mappings
+builder.Configuration.AddJsonFile("mappings.json");
+
+// Add Mcpify services
+builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"))
+    .AddAspNetCore();
+
+var app = builder.Build();
+
+// Map Mcpify endpoint
+app.MapMcpify("/mcp");
+
+app.Run();
+```
+
+See [Summerdawn.Mcpify.AspNetCore README](src/Summerdawn.Mcpify.AspNetCore/README.md) for detailed scenarios.
+
+### For Server Users
+
+**HTTP Mode:**
+```bash
+cd src/Summerdawn.Mcpify.Server
+dotnet run --mode http
+```
+
+**Stdio Mode:**
+
+Build first to not pollute the stdio stream with build logs:
+
+```bash
+cd src/Summerdawn.Mcpify.Server
+dotnet build
+.\bin\Debug\net8.0\mcpify.exe --mode stdio
+```
+
+See [Summerdawn.Mcpify.Server README](src/Summerdawn.Mcpify.Server/README.md) for complete documentation.
+
+## Using with MCP Clients
+
+### VS Code (.mcp.json)
+
+For stdio mode:
 ```json
 {
   "mcpServers": {
-    "rest-proxy": {
-      "name": "Summerdawn MCP REST Proxy",
-      "transport": {
-        "type": "https",
-        "baseUrl": "https://localhost:7026"
-      },
-      "authentication": {
-        "type": "oauth2",
-        "oauth2": {
-          "authorizationUrl": "https://auth.example.com/oauth/authorize",
-          "tokenUrl": "https://auth.example.com/oauth/token",
-          "scopes": ["openid", "profile", "api"]
-        }
+    "my-api": {
+      "command": "dotnet",
+      "args": ["run", "--project", "path/to/Summerdawn.Mcpify.Server", "--mode", "stdio"],
+      "env": {
+        "DOTNET_CONTENTROOT": "path/to/config"
       }
     }
   }
 }
 ```
 
-## Development
-
-### Build
-```bash
-dotnet build
+If your REST API requires authentication, configure header forwarding:
+```json
+{
+  "Mcpify": {
+    "Rest": {
+      "ForwardedHeaders": {
+        "Authorization": true
+      }
+    }
+  }
+}
 ```
 
-### Run Tests
-```bash
-# Test server info
-curl -k https://localhost:7026/
+### Claude Desktop
 
-# Test tools list
-curl -k -X POST https://localhost:7026/tools/list \
-  -H "Content-Type: application/json" \
-  -d '{}'
+Edit Claude's config file (location varies by OS):
 
-# Test tool call
-curl -k -X POST https://localhost:7026/tools/call \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"name":"getUserProfile","arguments":{"userId":"123"}}'
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "my-api": {
+      "command": "dotnet",
+      "args": ["path/to/Summerdawn.Mcpify.Server.dll", "--mode", "stdio"]
+    }
+  }
+}
 ```
 
-## Architecture
+### Generic MCP Clients
 
-```
-MCP Client
-    ↓ (HTTPS + Authorization header)
-MCP REST Proxy Server
-    ↓ (forwards Authorization header unchanged)
-REST API (handles authentication)
-    ↓ (200 OK or 401/403/500 error)
-MCP REST Proxy Server
-    ↓ (passes through response)
-MCP Client
-```
+Mcpify supports both transport modes:
+- **stdio**: For process-based clients (Claude Desktop, VS Code)
+- **HTTP**: For network-based clients
 
-## Security Considerations
+Configure according to your client's requirements. All clients receive the same MCP protocol implementation.
 
-1. **No Token Validation**: The server does not validate tokens. All authentication is delegated to the REST API.
-2. **HTTPS Required**: Always use HTTPS in production to protect tokens in transit.
-3. **Token Logging**: Tokens are never logged in full. Only truncated versions appear in debug logs.
-4. **Trust Boundary**: The server trusts the REST API to handle authentication correctly.
+## Links
 
-## Adding New Tools
+### Documentation
+- [Core Library (Summerdawn.Mcpify)](src/Summerdawn.Mcpify/README.md)
+- [ASP.NET Core Integration (Summerdawn.Mcpify.AspNetCore)](src/Summerdawn.Mcpify.AspNetCore/README.md)
+- [Standalone Server (Summerdawn.Mcpify.Server)](src/Summerdawn.Mcpify.Server/README.md)
 
-To add a new tool:
+### Downloads
+- [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases) - Standalone server binaries
+- [NuGet: Summerdawn.Mcpify](https://www.nuget.org/packages/Summerdawn.Mcpify) *(coming soon)*
+- [NuGet: Summerdawn.Mcpify.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpify.AspNetCore) *(coming soon)*
 
-1. Edit `mappings.json`
-2. Add a new tool definition to the `tools` array
-3. Restart the server
-
-**No code changes required!**
+### Resources
+- [Model Context Protocol Specification](https://modelcontextprotocol.io)
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
 
 ## License
 
-Copyright © 2024 Summerdawn AI
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
