@@ -2,7 +2,11 @@
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
     <File Path="AGENTS.md" />
+    <File Path="CODE_OF_CONDUCT.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="LICENSE.md" />
     <File Path="README.md" />
+    <File Path="SECURITY.md" />
   </Folder>
   <Folder Name="/Source/">
     <Project Path="src/Summerdawn.Mcpify.AspNetCore/Summerdawn.Mcpify.AspNetCore.csproj" Id="a800ffd4-08de-409c-bfaf-0d1d03fde519" />
