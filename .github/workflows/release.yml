@@ -21,6 +21,7 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions: {}
     outputs:
       is_prerelease: ${{ steps.check_version.outputs.is_prerelease }}
     steps:
@@ -44,6 +45,8 @@ jobs:
   build:
     needs: validate
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,6 +78,8 @@ jobs:
     needs: [validate, build]
     if: ${{ github.event.inputs.publish_nuget == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
