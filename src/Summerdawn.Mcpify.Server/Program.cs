@@ -84,7 +84,7 @@ public class Program
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions how to configure Mcpify.", ex);
+                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure Mcpify.", ex);
             }
 
             app.Run();
@@ -116,7 +116,7 @@ public class Program
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions how to configure Mcpify.", ex);
+                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure Mcpify.", ex);
             }
 
             app.Run();
