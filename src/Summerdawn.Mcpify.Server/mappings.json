@@ -1,112 +1,113 @@
 {
   "Mcpify": {
     "Tools": [
-      {
-        "mcp": {
-          "name": "create_measurement",
-          "description": "Create a new measurement entry.",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "timestampLocal": {
-                "type": "string",
-                "description": "Measurement timestamp in local time (ISO 8601).",
-                "minLength": 1
-              },
-              "metrics": {
-                "type": "object",
-                "description": "Key/value metrics to record.",
-                "minProperties": 1,
-                "additionalProperties": {
-                  "type": "integer",
-                  "format": "int32"
-                }
-              }
-            },
-            "required": [ "timestampLocal", "metrics" ]
-          }
-        },
-        "rest": {
-          "method": "POST",
-          "path": "/vibe/measurements",
-          "body": "{ \"timestampLocal\": {timestampLocal}, \"metrics\": {metrics} }"
-        }
-      },
-      {
-        "mcp": {
-          "name": "get_measurements",
-          "description": "Retrieve measurements between two UTC timestamps.",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "from": {
-                "type": "string",
-                "description": "ISO 8601 start timestamp (inclusive).",
-                "format": "date-time"
-              },
-              "to": {
-                "type": "string",
-                "description": "ISO 8601 end timestamp (exclusive).",
-                "format": "date-time"
-              }
-            },
-            "required": [ "from", "to" ]
-          }
-        },
-        "rest": {
-          "method": "GET",
-          "path": "/vibe/measurements",
-          "query": "from={from}&to={to}"
-        }
-      },
-      {
-        "mcp": {
-          "name": "get_recent_measurements",
-          "description": "Get the most recent measurements for the authenticated user.",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "count": {
-                "type": "integer",
-                "description": "The number of recent measurements to retrieve"
-              }
-            },
-            "required": []
-          }
-        },
-        "rest": {
-          "method": "GET",
-          "path": "/vibe/measurements/recent",
-          "query": "count={count}"
-        }
-      },
-      {
-        "mcp": {
-          "name": "create_analysis",
-          "description": "Request an analysis for a range of measurements.",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "from": {
-                "type": "string",
-                "description": "ISO 8601 start date (inclusive).",
-                "format": "date"
-              },
-              "to": {
-                "type": "string",
-                "description": "ISO 8601 end date (inclusive).",
-                "format": "date"
-              }
-            },
-            "required": [ "from", "to" ]
-          }
-        },
-        "rest": {
-          "method": "POST",
-          "path": "/vibe/analysis",
-          "query": "from={from}&to={to}"
-        }
-      }
+      // Add your MCP-to-REST mappings here. Examples:
+      //{
+      //  "mcp": {
+      //    "name": "create_measurement",
+      //    "description": "Create a new measurement entry.",
+      //    "inputSchema": {
+      //      "type": "object",
+      //      "properties": {
+      //        "timestampLocal": {
+      //          "type": "string",
+      //          "description": "Measurement timestamp in local time (ISO 8601).",
+      //          "minLength": 1
+      //        },
+      //        "metrics": {
+      //          "type": "object",
+      //          "description": "Key/value metrics to record.",
+      //          "minProperties": 1,
+      //          "additionalProperties": {
+      //            "type": "integer",
+      //            "format": "int32"
+      //          }
+      //        }
+      //      },
+      //      "required": [ "timestampLocal", "metrics" ]
+      //    }
+      //  },
+      //  "rest": {
+      //    "method": "POST",
+      //    "path": "/vibe/measurements",
+      //    "body": "{ \"timestampLocal\": {timestampLocal}, \"metrics\": {metrics} }"
+      //  }
+      //},
+      //{
+      //  "mcp": {
+      //    "name": "get_measurements",
+      //    "description": "Retrieve measurements between two UTC timestamps.",
+      //    "inputSchema": {
+      //      "type": "object",
+      //      "properties": {
+      //        "from": {
+      //          "type": "string",
+      //          "description": "ISO 8601 start timestamp (inclusive).",
+      //          "format": "date-time"
+      //        },
+      //        "to": {
+      //          "type": "string",
+      //          "description": "ISO 8601 end timestamp (exclusive).",
+      //          "format": "date-time"
+      //        }
+      //      },
+      //      "required": [ "from", "to" ]
+      //    }
+      //  },
+      //  "rest": {
+      //    "method": "GET",
+      //    "path": "/vibe/measurements",
+      //    "query": "from={from}&to={to}"
+      //  }
+      //},
+      //{
+      //  "mcp": {
+      //    "name": "get_recent_measurements",
+      //    "description": "Get the most recent measurements for the authenticated user.",
+      //    "inputSchema": {
+      //      "type": "object",
+      //      "properties": {
+      //        "count": {
+      //          "type": "integer",
+      //          "description": "The number of recent measurements to retrieve"
+      //        }
+      //      },
+      //      "required": []
+      //    }
+      //  },
+      //  "rest": {
+      //    "method": "GET",
+      //    "path": "/vibe/measurements/recent",
+      //    "query": "count={count}"
+      //  }
+      //},
+      //{
+      //  "mcp": {
+      //    "name": "create_analysis",
+      //    "description": "Request an analysis for a range of measurements.",
+      //    "inputSchema": {
+      //      "type": "object",
+      //      "properties": {
+      //        "from": {
+      //          "type": "string",
+      //          "description": "ISO 8601 start date (inclusive).",
+      //          "format": "date"
+      //        },
+      //        "to": {
+      //          "type": "string",
+      //          "description": "ISO 8601 end date (inclusive).",
+      //          "format": "date"
+      //        }
+      //      },
+      //      "required": [ "from", "to" ]
+      //    }
+      //  },
+      //  "rest": {
+      //    "method": "POST",
+      //    "path": "/vibe/analysis",
+      //    "query": "from={from}&to={to}"
+      //  }
+      //}
     ]
   }
 }

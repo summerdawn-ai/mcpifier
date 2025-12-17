@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 using Summerdawn.Mcpify.Configuration;
 using Summerdawn.Mcpify.Services;
@@ -12,12 +13,10 @@ namespace Summerdawn.Mcpify.DependencyInjection;
 public static class HostExtensions
 {
     /// <summary>
-    /// Activates the Mcpify server for the specified host application.
+    /// Activates the Mcpify server to handle stdio traffic.
     /// </summary>
-    /// <remarks>This method enables the Mcpify server by retrieving and activating the required <see
-    /// cref="McpStdioServer"/> service from the application's service provider. Call this method during application
-    /// startup to ensure the server is active.</remarks>
-    /// <param name="app">The host application to configure with the Mcpify server. Cannot be null.</param>
+    /// <param name="app">The <see cref="IHost"/> which has been configured to host Mcpify.</param>
+    /// <exception cref="InvalidOperationException">The Mcpify configuration is invalid or incomplete.</exception>
     /// <returns>The same <see cref="IHost"/> instance provided in <paramref name="app"/>.</returns>
     public static IHost UseMcpify(this IHost app)
     {
@@ -27,26 +26,18 @@ public static class HostExtensions
                      throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpify() in application startup code.");
 
         var options = services.GetRequiredService<IOptions<McpifyOptions>>().Value;
+        var logger = services.GetRequiredService<ILogger<McpifyBuilder>>();
 
-        // Log Mcpify information
-        var logger = services.GetRequiredService<ILogger<RestProxyService>>();
+        // Log the mode and base address, but do not verify or throw -
+        // for all we know, the user may have injected a different HttpClient.
+        logger.LogInformation("Mcpify is configured to listen to MCP traffic on STDIO and forward tool calls to '{restBaseAddress}'.", options.Rest.BaseAddress);
 
-        logger.LogInformation("Mcpify is configured to handle STDIO MCP traffic.");
-
-        string toolsList = string.Join("\r\n", options.Tools.Select(tool => $"  - {tool.Mcp.Name}: {tool.Mcp.Description}"));
-        logger.LogInformation("Successfully loaded {toolCount} tools:\r\n{toolList}", options.Tools.Count, toolsList);
+        // Verify any tools are configured.
+        services.ThrowIfNoMcpifyTools();
+        services.LogMcpifyTools();
 
         // Warn if we're using settings that are not supported over STDIO.
-        var forwardedHeaderNames = options.Rest.ForwardedHeaders.Where(h => h.Value == true).Select(h => h.Key).ToList();
-        if (forwardedHeaderNames.Any())
-        {
-            logger.LogWarning("Header forwarding is configured for {count} headers, but MCP over STDIO does not support header forwarding. You should disable header forwarding or use MCP over HTTP.", forwardedHeaderNames.Count);
-        }
-
-        if (options.Authentication.RequireAuthorization)
-        {
-            logger.LogWarning("Authorization is configured as required, but MCP over STDIO does not support authorization. You should disable authorization or use MCP over HTTP.");
-        }
+        services.WarnIfUnsupportedMcpifyStdioOptions();
 
         // Activate the registered background service.
         server.Activate();

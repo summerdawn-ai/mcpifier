@@ -33,6 +33,9 @@ public static class McpifyBuilderExtensions
     /// <summary>
     /// Gets the (first) address of the ASP.NET Core (Kestrel) server.
     /// </summary>
+    /// <remarks>
+    /// Note that the list of addresses will be empty until _after_ the server has started!
+    /// </remarks>
     private static Uri? GetServerAddress(IServiceProvider provider)
     {
         var serverFeatures = provider.GetService<IServer>();

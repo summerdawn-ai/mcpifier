@@ -31,7 +31,7 @@ public class Program
             Required = true
         }.AcceptOnlyFromAmong("http", "stdio");
 
-        var rootCommand = new RootCommand("MCP server that can run in HTTP or stdio mode")
+        var rootCommand = new RootCommand("Mcpify - an MCP-to-REST proxy that can run in HTTP or stdio mode")
         {
             modeOption
         };
@@ -57,51 +57,67 @@ public class Program
     {
         if (mode == "http")
         {
-            var builder = WebApplication.CreateBuilder();
+            WebApplication app;
+            try
+            {
+                var builder = WebApplication.CreateBuilder();
 
-            // Load tool mappings from separate file.
-            // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
-            builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: true);
+                // Load tool mappings from separate file.
+                // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
+                builder.Configuration.AddJsonFile("mappings.json", optional: true, reloadOnChange: false);
 
-            // Configure HTTP MCP proxy.
-            builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify")).AddAspNetCore();
+                // Configure HTTP MCP proxy.
+                builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify")).AddAspNetCore();
 
-            // Configure CORS to allow any connection.
-            builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy =>
-                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+                // Configure CORS to allow any connection.
+                builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy =>
+                    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
-            var app = builder.Build();
+                app = builder.Build();
 
-            app.UseHttpsRedirection();
-            app.UseRouting();
-            app.UseCors();
+                app.UseHttpsRedirection();
+                app.UseRouting();
+                app.UseCors();
 
-            // Use HTTP MCP proxy.
-            app.MapMcpify();
+                // Use HTTP MCP proxy.
+                app.MapMcpify();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions how to configure Mcpify.", ex);
+            }
 
             app.Run();
         }
         else
         {
-            var builder = Host.CreateApplicationBuilder(args);
-
-            // Load tool mappings from separate file.
-            // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
-            builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: true);
-
-            // Configure stdio MCP proxy.
-            builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
-
-            // Send all console logging output to stderr so that it doesn't interfere with MCP stdio traffic.
-            builder.Logging.AddConsole(options =>
+            IHost app;
+            try
             {
-                options.LogToStandardErrorThreshold = LogLevel.Trace;
-            });
+                var builder = Host.CreateApplicationBuilder(args);
 
-            var app = builder.Build();
+                // Load tool mappings from separate file.
+                // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
+                builder.Configuration.AddJsonFile("mappings.json", optional: true, reloadOnChange: false);
 
-            // Use stdio MCP proxy.
-            app.UseMcpify();
+                // Configure stdio MCP proxy.
+                builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
+
+                // Send all console logging output to stderr so that it doesn't interfere with MCP stdio traffic.
+                builder.Logging.AddConsole(options =>
+                {
+                    options.LogToStandardErrorThreshold = LogLevel.Trace;
+                });
+
+                app = builder.Build();
+
+                // Use stdio MCP proxy.
+                app.UseMcpify();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions how to configure Mcpify.", ex);
+            }
 
             app.Run();
         }
