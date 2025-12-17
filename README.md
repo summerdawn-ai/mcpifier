@@ -69,11 +69,46 @@ Mcpify is a configurable proxy that sits between MCP clients (like Claude Deskto
 **When to use**: Hosting Mcpify in your ASP.NET Core application (most common scenario).
 
 **Summerdawn.Mcpify.Server (Standalone Server)**
-- Pre-built executable
+- Available as a dotnet tool: `dotnet tool install -g Summerdawn.Mcpify.Server`
+- Pre-built binaries for Windows, Linux, and macOS (x64 and ARM64)
 - HTTP and stdio transport modes
 - Ready to run with just configuration files
 
 **When to use**: Quick deployment without writing code, or as a standalone MCP server process.
+
+## Installation
+
+### As a .NET Tool (Recommended)
+
+Install globally:
+```bash
+dotnet tool install -g Summerdawn.Mcpify.Server
+```
+
+Or locally in a project:
+```bash
+dotnet tool install Summerdawn.Mcpify.Server
+```
+
+Then run:
+```bash
+mcpify --mode stdio
+```
+
+### As a Standalone Binary
+
+Download pre-built binaries from [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases) for:
+- Windows (x64, ARM64)
+- Linux (x64, ARM64)
+- macOS (x64, ARM64)
+
+### As NuGet Packages
+
+Install the core library or ASP.NET Core integration:
+```bash
+dotnet add package Summerdawn.Mcpify
+dotnet add package Summerdawn.Mcpify.AspNetCore
+```
 
 ## Configuration
 
