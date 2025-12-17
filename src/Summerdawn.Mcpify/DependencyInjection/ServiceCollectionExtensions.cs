@@ -37,14 +37,7 @@ public static class ServiceCollectionExtensions
     public static McpifyBuilder AddMcpify(this IServiceCollection services, IConfiguration mcpifyConfiguration)
     {
         // Configure options from provided config section.
-        try
-        {
-            services.Configure<McpifyOptions>(mcpifyConfiguration);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("Failed to bind Mcpify configuration. Check the configuration section format and values.", ex);
-        }
+        services.Configure<McpifyOptions>(mcpifyConfiguration);
 
         return services.AddMcpifyCore();
     }
@@ -115,14 +108,7 @@ public static class ServiceCollectionExtensions
         serverAddress = NormalizeHost(serverAddress);
 
         // And build absolute URI based on server address.
-        try
-        {
-            return new Uri(serverAddress, baseAddress);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Failed to build absolute URI from server address '{serverAddress}' and base address '{baseAddress}'.", ex);
-        }
+        return new Uri(serverAddress, baseAddress);
     }
 
     private static Uri NormalizeHost(Uri uri)

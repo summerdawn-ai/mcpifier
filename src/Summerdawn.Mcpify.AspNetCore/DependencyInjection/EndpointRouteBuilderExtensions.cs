@@ -25,17 +25,17 @@ public static class EndpointRouteBuilderExtensions
         var services = endpoints.ServiceProvider;
 
         var handler = services.GetService<McpRouteHandler>() ??
-                      throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpify().AddAspNetCore() in application startup code.");
-        
+                              throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpify().AddAspNetCore() in application startup code.");
+
         var options = services.GetRequiredService<IOptions<McpifyOptions>>().Value;
+        var logger = services.GetRequiredService<ILogger<McpifyBuilder>>();
 
-        // Log information
-        var logger = services.GetRequiredService<ILogger<RestProxyService>>();
+        // Log the mode and base address, but do not verify or throw -
+        // for all we know, the user may have injected a different HttpClient.
+        logger.LogInformation("Mcpify is configured to listen to MCP traffic on HTTP and forward tool calls to '{restBaseAddress}'.", options.Rest.BaseAddress);
 
-        logger.LogInformation("Mcpify is configured to handle HTTP MCP traffic.");
-
-        string toolsList = string.Join("\r\n", options.Tools.Select(tool => $"  - {tool.Mcp.Name}: {tool.Mcp.Description}"));
-        logger.LogInformation("Successfully loaded {toolCount} tools:\r\n{toolList}", options.Tools.Count, toolsList);
+        services.ThrowIfNoMcpifyTools();
+        services.LogMcpifyTools();
 
         // Set up protected resource metadata endpoint if configured.
         // This endpoint will _not_ be affected by configuration of the main route (e.g. RequireAuthorization).
