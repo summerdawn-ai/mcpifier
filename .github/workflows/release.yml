@@ -66,6 +66,7 @@ jobs:
         run: |
           dotnet pack src/Summerdawn.Mcpify/Summerdawn.Mcpify.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
           dotnet pack src/Summerdawn.Mcpify.AspNetCore/Summerdawn.Mcpify.AspNetCore.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
+          dotnet pack src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
       
       - name: Upload NuGet packages
         uses: actions/upload-artifact@v4
