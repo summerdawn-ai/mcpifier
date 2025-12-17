@@ -42,7 +42,15 @@ public class Program
             MainWithMode(args, mode);
         });
 
-        return rootCommand.Parse(args).Invoke();
+        try
+        {
+            return rootCommand.Parse(args).Invoke(new InvocationConfiguration { EnableDefaultExceptionHandler = false });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            return 1;
+        }
     }
 
     private static void MainWithMode(string[] args, string mode)
@@ -51,33 +59,12 @@ public class Program
         {
             var builder = WebApplication.CreateBuilder();
 
-            try
-            {
-                // Load tool mappings from separate file.
-                // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
-                builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: true);
-            }
-            catch (FileNotFoundException ex)
-            {
-                Console.Error.WriteLine($"Configuration error: mappings.json file not found. {ex.Message}");
-                throw new InvalidOperationException("Failed to load required configuration file 'mappings.json'. Ensure the file exists in the content root directory.", ex);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Configuration error: Failed to load mappings.json. {ex.Message}");
-                throw new InvalidOperationException("Failed to load configuration file 'mappings.json'. Check the file format and permissions.", ex);
-            }
+            // Load tool mappings from separate file.
+            // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
+            builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: true);
 
-            try
-            {
-                // Configure HTTP MCP proxy.
-                builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify")).AddAspNetCore();
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Configuration error: Failed to configure Mcpify services. {ex.Message}");
-                throw new InvalidOperationException("Failed to configure Mcpify services. Check the Mcpify configuration section in appsettings.json and mappings.json.", ex);
-            }
+            // Configure HTTP MCP proxy.
+            builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify")).AddAspNetCore();
 
             // Configure CORS to allow any connection.
             builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy =>
@@ -98,33 +85,12 @@ public class Program
         {
             var builder = Host.CreateApplicationBuilder(args);
 
-            try
-            {
-                // Load tool mappings from separate file.
-                // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
-                builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: true);
-            }
-            catch (FileNotFoundException ex)
-            {
-                Console.Error.WriteLine($"Configuration error: mappings.json file not found. {ex.Message}");
-                throw new InvalidOperationException("Failed to load required configuration file 'mappings.json'. Ensure the file exists in the content root directory.", ex);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Configuration error: Failed to load mappings.json. {ex.Message}");
-                throw new InvalidOperationException("Failed to load configuration file 'mappings.json'. Check the file format and permissions.", ex);
-            }
+            // Load tool mappings from separate file.
+            // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
+            builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: true);
 
-            try
-            {
-                // Configure stdio MCP proxy.
-                builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Configuration error: Failed to configure Mcpify services. {ex.Message}");
-                throw new InvalidOperationException("Failed to configure Mcpify services. Check the Mcpify configuration section in appsettings.json and mappings.json.", ex);
-            }
+            // Configure stdio MCP proxy.
+            builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
 
             // Send all console logging output to stderr so that it doesn't interfere with MCP stdio traffic.
             builder.Logging.AddConsole(options =>
