@@ -7,31 +7,62 @@ on:
       - 'src/Summerdawn.Mcpify/**'
       - 'tests/Summerdawn.Mcpify.Tests/**'
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+env:
+  DOTNET_VERSION: '8.0.x'
+
 jobs:
   test:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: Restore dependencies
-      run: dotnet restore tests/Summerdawn.Mcpify.Tests/Summerdawn.Mcpify.Tests.csproj
-      
-    - name: Build
-      run: dotnet build tests/Summerdawn.Mcpify.Tests/Summerdawn.Mcpify.Tests.csproj --no-restore --configuration Release
-      
-    - name: Run tests
-      run: dotnet test tests/Summerdawn.Mcpify.Tests/Summerdawn.Mcpify.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
-      
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results-mcpify
-        path: '**/test-results.trx'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Restore dependencies
+        run: dotnet restore tests/Summerdawn.Mcpify.Tests/Summerdawn.Mcpify.Tests.csproj
+        
+      - name: Build
+        run: dotnet build tests/Summerdawn.Mcpify.Tests/Summerdawn.Mcpify.Tests.csproj --no-restore --configuration Release
+        
+      - name: Run tests
+        run: dotnet test tests/Summerdawn.Mcpify.Tests/Summerdawn.Mcpify.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
+        
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: **/test-results.trx
+  
+  results:
+    needs: test
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download test results artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: ./downloaded-test-results
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v2
+        with:
+          name: vibe-cli
+          path: ./downloaded-test-results/**/*.trx
+          reporter: dotnet-trx
+          fail-on-error: false
+          token: ${{ secrets.GITHUB_TOKEN }}
