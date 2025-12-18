@@ -10,7 +10,7 @@ namespace Summerdawn.Mcpify.Services;
 /// <summary>
 /// Handles HTTP routing for Model Context Protocol calls and protected resource metadata.
 /// </summary>
-internal class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifyOptions> options, ILogger<McpRouteHandler> logger)
+public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifyOptions> options, ILogger<McpRouteHandler> logger)
 {
     /// <summary>
     /// Handles HTTP requests for MCP RPC calls at the configured route.
