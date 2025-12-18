@@ -64,31 +64,72 @@ public class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<
                     continue;
                 }
 
-                JsonRpcRequest? rpcRequest;
-                try
-                {
-                    rpcRequest = JsonSerializer.Deserialize<JsonRpcRequest>(requestPayload, StdioJsonOptions);
-                }
-                catch (JsonException ex)
-                {
-                    logger.LogWarning(ex, "Failed to deserialize JSON-RPC request.");
-                    continue;
-                }
-
-                if (rpcRequest is null) continue;
-
-                var rpcResponse = await dispatcher.DispatchAsync(rpcRequest, stoppingToken);
-                if (rpcResponse.IsEmpty()) continue;
-               
-                string responseJson = JsonSerializer.Serialize(rpcResponse, StdioJsonOptions);
-
-                await writer.WriteLineAsync(responseJson);
+                await HandleMcpRequestAsync(requestPayload, writer, stoppingToken);
             }
         }
         catch (OperationCanceledException) { /* Host shutdown */ }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error in stdio server.");
+        }
+    }
+
+    private async Task HandleMcpRequestAsync(string requestPayload, StreamWriter writer, CancellationToken stoppingToken)
+    {
+        var startTime = DateTime.UtcNow;
+        string? rpcMethod = null;
+        JsonElement requestId = default;
+
+        try
+        {
+            JsonRpcRequest? rpcRequest;
+            try
+            {
+                rpcRequest = JsonSerializer.Deserialize<JsonRpcRequest>(requestPayload, StdioJsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                logger.LogWarning(ex, "Failed to deserialize MCP request as JSON-RPC.");
+
+                string errorJson = JsonSerializer.Serialize(JsonRpcResponse.ParseError(), StdioJsonOptions);
+                await writer.WriteLineAsync(errorJson);
+
+                return;
+            }
+
+            if (rpcRequest is null)
+            {
+                logger.LogWarning("Received null MCP request");
+
+                string errorJson = JsonSerializer.Serialize(JsonRpcResponse.InvalidRequest(default), StdioJsonOptions);
+                await writer.WriteLineAsync(errorJson);
+
+                return;
+            }
+
+            rpcMethod = rpcRequest.Method;
+            requestId = rpcRequest.Id;
+
+            logger.LogDebug("Processing MCP request: {RpcMethod} with id {RequestId}",
+                rpcRequest.Method, rpcRequest.Id);
+
+            var rpcResponse = await dispatcher.DispatchAsync(rpcRequest, stoppingToken);
+            
+            if (rpcResponse.IsEmpty())
+            {
+                // Don't send a response for notifications
+                return;
+            }
+
+            string responseJson = JsonSerializer.Serialize(rpcResponse, StdioJsonOptions);
+            await writer.WriteLineAsync(responseJson);
+        }
+        finally
+        {
+            var elapsedMs = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
+            logger.LogInformation("MCP request: {Method} with id {RequestId} completed in {ElapsedMs}ms",
+                rpcMethod ?? "unknown", requestId, elapsedMs);
         }
     }
 

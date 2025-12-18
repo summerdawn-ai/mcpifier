@@ -18,6 +18,7 @@ public sealed class JsonRpcResponse
     private const int MethodNotFoundCode = -32601;
     private const int InvalidParamsCode = -32602;
     private const int InternalErrorCode = -32603;
+    private const int ParseErrorCode = -32700;
 
     /// <summary>
     /// Gets or sets the JSON-RPC version. Always "2.0".
@@ -73,6 +74,12 @@ public sealed class JsonRpcResponse
         Id = id,
         Result = result ?? EmptyResult
     };
+
+    /// <summary>
+    /// Creates a parse error response.
+    /// </summary>
+    /// <returns>A parse error response.</returns>
+    public static JsonRpcResponse ParseError() => ErrorResponse(default, ParseErrorCode, "Parse Error");
 
     /// <summary>
     /// Creates an invalid request error response.
