@@ -11,7 +11,7 @@ using Summerdawn.Mcpify.Configuration;
 using Summerdawn.Mcpify.Models;
 using Summerdawn.Mcpify.Services;
 
-namespace Summerdawn.Mcpify.Tests;
+namespace Summerdawn.Mcpify.AspNetCore.Tests;
 
 public class McpRouteHandlerTests
 {

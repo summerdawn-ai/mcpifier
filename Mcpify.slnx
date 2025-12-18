@@ -14,6 +14,7 @@
     <Project Path="src/Summerdawn.Mcpify/Summerdawn.Mcpify.csproj" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="tests/Summerdawn.Mcpify.AspNetCore.Tests/Summerdawn.Mcpify.AspNetCore.Tests.csproj" />
     <Project Path="tests/Summerdawn.Mcpify.Server.Tests/Summerdawn.Mcpify.Server.Tests.csproj" />
     <Project Path="tests/Summerdawn.Mcpify.Tests/Summerdawn.Mcpify.Tests.csproj" />
   </Folder>
