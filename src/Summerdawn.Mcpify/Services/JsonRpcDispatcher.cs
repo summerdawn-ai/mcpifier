@@ -8,7 +8,7 @@ namespace Summerdawn.Mcpify.Services;
 /// <summary>
 /// Dispatches JSON-RPC requests to appropriate handlers.
 /// </summary>
-public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogger<JsonRpcDispatcher> logger)
+public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogger<JsonRpcDispatcher> logger) : IJsonRpcDispatcher
 {
     /// <summary>
     /// Dispatches a JSON-RPC request to the appropriate handler.

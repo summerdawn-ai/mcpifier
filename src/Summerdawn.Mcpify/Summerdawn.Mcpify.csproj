@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Summerdawn.Mcpify.AspNetCore" />
+    <InternalsVisibleTo Include="Summerdawn.Mcpify.AspNetCore.Tests" />
     <InternalsVisibleTo Include="Summerdawn.Mcpify.Tests" />
   </ItemGroup>
 

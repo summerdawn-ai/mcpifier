@@ -11,7 +11,7 @@ namespace Summerdawn.Mcpify.Services;
 /// <summary>
 /// Background service that handles MCP JSON-RPC communication over stdio.
 /// </summary>
-public class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
+public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
 {
     /// <summary>
     /// Defines JSON serialization options for stdio communication.
@@ -61,6 +61,9 @@ public class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<
 
                 if (string.IsNullOrWhiteSpace(requestPayload))
                 {
+                    // Treat blank/whitespace lines as InvalidRequest
+                    string errorJson = JsonSerializer.Serialize(JsonRpcResponse.InvalidRequest(default), StdioJsonOptions);
+                    await writer.WriteLineAsync(errorJson);
                     continue;
                 }
 
