@@ -174,9 +174,9 @@ jobs:
         run: |
           dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
-  attach-server-binaries:
+  publish-server:
     needs: create-release
-    if: ${{ github.event.inputs.publish-server == 'true' }}
+    if: ${{ github.event.inputs.publish_server == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -205,8 +205,8 @@ jobs:
           path: mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip
           retention-days: 1
   
-  attach-binaries-to-release:
-    needs: attach-server-binaries
+  attach-server-to-release:
+    needs: publish-server
     runs-on: ubuntu-latest
     permissions:
       contents: write
