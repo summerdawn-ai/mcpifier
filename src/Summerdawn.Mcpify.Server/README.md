@@ -13,6 +13,27 @@ Mcpify Server is a ready-to-run MCP (Model Context Protocol) server that:
 
 This server is perfect for quickly exposing REST APIs to MCP clients like Claude Desktop or VS Code without writing any integration code.
 
+## Installation
+
+### As a .NET Tool (Recommended)
+
+Install globally:
+```bash
+dotnet tool install -g Summerdawn.Mcpify.Server
+```
+
+Or locally in a project:
+```bash
+dotnet tool install Summerdawn.Mcpify.Server
+```
+
+### As a Standalone Binary
+
+Download pre-built binaries from [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases) for:
+- Windows (x64, ARM64)
+- Linux (x64, ARM64)
+- macOS (x64, ARM64)
+
 ## Running the Server
 
 ### HTTP Mode
@@ -20,13 +41,11 @@ This server is perfect for quickly exposing REST APIs to MCP clients like Claude
 For network-based MCP clients:
 
 ```bash
-dotnet run --mode http
-```
+# If installed as a dotnet tool:
+mcpify-server --mode http
 
-Or with a compiled binary:
-
-```bash
-dotnet Summerdawn.Mcpify.Server.dll --mode http
+# Or with downloaded binary:
+./mcpify-server --mode http
 ```
 
 The server starts on:
@@ -38,13 +57,11 @@ The server starts on:
 For process-based MCP clients (Claude Desktop, VS Code):
 
 ```bash
-dotnet run --mode stdio
-```
+# If installed as a dotnet tool:
+mcpify-server --mode stdio
 
-Or with a compiled binary:
-
-```bash
-dotnet Summerdawn.Mcpify.Server.dll --mode stdio
+# Or with downloaded binary:
+./mcpify-server --mode stdio
 ```
 
 ## Configuration
@@ -214,6 +231,37 @@ Arguments from the MCP tool call are automatically substituted.
 
 Configure stdio mode for VS Code MCP extensions:
 
+**Using dotnet tool (recommended)**:
+```json
+{
+  "mcpServers": {
+    "my-api": {
+      "command": "mcpify-server",
+      "args": ["--mode", "stdio"],
+      "env": {
+        "DOTNET_CONTENTROOT": "path/to/config"
+      }
+    }
+  }
+}
+```
+
+**Using downloaded binary**:
+```json
+{
+  "mcpServers": {
+    "my-api": {
+      "command": "/path/to/mcpify-server",
+      "args": ["--mode", "stdio"],
+      "env": {
+        "DOTNET_CONTENTROOT": "path/to/config"
+      }
+    }
+  }
+}
+```
+
+**Using dotnet run for development**:
 ```json
 {
   "mcpServers": {
@@ -278,16 +326,28 @@ Edit Claude's configuration file:
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
+**Using dotnet tool (recommended)**:
 ```json
 {
   "mcpServers": {
     "my-api": {
-      "command": "dotnet",
-      "args": [
-        "/full/path/to/Summerdawn.Mcpify.Server.dll",
-        "--mode",
-        "stdio"
-      ],
+      "command": "mcpify-server",
+      "args": ["--mode", "stdio"],
+      "env": {
+        "DOTNET_CONTENTROOT": "/full/path/to/config/directory"
+      }
+    }
+  }
+}
+```
+
+**Using downloaded binary**:
+```json
+{
+  "mcpServers": {
+    "my-api": {
+      "command": "/full/path/to/mcpify-server",
+      "args": ["--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "/full/path/to/config/directory"
       }

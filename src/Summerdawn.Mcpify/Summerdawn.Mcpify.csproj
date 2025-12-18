@@ -4,8 +4,18 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <!-- NuGet properties -->
+  <PropertyGroup>
+    <PackageId>Summerdawn.Mcpify</PackageId>
+    <Description>Core library for Mcpify MCP-to-REST proxy with tool definitions, validation, and REST proxy services.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Summerdawn.Mcpify.AspNetCore" />

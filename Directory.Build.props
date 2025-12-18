@@ -1,0 +1,27 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Shared NuGet package metadata -->
+    <Authors>summerdawn.ai</Authors>
+    <Company>summerdawn.ai</Company>
+    <Copyright>Copyright (c) 2025 summerdawn.ai</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/summerdawn-ai/mcpify</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/summerdawn-ai/mcpify</PackageProjectUrl>
+    <PackageTags>mcp;model-context-protocol;rest-api;proxy</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Include PDBs in authored .nupkg -->
+    <DebugSymbols>true</DebugSymbols>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Generate XML documentation files -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

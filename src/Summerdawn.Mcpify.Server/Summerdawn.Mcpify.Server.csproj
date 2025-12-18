@@ -4,7 +4,17 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>mcpify</AssemblyName>
+    <AssemblyName>mcpify-server</AssemblyName>
+  </PropertyGroup>
+
+  <!-- NuGet properties -->
+  <PropertyGroup>
+    <PackageId>Summerdawn.Mcpify.Server</PackageId>
+    <Description>Command-line MCP server tool for mcpify MCP-to-REST proxy.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>mcpify-server</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +24,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Summerdawn.Mcpify.AspNetCore\Summerdawn.Mcpify.AspNetCore.csproj" />
     <ProjectReference Include="..\Summerdawn.Mcpify\Summerdawn.Mcpify.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

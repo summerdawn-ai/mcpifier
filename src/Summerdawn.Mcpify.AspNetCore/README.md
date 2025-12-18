@@ -285,7 +285,7 @@ If you don't want to write any code, a pre-built standalone server is available:
 
 ```bash
 dotnet tool install -g Summerdawn.Mcpify.Server
-mcpify --mode http
+mcpify-server --mode http
 ```
 
 Or download from [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases).

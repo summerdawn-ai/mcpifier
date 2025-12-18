@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Ignore CS1591 warnings about missing XML comments triggered by `GenerateDocumentationFile` -->
+    <NoWarn>$(NoWarn);1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+</Project>
