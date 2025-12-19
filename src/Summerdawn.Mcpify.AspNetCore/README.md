@@ -1,6 +1,6 @@
 # Summerdawn.Mcpify.AspNetCore
 
-ASP.NET Core support for Mcpify. Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
+ASP.NET Core integration for Mcpify. Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
 
 ## Overview
 
@@ -10,7 +10,6 @@ This package provides seamless integration between Mcpify and ASP.NET Core, enab
 
 - **Host MCP endpoints** alongside your existing API
 - **Map MCP routes** using familiar ASP.NET Core patterns
-- **Configure via appsettings.json** and dependency injection
 - **Use standard middleware** for authentication, logging, etc.
 
 This is the **recommended package for most users** who want to add MCP capabilities to their applications.
@@ -26,7 +25,7 @@ dotnet add package Summerdawn.Mcpify.AspNetCore
 - This package automatically includes **Summerdawn.Mcpify**
 - Requires **ASP.NET Core 8.0** or later
 
-## Hosting Scenarios
+## Usage
 
 ### Scenario 1: Minimal Standalone Host
 
@@ -151,84 +150,52 @@ app.Run();
 
 ## Configuration
 
-### Auth Header Forwarding
+This package supports all Mcpify configuration options.  For complete documentation including: 
 
-Forward authentication headers from MCP clients to your REST API:
+- All configuration settings (`BaseAddress`, `DefaultHeaders`, `ForwardedHeaders`, etc.)
+- Authorization scenarios (MCP Authorization, static headers, forwarded headers)
+- Tool mappings structure
+- Parameter interpolation
 
-**appsettings.json:**
-```json
-{
-  "Mcpify": {
-    "Rest": {
-      "BaseAddress": "https://api.example.com",
-      "ForwardedHeaders": {
-        "Authorization": true,
-        "X-Custom-Header": true,
-        "X-API-Key": true
-      }
-    }
-  }
-}
-```
+See the [main README Configuration section](https://github.com/summerdawn-ai/mcpify#configuration).
 
-When an MCP client sends a request with these headers, Mcpify forwards them to the REST API.
+### Quick Configuration Examples
 
-### Default Headers
-
-Set headers that are always sent to the REST API:
-
+**Static API Key:**
 ```json
 {
   "Mcpify": {
     "Rest": {
       "BaseAddress": "https://api.example.com",
       "DefaultHeaders": {
-        "User-Agent": "MyApp-MCP/1.0",
-        "X-API-Key": "your-api-key-here",
-        "Accept": "application/json"
+        "X-API-Key": "your-api-key-here"
       }
     }
   }
 }
 ```
 
-**Key Difference:**
-- **Forwarded headers**: Come from the MCP client's request (dynamic per request)
-- **Default headers**: Always sent with every REST API request (static)
-
-### Tool Mappings
-
-Define tools in configuration (recommended: separate file):
-
+**OAuth with Header Forwarding:**
 ```json
 {
   "Mcpify": {
-    "Tools": [
-      {
-        "mcp": {
-          "name": "create_item",
-          "description": "Create a new item",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string" },
-              "value": { "type": "number" }
-            },
-            "required": ["name"]
-          }
-        },
-        "rest": {
-          "method": "POST",
-          "path": "/items",
-          "body": "{ \"name\": {name}, \"value\": {value} }"
-        }
+    "Rest": {
+      "BaseAddress": "https://api.example.com",
+      "ForwardedHeaders": {
+        "Authorization": true
       }
-    ]
+    },
+    "Authorization": {
+      "RequireAuthorization": true,
+      "ResourceMetadata": {
+        "Resource": "https://mcp.example.com",
+        "AuthorizationServers": [ "https://auth.example.com/oauth/v2.0" ],
+        "ScopesSupported": [ "https://mcp.example.com/access" ]
+      }
+    }
   }
 }
 ```
-
-For detailed configuration options, see the [main README](https://github.com/summerdawn-ai/mcpify/blob/main/README.md#configuration).
 
 ## Advanced Configuration
 
@@ -239,12 +206,19 @@ Require authorization for MCP endpoints:
 ```csharp
 builder.Services.Configure<McpifyOptions>(options =>
 {
-    options.Authentication.RequireAuthorization = true;
+    options.Authorization.RequireAuthorization = true;
+    options.Authorization.ResourceMetadata = new Dictionary<string, object>
+    {
+        ["Resource"] = "https://mcp.example.com",
+        ["AuthorizationServers"] = new[] { "https://auth.example.com/oauth/v2.0" },
+        ["ScopesSupported"] = new[] { "https://mcp.example.com/access" }
+    };
 });
 
-// Don't add authorization middleware, else Mcpify won't send the proper WWW-Authenticate response header
-app.MapMcpify()
+app.MapMcpify();
 ```
+
+See the [main README Authorization section](https://github.com/summerdawn-ai/mcpify#authorization-scenarios) for complete details.
 
 ### Custom Routes
 
@@ -281,22 +255,12 @@ app.UseCors("AllowMcpClients");
 app.MapMcpify();
 ```
 
-## Standalone Server
-
-If you don't want to write any code, a pre-built standalone server is available:
-
-```bash
-dotnet tool install -g Summerdawn.Mcpify.Server
-mcpify-server --mode http
-```
-
-Or download from [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases).
-
 ## Further Documentation
 
-- **Tool Mappings**: See the [main README](https://github.com/summerdawn-ai/mcpify/blob/main/README.md#configuration) for detailed mapping configuration
-- **Standalone Server**: See [Summerdawn.Mcpify.Server README](https://github.com/summerdawn-ai/mcpify/blob/main/src/Summerdawn.Mcpify.Server/README.md)
-- **Core Library**: See [Summerdawn.Mcpify README](https://github.com/summerdawn-ai/mcpify/blob/main/src/Summerdawn.Mcpify/README.md)
+- **Configuration Details**: [Main README](https://github.com/summerdawn-ai/mcpify#configuration)
+- **MCP Client Setup**: [Main README](https://github.com/summerdawn-ai/mcpify#configuring-mcp-clients-for-mcpify)
+- **Core Library**: [Summerdawn.Mcpify](https://github.com/summerdawn-ai/mcpify/blob/main/src/Summerdawn.Mcpify/README.md)
+- **Standalone Server**: [Summerdawn.Mcpify.Server](https://github.com/summerdawn-ai/mcpify/blob/main/src/Summerdawn.Mcpify.Server/README.md)
 - **GitHub Repository**: [summerdawn-ai/mcpify](https://github.com/summerdawn-ai/mcpify)
 
 ## License
