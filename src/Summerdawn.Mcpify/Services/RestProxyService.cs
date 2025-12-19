@@ -121,7 +121,7 @@ public class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> l
         foreach (Match match in matches)
         {
             var paramName = match.Groups[1].Value;
-            var paramValue = arguments.TryGetValue(paramName, out var argValue) ? JsonSerializer.Serialize(argValue) : "null";
+            var paramValue = arguments.TryGetValue(paramName, out var argValue) ? argValue.GetRawText() : "null";
 
             result = result.Replace($"{{{paramName}}}", paramValue);
         }

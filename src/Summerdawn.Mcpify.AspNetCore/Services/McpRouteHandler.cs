@@ -42,14 +42,14 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifyOptio
             JsonRpcRequest? rpcRequest;
             try
             {
-                rpcRequest = await context.Request.ReadFromJsonAsync<JsonRpcRequest>();
+                rpcRequest = await context.Request.ReadFromJsonAsync<JsonRpcRequest>(JsonRpcAndMcpJsonContext.Default.JsonRpcRequest);
             }
             catch (JsonException ex)
             {
                 logger.LogWarning(ex, "Failed to deserialize MCP request as JSON-RPC.");
 
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync(JsonRpcResponse.ParseError());
+                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.ParseError(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
 
                 return;
             }
@@ -59,7 +59,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifyOptio
                 logger.LogWarning("Received null MCP request");
 
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync(JsonRpcResponse.InvalidRequest(default));
+                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(default), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
 
                 return;
             }
@@ -77,13 +77,13 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifyOptio
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                await context.Response.WriteAsJsonAsync(rpcResponse);
+                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(rpcResponse, JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
             }
             else
             {
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await context.Response.WriteAsJsonAsync(rpcResponse);
+                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(rpcResponse, JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
             }
         }
         finally
@@ -106,7 +106,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifyOptio
 
             context.Response.StatusCode = StatusCodes.Status200OK;
 
-            await context.Response.WriteAsJsonAsync(metadata);
+            await context.Response.WriteAsJsonAsync<ProtectedResourceMetadata?>(metadata, JsonRpcAndMcpJsonContext.Default.ProtectedResourceMetadata!);
             
             logger.LogDebug("Served protected resource metadata for path {Path}", context.Request.Path);
         }

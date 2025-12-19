@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -39,10 +40,11 @@ public sealed class JsonRpcRequest
     /// Deserializes the parameters to the specified type.
     /// </summary>
     /// <typeparam name="T">The type to deserialize to.</typeparam>
-    /// <param name="serializerOptions">Optional JSON serializer options.</param>
     /// <returns>The deserialized parameters, or default if parameters are null or undefined.</returns>
     /// <exception cref="JsonException">Thrown when deserialization fails.</exception>
-    public T? DeserializeParams<T>(JsonSerializerOptions? serializerOptions = default)
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "JsonRpcAndMcpJsonContext supports all possible types of T")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "JsonRpcAndMcpJsonContext supports all possible types of T")]
+    public T? DeserializeParams<T>()
     {
         if (Params.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
         {
@@ -51,7 +53,7 @@ public sealed class JsonRpcRequest
 
         try
         {
-            return Params.Deserialize<T>(serializerOptions);
+            return Params.Deserialize<T>(JsonRpcAndMcpJsonContext.JsonOptions);
 
         }
         catch (JsonException e)
@@ -64,9 +66,8 @@ public sealed class JsonRpcRequest
     /// Deserializes the parameters to the specified type, throwing if parameters are missing.
     /// </summary>
     /// <typeparam name="T">The type to deserialize to.</typeparam>
-    /// <param name="serializerOptions">Optional JSON serializer options.</param>
     /// <returns>The deserialized parameters.</returns>
     /// <exception cref="JsonException">Thrown when parameters are missing or deserialization fails.</exception>
-    public T DeserializeRequiredParams<T>(JsonSerializerOptions? serializerOptions = default) =>
-        DeserializeParams<T>(serializerOptions) ?? throw new JsonException("Params are required.");
+    public T DeserializeRequiredParams<T>() =>
+        DeserializeParams<T>() ?? throw new JsonException("Params are required.");
 }

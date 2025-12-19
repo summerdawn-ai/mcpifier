@@ -13,15 +13,6 @@ namespace Summerdawn.Mcpify.Services;
 /// </summary>
 public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
 {
-    /// <summary>
-    /// Defines JSON serialization options for stdio communication.
-    /// </summary>
-    private static readonly JsonSerializerOptions StdioJsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    };
-
     private readonly TaskCompletionSource<object?> activation = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     /// <summary>
@@ -62,7 +53,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
                 if (string.IsNullOrWhiteSpace(requestPayload))
                 {
                     // Treat blank/whitespace lines as InvalidRequest
-                    string errorJson = JsonSerializer.Serialize(JsonRpcResponse.InvalidRequest(default), StdioJsonOptions);
+                    string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(default), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
                     await writer.WriteLineAsync(errorJson);
                     continue;
                 }
@@ -88,13 +79,13 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
             JsonRpcRequest? rpcRequest;
             try
             {
-                rpcRequest = JsonSerializer.Deserialize<JsonRpcRequest>(requestPayload, StdioJsonOptions);
+                rpcRequest = JsonSerializer.Deserialize<JsonRpcRequest>(requestPayload, JsonRpcAndMcpJsonContext.Default.JsonRpcRequest);
             }
             catch (JsonException ex)
             {
                 logger.LogWarning(ex, "Failed to deserialize MCP request as JSON-RPC.");
 
-                string errorJson = JsonSerializer.Serialize(JsonRpcResponse.ParseError(), StdioJsonOptions);
+                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.ParseError(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
                 await writer.WriteLineAsync(errorJson);
 
                 return;
@@ -104,7 +95,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
             {
                 logger.LogWarning("Received null MCP request");
 
-                string errorJson = JsonSerializer.Serialize(JsonRpcResponse.InvalidRequest(default), StdioJsonOptions);
+                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(default), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
                 await writer.WriteLineAsync(errorJson);
 
                 return;
@@ -124,7 +115,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
                 return;
             }
 
-            string responseJson = JsonSerializer.Serialize(rpcResponse, StdioJsonOptions);
+            string responseJson = JsonSerializer.Serialize<JsonRpcResponse>(rpcResponse, JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
             await writer.WriteLineAsync(responseJson);
         }
         finally
