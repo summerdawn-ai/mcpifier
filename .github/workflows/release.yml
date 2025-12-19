@@ -179,12 +179,23 @@ jobs:
   publish-server:
     needs: create-release
     if: ${{ github.event.inputs.publish_server == 'true' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        rid: [win-x64, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64]
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: win-arm64
+            os: windows-latest
+          - rid: linux-x64
+            os: ubuntu-latest
+          - rid: linux-arm64
+            os: ubuntu-latest
+          - rid: osx-x64
+            os: macos-latest
+          - rid: osx-arm64
+            os: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -196,7 +207,7 @@ jobs:
       
       - name: Publish Server for ${{ matrix.rid }}
         run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishSingleFile=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }}  -o ./publish/${{ matrix.rid }}
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishTrimmed=true -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }}  -o ./publish/${{ matrix.rid }}
           cd ./publish/${{ matrix.rid }}
           zip -r ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip .
       
