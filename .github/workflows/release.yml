@@ -205,28 +205,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
-      - name: Install ARM64 cross toolchain
-        if: matrix.rid == 'linux-arm64'
-        run: |
-          sudo dpkg --add-architecture arm64
-          sudo apt-get update
-          sudo apt-get install -y \
-            clang lld gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu \
-            zlib1g-dev:arm64 libkrb5-dev:arm64 libssl-dev:arm64 \
-            libunwind8:arm64 libicu-dev:arm64
-      
       - name: Publish Server for ${{ matrix.rid }}
-        run: dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishTrimmed=true -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
-
-      - name: Package Server for ${{ matrix.rid }} (Windows)
-        if: runner.os == 'Windows'
         run: |
-          cd ./publish/${{ matrix.rid }}
-          Compress-Archive -Path * -DestinationPath ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip -CompressionLevel Optimal
-
-      - name: Package Server for ${{ matrix.rid }} (Unix)
-        if: runner.os != 'Windows'
-        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishTrimmed=true -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }}  -o ./publish/${{ matrix.rid }}
           cd ./publish/${{ matrix.rid }}
           zip -r ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip .
       
