@@ -6,6 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- Settings for trimmed/AOT deployment -->
+  <PropertyGroup>
+    <!-- Enable trimming and AOT analyzers and warnings and indicate that NuGet package is trim-compatible -->
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- Enable trimming-compatible configuration binding -->
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+
   <!-- NuGet properties -->
   <PropertyGroup>
     <PackageId>Summerdawn.Mcpify</PackageId>

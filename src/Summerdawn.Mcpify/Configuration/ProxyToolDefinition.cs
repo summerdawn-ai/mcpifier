@@ -10,12 +10,12 @@ public class ProxyToolDefinition
     /// <summary>
     /// Gets or sets the MCP tool definition.
     /// </summary>
-    public required McpToolDefinition Mcp { get; set; }
+    public McpToolDefinition Mcp { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the REST API configuration for this tool.
     /// </summary>
-    public required RestConfiguration Rest { get; set; }
+    public RestConfiguration Rest { get; set; } = new();
 }
 
 /// <summary>

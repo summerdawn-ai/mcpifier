@@ -110,7 +110,7 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IOptio
         JsonElement responseAsJson;
         try
         {
-            responseAsJson = JsonSerializer.Deserialize<JsonElement>(responseBody);
+            responseAsJson = JsonDocument.Parse(responseBody).RootElement.Clone();
         }
         catch (JsonException)
         {
@@ -122,7 +122,7 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IOptio
         {
             JsonValueKind.Object => responseAsJson,
             // StructuredContent must be an object, not an array.
-            JsonValueKind.Array => JsonSerializer.Deserialize<JsonElement>($$"""{ "results": {{responseBody}} }"""),
+            JsonValueKind.Array => JsonDocument.Parse($$"""{ "results": {{responseBody}} }""").RootElement.Clone(),
             _ => null,
         };
     }

@@ -7,6 +7,12 @@
     <AssemblyName>mcpify-server</AssemblyName>
   </PropertyGroup>
 
+  <!-- Settings for trimmed/AOT deployment -->
+  <PropertyGroup>
+    <!-- Enable trimming and AOT analyzers and warnings and indicate that NuGet package is trim-compatible -->
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
   <!-- NuGet properties -->
   <PropertyGroup>
     <PackageId>Summerdawn.Mcpify.Server</PackageId>
