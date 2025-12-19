@@ -196,7 +196,7 @@ jobs:
       
       - name: Publish Server for ${{ matrix.rid }}
         run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishSingleFile=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }}  -o ./publish/${{ matrix.rid }}
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }}  -o ./publish/${{ matrix.rid }}
           cd ./publish/${{ matrix.rid }}
           zip -r ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip .
       
