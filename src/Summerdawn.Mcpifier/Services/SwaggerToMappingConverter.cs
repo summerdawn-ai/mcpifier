@@ -220,8 +220,37 @@ public class SwaggerToMappingConverter(ILogger<SwaggerToMappingConverter> logger
         if (schema.Enum != null && schema.Enum.Count > 0)
         {
             propertySchema.Enum = schema.Enum
-                .Select(e => e?.ToString() ?? string.Empty)
-                .Cast<object>()
+                .Select(e =>
+                {
+                    // OpenAPI enum values are IOpenApiAny objects
+                    // They can be OpenApiString, OpenApiInteger, etc.
+                    // We need to extract the actual primitive value
+                    if (e is Microsoft.OpenApi.Any.OpenApiString openApiString)
+                    {
+                        return (object)openApiString.Value;
+                    }
+                    else if (e is Microsoft.OpenApi.Any.OpenApiInteger openApiInt)
+                    {
+                        return (object)openApiInt.Value;
+                    }
+                    else if (e is Microsoft.OpenApi.Any.OpenApiLong openApiLong)
+                    {
+                        return (object)openApiLong.Value;
+                    }
+                    else if (e is Microsoft.OpenApi.Any.OpenApiDouble openApiDouble)
+                    {
+                        return (object)openApiDouble.Value;
+                    }
+                    else if (e is Microsoft.OpenApi.Any.OpenApiBoolean openApiBool)
+                    {
+                        return (object)openApiBool.Value;
+                    }
+                    else
+                    {
+                        // Fallback to ToString
+                        return (object)(e?.ToString() ?? string.Empty);
+                    }
+                })
                 .ToList();
         }
 
