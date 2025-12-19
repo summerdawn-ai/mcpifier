@@ -39,7 +39,7 @@ public static class EndpointRouteBuilderExtensions
 
         // Set up protected resource metadata endpoint if configured.
         // This endpoint will _not_ be affected by configuration of the main route (e.g. RequireAuthorization).
-        if (options.Authentication.ResourceMetadata is not null)
+        if (options.Authorization.ResourceMetadata is not null)
         {
             endpoints.MapGet($"/.well-known/oauth-protected-resource/{route}", handler.HandleProtectedResourceAsync);
         }

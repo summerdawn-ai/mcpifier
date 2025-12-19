@@ -59,7 +59,7 @@ internal static class ServiceProviderExtensions
             logger.LogWarning("Header forwarding is configured for {count} headers, but MCP over STDIO does not support header forwarding. You should disable header forwarding or use MCP over HTTP.", forwardedHeaderNames.Count);
         }
 
-        if (options.Authentication.RequireAuthorization)
+        if (options.Authorization.RequireAuthorization)
         {
             logger.LogWarning("Authorization is configured as required, but MCP over STDIO does not support authorization. You should disable authorization or use MCP over HTTP.");
         }

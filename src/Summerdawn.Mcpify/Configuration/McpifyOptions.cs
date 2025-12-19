@@ -33,9 +33,9 @@ public class McpifyOptions
     public List<ProxyToolDefinition> Tools { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the authentication configuration.
+    /// Gets or sets the authorization configuration.
     /// </summary>
-    public McpifyAuthenticationSection Authentication { get; set; } = new();
+    public McpifyAuthorizationSection Authorization { get; set; } = new();
 }
 
 /// <summary>
@@ -60,9 +60,9 @@ public class McpifyRestSection
 }
 
 /// <summary>
-/// Configuration for MCP authentication and authorization.
+/// Configuration for MCP authorization.
 /// </summary>
-public class McpifyAuthenticationSection
+public class McpifyAuthorizationSection
 {
     /// <summary>
     /// Gets or sets a value indicating whether authorization is required for MCP requests.

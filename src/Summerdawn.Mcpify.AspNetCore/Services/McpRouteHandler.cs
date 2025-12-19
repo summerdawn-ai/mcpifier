@@ -26,7 +26,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifyOptio
         {
             // If the request is not authenticated, return 401 Unauthorized and include a WWW-Authenticate header
             // as required by the specification.
-            if (options.Value.Authentication.RequireAuthorization && !context.Request.Headers.Authorization.Any())
+            if (options.Value.Authorization.RequireAuthorization && !context.Request.Headers.Authorization.Any())
             {
                 var url = new Uri(context.Request.GetEncodedUrl());
 
@@ -102,7 +102,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifyOptio
     {
         try
         {
-            var metadata = options.Value.Authentication.ResourceMetadata;
+            var metadata = options.Value.Authorization.ResourceMetadata;
 
             context.Response.StatusCode = StatusCodes.Status200OK;
 

@@ -105,7 +105,7 @@ Contains environment-specific settings like API base URLs:
       "Title": "My MCP Server",
       "Version": "1.0.0"
     },
-    "Authentication": {
+    "Authorization": {
       "RequireAuthorization": false
     }
   }
@@ -269,6 +269,7 @@ Configure stdio mode for VS Code MCP extensions:
       "command": "dotnet",
       "args": [
         "run",
+        "--no-build",
         "--project",
         "path/to/Summerdawn.Mcpify.Server",
         "--mode",
