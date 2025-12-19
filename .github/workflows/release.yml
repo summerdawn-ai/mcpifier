@@ -78,8 +78,40 @@ jobs:
           path: ./nupkgs/*.nupkg
           retention-days: 1
 
+  build-server:
+    needs: [validate, build]
+    if: ${{ github.event.inputs.publish_server == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        rid: [win-x64, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Build server for ${{ matrix.rid }}
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
+          cd ./publish/${{ matrix.rid }}
+          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip .
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-binaries-${{ matrix.rid }}
+          path: mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip
+          retention-days: 1
+  
   create-release:
-    needs: build
+    needs: [validate, build, build-server]
+    if: ${{ needs.build.result == 'success' && (needs['build-server'].result == 'success' || needs['build-server'].result == 'skipped') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -159,6 +191,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  attach-server-to-release:
+    needs: create-release
+    if: ${{ github.event.inputs.publish_server == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      
+      - name: Publish server binaries to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          files: artifacts/server-binaries-*/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   publish-nuget:
     needs: create-release
     if: ${{ github.event.inputs.publish_nuget == 'true' }}
@@ -175,83 +227,3 @@ jobs:
       - name: Publish NuGet packages
         run: |
           dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-
-  publish-server:
-    needs: create-release
-    if: ${{ github.event.inputs.publish_server == 'true' }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - rid: win-x64
-            os: windows-latest
-          - rid: win-arm64
-            os: windows-latest
-          - rid: linux-x64
-            os: ubuntu-latest
-          - rid: linux-arm64
-            os: ubuntu-latest
-          - rid: osx-x64
-            os: macos-latest
-          - rid: osx-arm64
-            os: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      
-      - name: Install ARM64 cross toolchain
-        if: matrix.rid == 'linux-arm64'
-        run: |
-          sudo dpkg --add-architecture arm64
-          sudo apt-get update
-          sudo apt-get install -y \
-            clang lld gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu \
-            zlib1g-dev:arm64 libkrb5-dev:arm64 libssl-dev:arm64 \
-            libunwind8:arm64 libicu-dev:arm64
-      
-      - name: Publish Server for ${{ matrix.rid }}
-        run: dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishTrimmed=true -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
-
-      - name: Package Server for ${{ matrix.rid }} (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          cd ./publish/${{ matrix.rid }}
-          Compress-Archive -Path * -DestinationPath ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip -CompressionLevel Optimal
-
-      - name: Package Server for ${{ matrix.rid }} (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          cd ./publish/${{ matrix.rid }}
-          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip .
-      
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-binaries-${{ matrix.rid }}
-          path: mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip
-          retention-days: 1
-  
-  attach-server-to-release:
-    needs: publish-server
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-      
-      - name: Attach binaries to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.event.inputs.version }}
-          files: artifacts/server-binaries-*/*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
