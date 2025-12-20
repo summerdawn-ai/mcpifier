@@ -53,7 +53,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
                 if (string.IsNullOrWhiteSpace(requestPayload))
                 {
                     // Treat blank/whitespace lines as InvalidRequest
-                    string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(default), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
+                    string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
                     await writer.WriteLineAsync(errorJson);
                     continue;
                 }
@@ -95,7 +95,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
             {
                 logger.LogWarning("Received null MCP request");
 
-                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(default), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
+                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
                 await writer.WriteLineAsync(errorJson);
 
                 return;

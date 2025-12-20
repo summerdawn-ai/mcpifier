@@ -59,7 +59,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
                 logger.LogWarning("Received null MCP request");
 
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(default), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
+                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
 
                 return;
             }
