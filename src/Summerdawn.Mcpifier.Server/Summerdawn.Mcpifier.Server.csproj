@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>mcpifier-server</AssemblyName>
+    <AssemblyName>mcpifier</AssemblyName>
   </PropertyGroup>
 
   <!-- Settings for trimmed/AOT deployment -->
@@ -20,7 +20,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>mcpifier-server</ToolCommandName>
+    <ToolCommandName>mcpifier</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>
