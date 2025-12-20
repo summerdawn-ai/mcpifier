@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/Docs/">
+    <File Path="AGENTS.md" />
+    <File Path="CODE_OF_CONDUCT.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="LICENSE.md" />
+    <File Path="README.md" />
+    <File Path="SECURITY.md" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Folder Name="/Source/">
+    <Project Path="src/Summerdawn.Mcpifier.AspNetCore/Summerdawn.Mcpifier.AspNetCore.csproj" Id="a800ffd4-08de-409c-bfaf-0d1d03fde519" />
+    <Project Path="src/Summerdawn.Mcpifier.Server/Summerdawn.Mcpifier.Server.csproj" />
+    <Project Path="src/Summerdawn.Mcpifier/Summerdawn.Mcpifier.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Summerdawn.Mcpifier.AspNetCore.Tests/Summerdawn.Mcpifier.AspNetCore.Tests.csproj" />
+    <Project Path="tests/Summerdawn.Mcpifier.Server.Tests/Summerdawn.Mcpifier.Server.Tests.csproj" />
+    <Project Path="tests/Summerdawn.Mcpifier.Tests/Summerdawn.Mcpifier.Tests.csproj" />
+  </Folder>
+</Solution>

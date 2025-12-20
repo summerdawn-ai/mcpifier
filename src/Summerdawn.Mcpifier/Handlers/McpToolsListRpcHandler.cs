@@ -1,0 +1,30 @@
+using Summerdawn.Mcpifier.Configuration;
+using Summerdawn.Mcpifier.Models;
+
+namespace Summerdawn.Mcpifier.Handlers;
+
+/// <summary>
+/// Handles the MCP tools/list request.
+/// </summary>
+public sealed class McpToolsListRpcHandler(IOptions<McpifierOptions> options, ILogger<McpToolsListRpcHandler> logger) : IRpcHandler
+{
+    /// <inheritdoc/>
+    public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default)
+    {
+        // Deserialize, but ignore, params.
+        rpcRequest.DeserializeParams<McpToolsListParams>();
+
+        logger.LogDebug("Handling tools/list request with id {RequestId}", rpcRequest.Id);
+
+        var mcpTools = options.Value.Tools
+            .Select(t => t.Mcp)
+            .ToList();
+
+        var result = new McpToolsListResult
+        {
+            Tools = mcpTools
+        };
+
+        return Task.FromResult(JsonRpcResponse.Success(rpcRequest.Id, result));
+    }
+}

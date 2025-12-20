@@ -6,10 +6,10 @@
     <Company>summerdawn.ai</Company>
     <Copyright>Copyright (c) 2025 summerdawn.ai</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/summerdawn-ai/mcpify</RepositoryUrl>
+    <RepositoryUrl>https://github.com/summerdawn-ai/mcpifier</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/summerdawn-ai/mcpify</PackageProjectUrl>
-    <PackageTags>mcp;model-context-protocol;rest-api;proxy</PackageTags>
+    <PackageProjectUrl>https://github.com/summerdawn-ai/mcpifier</PackageProjectUrl>
+    <PackageTags>mcp;model-context-protocol;mcpify;rest;rest-api;proxy;gateway</PackageTags>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 

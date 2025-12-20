@@ -1,13 +1,13 @@
 # Security Policy
 
-Thank you for helping keep summerdawn.ai and the Mcpify project secure. This document describes how to report security vulnerabilities and how we handle reports.
+Thank you for helping keep summerdawn.ai and the Mcpifier project secure. This document describes how to report security vulnerabilities and how we handle reports.
 
 ## Reporting a Vulnerability
 
 Preferred reporting methods (in order):
 
 1. GitHub Security Advisory (recommended)
-   - Create a private Security Advisory in this repository: https://github.com/summerdawn-ai/mcpify/security/advisories
+   - Create a private Security Advisory in this repository: https://github.com/summerdawn-ai/mcpifier/security/advisories
    - GitHub will allow private communication and coordinated disclosure.
 
 2. Email (if you cannot use GitHub)
@@ -22,7 +22,7 @@ Provide as much of the following as possible:
 
 - A clear, concise summary of the issue and the impact.
 - Reproduction steps or a minimal proof-of-concept (PoC) demonstrating the vulnerability.
-- Affected version(s) of Mcpify (commit SHA, release tag, or date).
+- Affected version(s) of Mcpifier (commit SHA, release tag, or date).
 - Environment details (OS, .NET runtime version, hosting mode: http or stdio).
 - Any logs, request/response samples, or stack traces that help reproduce the issue.
 - Your contact information and preferred method for follow-up (email/GitHub handle).
@@ -45,13 +45,13 @@ Please do not publicly disclose the vulnerability before we have issued a fix or
 
 ## Safe Harbor / Legal
 
-We welcome responsible security research. Reporters acting in good faith to help improve the security of Mcpify will not be pursued legally for their reporting activities, provided they do not violate other laws or intentionally destroy data.
+We welcome responsible security research. Reporters acting in good faith to help improve the security of Mcpifier will not be pursued legally for their reporting activities, provided they do not violate other laws or intentionally destroy data.
 
 ## Contact / Follow-up
 
-- GitHub Security Advisories: https://github.com/summerdawn-ai/mcpify/security/advisories
+- GitHub Security Advisories: https://github.com/summerdawn-ai/mcpifier/security/advisories
 - Email (alternative): security@summerdawn.ai
 
 If you don't receive a timely response by the SLA above, please follow up on the same channel or open a (private) GitHub Security Advisory and reference your original report.
 
-Thank you for helping keep Mcpify safe.
+Thank you for helping keep Mcpifier safe.

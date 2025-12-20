@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>mcpifier</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Settings for trimmed/AOT deployment -->
+  <PropertyGroup>
+    <!-- Enable trimming and AOT analyzers and warnings and indicate that NuGet package is trim-compatible -->
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- NuGet properties -->
+  <PropertyGroup>
+    <PackageId>Summerdawn.Mcpifier.Server</PackageId>
+    <Description>Command-line Mcpifier server with stdio and http support. Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>mcpifier</ToolCommandName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Summerdawn.Mcpifier.AspNetCore\Summerdawn.Mcpifier.AspNetCore.csproj" />
+    <ProjectReference Include="..\Summerdawn.Mcpifier\Summerdawn.Mcpifier.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
