@@ -72,7 +72,7 @@ public class McpRouteHandlerTests
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
-        var successResponse = JsonRpcResponse.Success(JsonDocument.Parse("\"test-id\"").RootElement, new { result = "success" });
+        var successResponse = JsonRpcResponse.Success(JsonDocument.Parse("\"test-id\"").RootElement, new McpToolsCallResult { Content  = [JsonDocument.Parse("{ \"result\": \"success\" }").RootElement ] });
         mockDispatcher
             .Setup(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(successResponse);

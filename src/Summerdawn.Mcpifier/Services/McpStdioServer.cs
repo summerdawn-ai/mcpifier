@@ -68,7 +68,13 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
         }
     }
 
-    private async Task HandleMcpRequestAsync(string requestPayload, StreamWriter writer, CancellationToken stoppingToken)
+    /// <summary>
+    /// Handles an MCP request by deserializing the request payload, dispatching it, and writing the response.
+    /// </summary>
+    /// <param name="requestPayload">The request as Line-Delimited JSON.</param>
+    /// <param name="writer">The <see cref="StreamWriter"/> used to write the response.</param>
+    /// <param name="stoppingToken">A cancellation token that indicates when the service should stop.</param>
+    protected internal async Task HandleMcpRequestAsync(string requestPayload, StreamWriter writer, CancellationToken stoppingToken)
     {
         var startTime = DateTime.UtcNow;
         string? rpcMethod = null;

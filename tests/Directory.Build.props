@@ -5,4 +5,9 @@
     <NoWarn>$(NoWarn);1701;1702;1591</NoWarn>
   </PropertyGroup>
 
+  <!-- Don't publish test projects -->
+  <PropertyGroup>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
 </Project>
