@@ -1,10 +1,10 @@
-# Mcpify
+# Mcpifier
 
-Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
+Mcpifier is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
 
 ## Overview
 
-Mcpify enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpify translates requests between MCP clients and your REST service.
+Mcpifier enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpifier translates requests between MCP clients and your REST service.
 
 ### Key Benefits
 
@@ -27,9 +27,9 @@ Mcpify enables you to expose REST APIs as MCP tools without writing any code. Si
 
 ## Repository Structure
 
-- **[/src/Summerdawn.Mcpify](src/Summerdawn.Mcpify/README.md)** - Core library providing MCP protocol implementation, JSON-RPC handlers, and REST proxy service
-- **[/src/Summerdawn.Mcpify.AspNetCore](src/Summerdawn.Mcpify.AspNetCore/README.md)** - ASP.NET Core integration for hosting Mcpify in your web applications
-- **[/src/Summerdawn.Mcpify.Server](src/Summerdawn.Mcpify.Server/README.md)** - Standalone server for running Mcpify without coding
+- **[/src/Summerdawn.Mcpifier](src/Summerdawn.Mcpifier/README.md)** - Core library providing MCP protocol implementation, JSON-RPC handlers, and REST proxy service
+- **[/src/Summerdawn.Mcpifier.AspNetCore](src/Summerdawn.Mcpifier.AspNetCore/README.md)** - ASP.NET Core integration for hosting Mcpifier in your web applications
+- **[/src/Summerdawn.Mcpifier.Server](src/Summerdawn.Mcpifier.Server/README.md)** - Standalone server for running Mcpifier without coding
 - **/tests** - Test projects for all libraries
 
 ## Key Technologies
@@ -44,7 +44,7 @@ Mcpify enables you to expose REST APIs as MCP tools without writing any code. Si
 ```
 ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
 │             │   MCP   │             │   HTTP  │             │
-│ MCP Client  │────────▶│   Mcpify    │────────▶│  REST API   │
+│ MCP Client  │────────▶│   Mcpifier    │────────▶│  REST API   │
 │ (Claude,    │◀────────│   Proxy     │◀────────│             │
 │  VS Code)   │         │             │         │             │
 └─────────────┘         └─────────────┘         └─────────────┘
@@ -52,23 +52,23 @@ Mcpify enables you to expose REST APIs as MCP tools without writing any code. Si
 
 ### The Three Packages
 
-**Summerdawn.Mcpify (Core Library)**
+**Summerdawn.Mcpifier (Core Library)**
 - JSON-RPC message handling
 - MCP protocol implementation
 - REST API proxy service
 - STDIO server support for process-based communication
 
-**When to use**: Hosting Mcpify as a stdio server, building custom integrations, or needing fine-grained control over the MCP implementation.
+**When to use**: Hosting Mcpifier as a stdio server, building custom integrations, or needing fine-grained control over the MCP implementation.
 
-**Summerdawn.Mcpify.AspNetCore (ASP.NET Core Integration)**
+**Summerdawn.Mcpifier.AspNetCore (ASP.NET Core Integration)**
 - HTTP endpoint mapping
 - ASP.NET Core middleware
 - Easy integration with existing web apps
 
-**When to use**: Hosting Mcpify as an http server, or integrating into an ASP.NET Core application.
+**When to use**: Hosting Mcpifier as an http server, or integrating into an ASP.NET Core application.
 
-**Summerdawn.Mcpify.Server (Standalone Server)**
-- Available as a dotnet tool: `dotnet tool install -g Summerdawn.Mcpify.Server`
+**Summerdawn.Mcpifier.Server (Standalone Server)**
+- Available as a dotnet tool: `dotnet tool install -g Summerdawn.Mcpifier.Server`
 - Pre-built binaries for Windows, Linux, and macOS (x64 and ARM64)
 - HTTP and stdio transport modes
 - Ready to run with just configuration files
@@ -81,22 +81,22 @@ Mcpify enables you to expose REST APIs as MCP tools without writing any code. Si
 
 Install globally:
 ```bash
-dotnet tool install -g Summerdawn.Mcpify.Server
+dotnet tool install -g Summerdawn.Mcpifier.Server
 ```
 
 Or locally in a project:
 ```bash
-dotnet tool install Summerdawn.Mcpify.Server
+dotnet tool install Summerdawn.Mcpifier.Server
 ```
 
 Then run:
 ```bash
-mcpify-server --mode stdio
+mcpifier-server --mode stdio
 ```
 
 ### As a Standalone Binary
 
-Download pre-built binaries from [GitHub](https://github.com/summerdawn-ai/mcpify/releases) for:
+Download pre-built binaries from [GitHub](https://github.com/summerdawn-ai/mcpifier/releases) for:
 - Windows (x64, ARM64)
 - Linux (x64, ARM64)
 - macOS (x64, ARM64)
@@ -105,22 +105,22 @@ Download pre-built binaries from [GitHub](https://github.com/summerdawn-ai/mcpif
 
 Install the core library or ASP.NET Core integration:
 ```bash
-dotnet add package Summerdawn.Mcpify
-dotnet add package Summerdawn.Mcpify.AspNetCore
+dotnet add package Summerdawn.Mcpifier
+dotnet add package Summerdawn.Mcpifier.AspNetCore
 ```
 
 ## Configuration
 
 ### Structure
 
-Mcpify configuration is organized into several sections:
+Mcpifier configuration is organized into several sections:
 
 ```json
 {
-  "Mcpify": {
+  "Mcpifier": {
     "Rest": {
       "BaseAddress": "https://api.example.com",
-      "DefaultHeaders": { "User-Agent": "Mcpify/1.0" },
+      "DefaultHeaders": { "User-Agent": "Mcpifier/1.0" },
       "ForwardedHeaders": { "Authorization": true }
     },
     "ServerInfo": {
@@ -158,7 +158,7 @@ Mcpify configuration is organized into several sections:
 - Example: 
   ```json
   "DefaultHeaders": {
-    "User-Agent": "Mcpify/1.0",
+    "User-Agent": "Mcpifier/1.0",
     "X-API-Key": "your-api-key-here",
     "Accept": "application/json"
   }
@@ -290,7 +290,7 @@ Parameters are automatically interpolated from the MCP tool call's `arguments` o
 
 ### Authorization Scenarios
 
-Mcpify supports multiple authorization scenarios: 
+Mcpifier supports multiple authorization scenarios: 
 
 #### Scenario 1: Static API Key (Default Headers)
 
@@ -298,7 +298,7 @@ Use `DefaultHeaders` to include a static API key with every REST request:
 
 ```json
 {
-  "Mcpify": {
+  "Mcpifier": {
     "Rest": {
       "BaseAddress": "https://api.example.com",
       "DefaultHeaders": {
@@ -317,7 +317,7 @@ Enable MCP Authorization to have clients authenticate via OAuth:
 
 ```json
 {
-  "Mcpify": {
+  "Mcpifier": {
     "Rest": {
       "BaseAddress": "https://api.example.com",
       "ForwardedHeaders": {
@@ -340,7 +340,7 @@ When `RequireAuthorization` is `true`:
 1. Unauthorized requests receive a 401 response
 2. MCP clients discover the OAuth endpoints at `/.well-known/oauth-protected-resource`
 3. Clients obtain tokens and include them in subsequent requests
-4. Mcpify forwards the `Authorization` header to your REST API
+4. Mcpifier forwards the `Authorization` header to your REST API
 
 See the [MCP Authorization specification](https://modelcontextprotocol.io/docs/tutorials/security/authorization) for complete OAuth flow details.
 
@@ -350,7 +350,7 @@ Forward authorization headers from the MCP client without requiring MCP Authoriz
 
 ```json
 {
-  "Mcpify": {
+  "Mcpifier": {
     "Rest": {
       "BaseAddress": "https://api.example.com",
       "ForwardedHeaders": {
@@ -372,11 +372,11 @@ Here's a complete example configuration:
 
 ```json
 {
-  "Mcpify": {
+  "Mcpifier": {
     "Rest": {
       "BaseAddress": "https://api.example.com",
       "DefaultHeaders": {
-        "User-Agent": "Mcpify/1.0"
+        "User-Agent": "Mcpifier/1.0"
       },
       "ForwardedHeaders": {
         "Authorization": true
@@ -465,18 +465,18 @@ Here's a complete example configuration:
 
 ```csharp
 builder.Configuration.AddJsonFile("mappings.json");
-builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
+builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 ```
 
 This keeps your tool definitions environment-independent and version-controllable.
 
 ### Generating Mappings from OpenAPI Specs
 
-Use an AI agent to convert OpenAPI/Swagger specifications into Mcpify mappings:
+Use an AI agent to convert OpenAPI/Swagger specifications into Mcpifier mappings:
 
 **Sample Prompt:**
 ```
-Convert this OpenAPI endpoint specification into an Mcpify tool mapping in JSON format.
+Convert this OpenAPI endpoint specification into an Mcpifier tool mapping in JSON format.
 
 The output should have two sections:
 1. "mcp": containing name, description, and inputSchema (JSON Schema)
@@ -507,7 +507,7 @@ OpenAPI Spec:
 }
 ```
 
-**Example Output (Mcpify mapping):**
+**Example Output (Mcpifier mapping):**
 ```json
 {
   "mcp": {
@@ -544,8 +544,8 @@ var builder = Host.CreateApplicationBuilder(args);
 // Load tool mappings
 builder.Configuration.AddJsonFile("mappings.json");
 
-// Add Mcpify services
-builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
+// Add Mcpifier services
+builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
 // Send all console logging output to stderr so that it doesn't interfere with MCP stdio traffic.
 builder.Logging.AddConsole(options =>
@@ -556,12 +556,12 @@ builder.Logging.AddConsole(options =>
 var app = builder.Build();
 
 // Use stdio MCP proxy.
-app.UseMcpify();
+app.UseMcpifier();
 
 app.Run();
 ```
 
-See [Summerdawn.Mcpify README](src/Summerdawn.Mcpify/README.md) for detailed scenarios.
+See [Summerdawn.Mcpifier README](src/Summerdawn.Mcpifier/README.md) for detailed scenarios.
 
 **ASP.NET Core:**
 
@@ -572,35 +572,35 @@ var builder = WebApplication.CreateBuilder(args);
 // Load tool mappings
 builder.Configuration.AddJsonFile("mappings.json");
 
-// Add Mcpify services
-builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"))
+// Add Mcpifier services
+builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
     .AddAspNetCore();
 
 var app = builder.Build();
 
-// Map Mcpify endpoint
-app.MapMcpify("/mcp");
+// Map Mcpifier endpoint
+app.MapMcpifier("/mcp");
 
 app.Run();
 ```
 
-See [Summerdawn.Mcpify.AspNetCore README](src/Summerdawn.Mcpify.AspNetCore/README.md) for detailed scenarios.
+See [Summerdawn.Mcpifier.AspNetCore README](src/Summerdawn.Mcpifier.AspNetCore/README.md) for detailed scenarios.
 
 ### For Server Users
 
 **HTTP Mode:**
 ```bash
-mcpify-server --mode http
+mcpifier-server --mode http
 ```
 
 **Stdio Mode:**
 ```bash
-mcpify-server --mode stdio
+mcpifier-server --mode stdio
 ```
 
-See [Summerdawn.Mcpify.Server README](src/Summerdawn.Mcpify.Server/README.md) for complete documentation.
+See [Summerdawn.Mcpifier.Server README](src/Summerdawn.Mcpifier.Server/README.md) for complete documentation.
 
-## Configuring MCP Clients for Mcpify
+## Configuring MCP Clients for Mcpifier
 
 ### VS Code (.mcp.json)
 
@@ -609,7 +609,7 @@ For stdio mode:
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpify-server",
+      "command": "mcpifier-server",
       "args": ["--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config"
@@ -626,7 +626,7 @@ If your REST API requires authentication, you have several options:
 Configure a static API key in `appsettings.json`:
 ```json
 {
-  "Mcpify": {
+  "Mcpifier": {
     "Rest": {
       "DefaultHeaders": {
         "X-API-Key": "your-api-key-here"
@@ -643,7 +643,7 @@ Some MCP clients support providing authentication tokens:
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpify-server",
+      "command": "mcpifier-server",
       "args": ["--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config"
@@ -671,7 +671,7 @@ Edit Claude's config file (location varies by OS):
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpify-server",
+      "command": "mcpifier-server",
       "args": ["--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "/full/path/to/config/directory"
@@ -687,7 +687,7 @@ Edit Claude's config file (location varies by OS):
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpify-server",
+      "command": "mcpifier-server",
       "args": ["--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "/full/path/to/config/directory"
@@ -703,7 +703,7 @@ Edit Claude's config file (location varies by OS):
 
 ### Generic MCP Clients
 
-Mcpify supports both transport modes:
+Mcpifier supports both transport modes:
 - **stdio**: For process-based clients (Claude Desktop, VS Code)
 - **HTTP**: For network-based clients
 
@@ -718,14 +718,14 @@ Configure according to your client's requirements. All clients receive the same 
 ## Links
 
 ### Documentation
-- [Core Library (Summerdawn.Mcpify)](src/Summerdawn.Mcpify/README.md)
-- [ASP.NET Core Integration (Summerdawn.Mcpify.AspNetCore)](src/Summerdawn.Mcpify.AspNetCore/README.md)
-- [Standalone Server (Summerdawn.Mcpify.Server)](src/Summerdawn.Mcpify.Server/README.md)
+- [Core Library (Summerdawn.Mcpifier)](src/Summerdawn.Mcpifier/README.md)
+- [ASP.NET Core Integration (Summerdawn.Mcpifier.AspNetCore)](src/Summerdawn.Mcpifier.AspNetCore/README.md)
+- [Standalone Server (Summerdawn.Mcpifier.Server)](src/Summerdawn.Mcpifier.Server/README.md)
 
 ### Downloads
-- [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases) - Standalone server binaries
-- [NuGet: Summerdawn.Mcpify](https://www.nuget.org/packages/Summerdawn.Mcpify)
-- [NuGet: Summerdawn.Mcpify.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpify.AspNetCore)
+- [GitHub Releases](https://github.com/summerdawn-ai/mcpifier/releases) - Standalone server binaries
+- [NuGet: Summerdawn.Mcpifier](https://www.nuget.org/packages/Summerdawn.Mcpifier)
+- [NuGet: Summerdawn.Mcpifier.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpifier.AspNetCore)
 
 ### Resources
 - [Model Context Protocol Specification](https://modelcontextprotocol.io)

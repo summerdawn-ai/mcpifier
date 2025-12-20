@@ -1,10 +1,10 @@
-# Contributing to Mcpify
+# Contributing to Mcpifier
 
-We welcome contributions to Mcpify! This document provides guidelines for contributing to the project.
+We welcome contributions to Mcpifier! This document provides guidelines for contributing to the project.
 
 ## Welcome
 
-Thank you for your interest in contributing to Mcpify. Whether you're fixing a bug, adding a feature, improving documentation, or reporting an issue, your contributions are appreciated.
+Thank you for your interest in contributing to Mcpifier. Whether you're fixing a bug, adding a feature, improving documentation, or reporting an issue, your contributions are appreciated.
 
 ## Development Environment Setup
 
@@ -18,8 +18,8 @@ Thank you for your interest in contributing to Mcpify. Whether you're fixing a b
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/summerdawn-ai/mcpify.git
-cd mcpify
+git clone https://github.com/summerdawn-ai/mcpifier.git
+cd mcpifier
 ```
 
 2. Build the solution:
@@ -34,9 +34,9 @@ dotnet test
 
 ### Project Structure
 
-- `/src/Summerdawn.Mcpify` - Core library with MCP protocol implementation
-- `/src/Summerdawn.Mcpify.AspNetCore` - ASP.NET Core integration
-- `/src/Summerdawn.Mcpify.Server` - Standalone server application
+- `/src/Summerdawn.Mcpifier` - Core library with MCP protocol implementation
+- `/src/Summerdawn.Mcpifier.AspNetCore` - ASP.NET Core integration
+- `/src/Summerdawn.Mcpifier.Server` - Standalone server application
 - `/tests` - Test projects
 
 ## How to Submit Changes
@@ -103,7 +103,7 @@ Please review [AGENTS.md](AGENTS.md) for complete coding style guidelines.
 dotnet test
 
 # Run tests for a specific project
-dotnet test tests/Summerdawn.Mcpify.Tests
+dotnet test tests/Summerdawn.Mcpifier.Tests
 
 # Run tests with coverage
 dotnet test --collect:"XPlat Code Coverage"
@@ -138,4 +138,4 @@ If you need help or have questions:
 
 ## License
 
-By contributing to Mcpify, you agree that your contributions will be licensed under the same license as the project (MIT License).
+By contributing to Mcpifier, you agree that your contributions will be licensed under the same license as the project (MIT License).

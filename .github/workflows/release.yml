@@ -60,16 +60,16 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
       - name: Restore dependencies
-        run: dotnet restore Mcpify.slnx
+        run: dotnet restore Mcpifier.slnx
       
       - name: Build solution
-        run: dotnet build Mcpify.slnx -c Release --no-restore
+        run: dotnet build Mcpifier.slnx -c Release --no-restore
       
       - name: Pack NuGet packages
         run: |
-          dotnet pack src/Summerdawn.Mcpify/Summerdawn.Mcpify.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
-          dotnet pack src/Summerdawn.Mcpify.AspNetCore/Summerdawn.Mcpify.AspNetCore.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
-          dotnet pack src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
+          dotnet pack src/Summerdawn.Mcpifier/Summerdawn.Mcpifier.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
+          dotnet pack src/Summerdawn.Mcpifier.AspNetCore/Summerdawn.Mcpifier.AspNetCore.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
+          dotnet pack src/Summerdawn.Mcpifier.Server/Summerdawn.Mcpifier.Server.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
       
       - name: Upload NuGet packages
         uses: actions/upload-artifact@v4
@@ -109,25 +109,25 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build Server for ${{ matrix.rid }}
-        run: dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
+        run: dotnet publish src/Summerdawn.Mcpifier.Server/Summerdawn.Mcpifier.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
 
       - name: Package Server for ${{ matrix.rid }} (Windows)
         if: runner.os == 'Windows'
         run: |
           cd ./publish/${{ matrix.rid }}
-          Compress-Archive -Path * -DestinationPath ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip -CompressionLevel Optimal
+          Compress-Archive -Path * -DestinationPath ../../mcpifier-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip -CompressionLevel Optimal
 
       - name: Package Server for ${{ matrix.rid }} (Unix)
         if: runner.os != 'Windows'
         run: |
           cd ./publish/${{ matrix.rid }}
-          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip .
+          zip -r ../../mcpifier-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip .
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: server-binaries-${{ matrix.rid }}
-          path: mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip
+          path: mcpifier-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip
           retention-days: 1
   
   create-release:
