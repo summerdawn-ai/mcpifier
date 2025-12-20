@@ -116,6 +116,66 @@ public class McpRouteHandlerTests
             await handler.HandleMcpRequestAsync(context));
     }
 
+    [Fact]
+    public async Task HandleMcpRequestAsync_InvalidJson_Returns400WithParseError()
+    {
+        // Arrange
+        var mockDispatcher = new Mock<IJsonRpcDispatcher>();
+        var mockOptions = CreateMockOptions();
+        var mockLogger = new Mock<ILogger<McpRouteHandler>>();
+        var handler = new McpRouteHandler(mockDispatcher.Object, mockOptions.Object, mockLogger.Object);
+
+        var context = new DefaultHttpContext();
+        var invalidJson = "{ invalid json }";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(invalidJson));
+        context.Request.ContentType = "application/json";
+        context.Response.Body = new MemoryStream();
+
+        // Act
+        await handler.HandleMcpRequestAsync(context);
+
+        // Assert
+        Assert.Equal(400, context.Response.StatusCode);
+        
+        context.Response.Body.Position = 0;
+        var responseJson = await JsonSerializer.DeserializeAsync<JsonElement>(context.Response.Body);
+        Assert.True(responseJson.TryGetProperty("error", out var error));
+        Assert.True(error.TryGetProperty("code", out var code));
+        Assert.Equal(-32700, code.GetInt32()); // ParseError
+
+        mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleMcpRequestAsync_NullRequest_Returns400WithInvalidRequest()
+    {
+        // Arrange
+        var mockDispatcher = new Mock<IJsonRpcDispatcher>();
+        var mockOptions = CreateMockOptions();
+        var mockLogger = new Mock<ILogger<McpRouteHandler>>();
+        var handler = new McpRouteHandler(mockDispatcher.Object, mockOptions.Object, mockLogger.Object);
+
+        var context = new DefaultHttpContext();
+        var nullJson = "null";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(nullJson));
+        context.Request.ContentType = "application/json";
+        context.Response.Body = new MemoryStream();
+
+        // Act
+        await handler.HandleMcpRequestAsync(context);
+
+        // Assert
+        Assert.Equal(400, context.Response.StatusCode);
+        
+        context.Response.Body.Position = 0;
+        var responseJson = await JsonSerializer.DeserializeAsync<JsonElement>(context.Response.Body);
+        Assert.True(responseJson.TryGetProperty("error", out var error));
+        Assert.True(error.TryGetProperty("code", out var code));
+        Assert.Equal(-32600, code.GetInt32()); // InvalidRequest
+
+        mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     private static Mock<IOptions<McpifierOptions>> CreateMockOptions()
     {
         var options = new McpifierOptions();

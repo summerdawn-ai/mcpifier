@@ -13,6 +13,11 @@ public sealed class JsonRpcResponse
     /// </summary>
     public static readonly IReadOnlyDictionary<string, object?> EmptyResult = new Dictionary<string, object?>();
 
+    /// <summary>
+    /// Gets a JsonElement representing a null identifier.
+    /// </summary>
+    private static readonly JsonElement NullId = JsonDocument.Parse("null").RootElement.Clone();
+
     // JSON-RPC 2.0 error codes
     private const int InvalidRequestCode = -32600;
     private const int MethodNotFoundCode = -32601;
@@ -60,7 +65,7 @@ public sealed class JsonRpcResponse
     /// </summary>
     public static JsonRpcResponse Empty { get; } = new()
     {
-        Id = default
+        Id = NullId
     };
 
     /// <summary>
@@ -79,7 +84,13 @@ public sealed class JsonRpcResponse
     /// Creates a parse error response.
     /// </summary>
     /// <returns>A parse error response.</returns>
-    public static JsonRpcResponse ParseError() => ErrorResponse(default, ParseErrorCode, "Parse Error");
+    public static JsonRpcResponse ParseError() => ErrorResponse(NullId, ParseErrorCode, "Parse Error");
+
+    /// <summary>
+    /// Creates an invalid request error response.
+    /// </summary>
+    /// <returns>An invalid request error response.</returns>
+    public static JsonRpcResponse InvalidRequest() => InvalidRequest(NullId);
 
     /// <summary>
     /// Creates an invalid request error response.
@@ -122,7 +133,8 @@ public sealed class JsonRpcResponse
     /// <returns>An error response.</returns>
     public static JsonRpcResponse ErrorResponse(JsonElement id, int code, string message, object? data = null) => new()
     {
-        Id = id,
+        // Substitute undefined/default id values with null so they can be serialized.
+        Id = id.ValueKind == JsonValueKind.Undefined ? NullId : id,
         Result = null,
         Error = new JsonRpcError
         {
