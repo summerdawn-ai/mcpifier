@@ -16,37 +16,29 @@ public class SwaggerToMappingConverter(ILogger<SwaggerToMappingConverter> logger
     /// <summary>
     /// Converts a Swagger/OpenAPI specification file to a list of proxy tool definitions.
     /// </summary>
-    /// <param name="swaggerFilePath">Path to the swagger.json or openapi.json file.</param>
+    /// <param name="swaggerJson">The specification JSON content.</param>
     /// <returns>List of proxy tool definitions.</returns>
-    public async Task<List<McpifierToolMapping>> ConvertAsync(string swaggerFilePath)
+    public List<McpifierToolMapping> Convert(string swaggerJson)
     {
-        if (!File.Exists(swaggerFilePath))
-        {
-            throw new FileNotFoundException($"Swagger file not found: {swaggerFilePath}");
-        }
-
         OpenApiDocument document;
         try
         {
-            using var stream = File.OpenRead(swaggerFilePath);
-            var reader = new OpenApiStreamReader();
-            var readResult = await reader.ReadAsync(stream);
-
-            document = readResult.OpenApiDocument;
+            var reader = new OpenApiStringReader();
+            document = reader.Read(swaggerJson, out var openApiDiagnostic);
 
             // Log any diagnostics from parsing
-            if (readResult.OpenApiDiagnostic.Errors.Count > 0)
+            if (openApiDiagnostic.Errors.Count > 0)
             {
-                foreach (var error in readResult.OpenApiDiagnostic.Errors)
+                foreach (var error in openApiDiagnostic.Errors)
                 {
                     logger.LogError("OpenAPI parsing error: {Message} at {Pointer}", error.Message, error.Pointer);
                 }
                 throw new InvalidOperationException("Failed to parse OpenAPI document. See logs for details.");
             }
 
-            if (readResult.OpenApiDiagnostic.Warnings.Count > 0)
+            if (openApiDiagnostic.Warnings.Count > 0)
             {
-                foreach (var warning in readResult.OpenApiDiagnostic.Warnings)
+                foreach (var warning in openApiDiagnostic.Warnings)
                 {
                     logger.LogWarning("OpenAPI parsing warning: {Message} at {Pointer}", warning.Message, warning.Pointer);
                 }

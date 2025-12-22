@@ -152,8 +152,10 @@ public class Program
         {
             Console.WriteLine($"Reading swagger.json from: {swaggerFilePath}");
 
+            string swaggerJson = File.ReadAllText(swaggerFilePath);
+
             // Convert swagger to tools
-            var tools = converter.ConvertAsync(swaggerFilePath).GetAwaiter().GetResult();
+            var tools = converter.Convert(swaggerJson).Tools;
 
             Console.WriteLine($"Successfully converted {tools.Count} operations to tools");
 
