@@ -11,7 +11,7 @@ namespace Summerdawn.Mcpifier.Services;
 /// </summary>
 public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logger)
 {
-    private static readonly Regex PlaceholderRegex = new Regex(@"\{(\w+)\}");
+    private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}]+)\}");
 
     /// <summary>
     /// Executes a tool by making a REST API call with the specified arguments and headers.
