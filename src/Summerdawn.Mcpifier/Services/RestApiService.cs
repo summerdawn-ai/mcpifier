@@ -11,7 +11,15 @@ namespace Summerdawn.Mcpifier.Services;
 /// </summary>
 public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logger)
 {
+    /// <summary>
+    /// Defines a pattern for a placeholder in the form "{argumentName}".
+    /// </summary>
     private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}]+)\}");
+
+    /// <summary>
+    /// Defines a pattern for a query parameter assignment in the form "param={argumentName}".
+    /// </summary>
+    private static readonly Regex PlaceholderAssignmentRegex = new Regex(@"([^&?]*?)=\{([^}]+)\}");
 
     /// <summary>
     /// Executes a tool by making a REST API call with the specified arguments and headers.
@@ -96,9 +104,12 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
 
     private static string InterpolateQuery(string query, Dictionary<string, JsonElement> arguments)
     {
-        var result = query;
-
-        var matches = PlaceholderRegex.Matches(query);
+        // First, remove query parameters where the argument is not provided
+        string cleanedQuery = RemoveAbsentArguments(query, arguments);
+        
+        // Then interpolate the remaining parameters
+        var result = cleanedQuery;
+        var matches = PlaceholderRegex.Matches(cleanedQuery);
 
         foreach (Match match in matches)
         {
@@ -108,6 +119,47 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
             result = result.Replace($"{{{paramName}}}", paramValue);
         }
 
+        return result;
+    }
+
+    /// <summary>
+    /// Removes query parameter assignments where the corresponding argument is not provided.
+    /// </summary>
+    /// <remarks>
+    /// Works by identifying param=argument patterns and removing the entire assignment.
+    /// If the argument name is not present in the arguments dictionary, the parameter is removed.
+    /// For example: "from={from}&amp;to={to}" with arguments containing only "from"
+    /// becomes "from={from}".
+    /// </remarks>
+    /// <param name="query">The original query string with placeholders.</param>
+    /// <param name="arguments">The arguments dictionary.</param>
+    /// <returns>Query string with unsupported parameters removed.</returns>
+    private static string RemoveAbsentArguments(string query, Dictionary<string, JsonElement> arguments)
+    {
+        var result = query;
+        var matches = PlaceholderAssignmentRegex.Matches(query);
+        
+        // Process matches in reverse to maintain correct indices when removing
+        for (int i = matches.Count - 1; i >= 0; i--)
+        {
+            var match = matches[i];
+            var argName = match.Groups[2].Value;
+            
+            // If the argument doesn't exist, remove the entire parameter assignment
+            if (!arguments.ContainsKey(argName))
+            {
+                result = result.Remove(match.Index, match.Length);
+            }
+        }
+        
+        // Cleanup: remove orphaned & characters
+        // Replace multiple consecutive & with single &
+        result = Regex.Replace(result, "&+", "&");
+        // Remove leading &
+        result = result.TrimStart('&');
+        // Remove trailing &
+        result = result.TrimEnd('&');
+        
         return result;
     }
 
