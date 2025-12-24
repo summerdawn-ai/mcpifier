@@ -14,12 +14,12 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
     /// <summary>
     /// Defines a pattern for a placeholder in the form "{argumentName}".
     /// </summary>
-    private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}]+)\}");
+    private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}]+)\}", RegexOptions.Compiled);
 
     /// <summary>
     /// Defines a pattern for a query parameter assignment in the form "param={argumentName}".
     /// </summary>
-    private static readonly Regex PlaceholderAssignmentRegex = new Regex(@"([^&?]*?)=\{([^}]+)\}");
+    private static readonly Regex PlaceholderAssignmentRegex = new Regex(@"([^&?]*?)=\{([^}]+)\}", RegexOptions.Compiled);
 
     /// <summary>
     /// Executes a tool by making a REST API call with the specified arguments and headers.
