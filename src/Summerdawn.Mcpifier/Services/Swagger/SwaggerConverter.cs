@@ -11,8 +11,55 @@ namespace Summerdawn.Mcpifier.Services;
 /// <summary>
 /// Converts OpenAPI/Swagger specifications to Mcpifier tool mappings and related options.
 /// </summary>
-public class SwaggerConverter(ILogger<SwaggerConverter> logger)
+public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<SwaggerConverter> logger)
 {
+    /// <summary>
+    /// Loads the specified Swagger specification, converts it into mappings, and saves them as JSON to the output file.
+    /// </summary>
+    /// <param name="swaggerFileNameOrUrl">The file name or URL of the Swagger/OpenAPI specification.</param>
+    /// <param name="outputFileName">The output file name, default "mappings.json".</param>
+    public async Task LoadAndConvertAsync(string swaggerFileNameOrUrl, string? outputFileName)
+    {
+        outputFileName ??= "mappings.json";
+
+        try
+        {
+            // Parse Swagger into tools.
+            logger.LogInformation("Loading Swagger specification from '{Source}'.", swaggerFileNameOrUrl);
+
+            // Read Swagger file (support file or URL).
+            string swaggerJson = await LoadSwaggerAsync(swaggerFileNameOrUrl);
+
+            // Parse Swagger into tools.
+            var swaggerOptions = await ConvertAsync(swaggerJson);
+            var (swaggerTools, swaggerBaseAddress) = (swaggerOptions.Tools, swaggerOptions.Rest?.BaseAddress);
+
+            logger.LogInformation("Created {Count} tool mappings from Swagger specification '{Source}'.", swaggerTools.Count, swaggerFileNameOrUrl);
+
+            // Save tools as mappings.json - use minimal options structure with
+            // custom serializer to avoid writing null values or empty properties.
+            var minimalOptions = new MinimalOptionsWrapper
+            {
+                Mcpifier = new()
+                {
+                    Rest = swaggerBaseAddress is null ? null : new() { BaseAddress = swaggerBaseAddress },
+                    Tools = swaggerTools
+                }
+            };
+
+            var mappingsJson = JsonSerializer.Serialize<MinimalOptionsWrapper>(minimalOptions, SwaggerConverterJsonContext.Default.MinimalOptionsWrapper);
+
+            await File.WriteAllTextAsync(outputFileName, mappingsJson);
+
+            logger.LogInformation("Saved tool mappings to '{FileName}'.", outputFileName);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to map Swagger tools.");
+            throw new InvalidOperationException("Failed to map Swagger tools.", ex);
+        }
+    }
+
     /// <summary>
     /// Converts a Swagger/OpenAPI specification file to a list of tool mappings.
     /// </summary>
@@ -75,7 +122,7 @@ public class SwaggerConverter(ILogger<SwaggerConverter> logger)
             }
         }
 
-        logger.LogDebug("Successfully converted {Count} operations to tools", tools.Count);
+        logger.LogDebug("Successfully converted {Count} operations to tools.", tools.Count);
 
         string? baseAddress = document.Servers?.FirstOrDefault()?.Url;
 
@@ -285,5 +332,25 @@ public class SwaggerConverter(ILogger<SwaggerConverter> logger)
         result = result.Trim('_');
 
         return result;
+    }
+
+    /// <summary>
+    /// Loads a Swagger specification from a file or URL.
+    /// </summary>
+    /// <param name="fileNameOrUrl">The file name or URL.</param>
+    /// <returns>The file contents.</returns>
+    private async Task<string> LoadSwaggerAsync(string fileNameOrUrl)
+    {
+        if (Uri.TryCreate(fileNameOrUrl, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        {
+            // Download from URL.
+            var httpClient = httpClientFactory.CreateClient();
+            return await httpClient.GetStringAsync(uri);
+        }
+        else
+        {
+            // Read from file.
+            return await File.ReadAllTextAsync(fileNameOrUrl);
+        }
     }
 }

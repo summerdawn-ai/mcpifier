@@ -340,7 +340,8 @@ public class SwaggerConverterTests
 
     private static SwaggerConverter CreateConverter()
     {
+        var mockFactory = new Mock<IHttpClientFactory>();
         var mockLogger = new Mock<ILogger<SwaggerConverter>>();
-        return new SwaggerConverter(mockLogger.Object);
+        return new SwaggerConverter(mockFactory.Object, mockLogger.Object);
     }
 }

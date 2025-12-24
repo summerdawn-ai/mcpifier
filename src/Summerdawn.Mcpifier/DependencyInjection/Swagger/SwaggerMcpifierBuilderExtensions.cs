@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Summerdawn.Mcpifier.Configuration;
-using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.DependencyInjection;
 
@@ -29,9 +28,6 @@ public static class SwaggerMcpifierBuilderExtensions
 
         // Add post-configure loader to load and merge Swagger tools when options are first resolved.
         mcpifierBuilder.Services.AddSingleton<IPostConfigureOptions<McpifierOptions>, SwaggerConfigurationLoader>();
-
-        // Add SwaggerConverter as a singleton for reuse.
-        mcpifierBuilder.Services.AddSingleton<SwaggerConverter>();
 
         return mcpifierBuilder;
     }
