@@ -157,8 +157,17 @@ public class RestApiServiceTests
         Assert.Equal("?q=test%20query&limit=10&offset=0", capturedQuery);
     }
 
-    [Fact]
-    public async Task ExecuteToolAsync_InterpolatesQueryParameters_WithMissingArguments()
+    [Theory]
+    [InlineData("q={query}", new[] { "query" }, "?q=query")]
+    [InlineData("q={query}&sort={sortBy}", new[] { "query" }, "?q=query")]
+    [InlineData("q={search}&limit={limit}", new[] { "search" }, "?q=search")]
+    [InlineData("from={startDate}&to={endDate}&status={status}", new[] { "startDate", "status" }, "?from=startDate&status=status")]
+    [InlineData("a={x}&b={y}&c={z}", new[] { "x", "z" }, "?a=x&c=z")]
+    [InlineData("first={paramA}&middle={paramB}&last={paramC}", new[] { "paramB" }, "?middle=paramB")]
+    [InlineData("x={arg}", new string[] { }, "?")]
+    [InlineData("p1={a1}&p2={a2}&p3={a3}&p4={a4}", new[] { "a1", "a3" }, "?p1=a1&p3=a3")]
+    [InlineData("v={weird&param}&limit={other weird}", new[] { "weird&param" }, "?v=weird%26param")]
+    public async Task ExecuteToolAsync_InterpolatesQueryParameters_WithMissingArguments(string query, string[] argumentNames, string expectedQuery)
     {
         // Arrange
         string? capturedQuery = null;
@@ -175,6 +184,13 @@ public class RestApiServiceTests
         var mockLogger = new Mock<ILogger<RestApiService>>();
         var service = new RestApiService(httpClient, mockLogger.Object);
 
+        // Build arguments from the provided arg names
+        var arguments = new Dictionary<string, JsonElement>();
+        foreach (var argName in argumentNames)
+        {
+            arguments[argName] = JsonSerializer.SerializeToElement(argName);
+        }
+
         var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
@@ -187,13 +203,8 @@ public class RestApiServiceTests
             {
                 Method = "GET",
                 Path = "/search",
-                Query = "q={searchTerm}&limit={maxResults}"
+                Query = query
             }
-        };
-
-        var arguments = new Dictionary<string, JsonElement>
-        {
-            ["searchTerm"] = JsonSerializer.SerializeToElement("test")
         };
 
         // Act
@@ -201,7 +212,7 @@ public class RestApiServiceTests
 
         // Assert
         Assert.NotNull(capturedQuery);
-        Assert.Equal("?q=test&limit=", capturedQuery);
+        Assert.Equal(expectedQuery, capturedQuery);
     }
 
     [Fact]
