@@ -103,7 +103,7 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
         foreach (Match match in matches)
         {
             var paramName = match.Groups[1].Value;
-            var paramValue = arguments.TryGetValue(paramName, out var argValue) ? argValue.ToString() : "";
+            var paramValue = arguments.TryGetValue(paramName, out var argValue) ? Uri.EscapeDataString(argValue.ToString()) : "";
 
             result = result.Replace($"{{{paramName}}}", paramValue);
         }
