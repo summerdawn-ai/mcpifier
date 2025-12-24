@@ -285,61 +285,6 @@ app.Run();
 }
 ```
 
-### Scenario 1: Minimal Standalone Host
-
-Create a minimal MCP server that proxies to an external REST API:
-
-```csharp
-// Program.cs
-var builder = WebApplication.CreateBuilder(args);
-
-// Load tool mappings from separate file
-builder.Configuration.AddJsonFile("mappings.json");
-
-// Add Mcpifier services
-builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
-    .AddAspNetCore();
-
-var app = builder.Build();
-
-app.UseRouting();
-
-// Map Mcpifier to root path
-app.MapMcpifier();
-
-app.Run();
-```
-
-**mappings.json:**
-```json
-{
-  "Mcpifier": {
-    "Rest": {
-      "BaseAddress": "https://api.example.com"
-    },
-    "Tools": [
-      {
-        "mcp": {
-          "name": "get_user",
-          "description": "Get user by ID",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" }
-            },
-            "required": ["id"]
-          }
-        },
-        "rest": {
-          "method": "GET",
-          "path": "/users/{id}"
-        }
-      }
-    ]
-  }
-}
-```
-
 ### Scenario 2: Alongside Your REST API
 
 Host Mcpifier in the same application as the REST API it proxies:
