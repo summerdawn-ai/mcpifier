@@ -21,7 +21,7 @@ Examples of unacceptable behavior by participants include:
 - Harassment, abusive language, or hateful speech
 - Personal attacks, including insults and unwelcome sexual attention
 - Disrespectful or exclusionary comments
-- Publishing someone’s private information (doxing)
+- Publishing someone's private information (doxing)
 - Other conduct which could reasonably be considered inappropriate in a professional setting
 
 ## Enforcement
