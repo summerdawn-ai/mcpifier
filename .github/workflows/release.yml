@@ -132,7 +132,7 @@ jobs:
   
   create-release:
     needs: [validate, build, build-server]
-    if: ${{ needs.build.result == 'success' && (needs['build-server'].result == 'success' || needs['build-server'].result == 'skipped') }}
+    if: ${{ always() && needs.build.result == 'success' && (needs['build-server'].result == 'success' || needs['build-server'].result == 'skipped') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
