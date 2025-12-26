@@ -8,36 +8,7 @@ Thank you for your interest in contributing to Mcpifier. Whether you're fixing a
 
 ## Development Environment Setup
 
-### Prerequisites
-
-- .NET 8.0 SDK or later
-- A code editor (Visual Studio, Visual Studio Code, or JetBrains Rider recommended)
-- Git
-
-### Building the Project
-
-1. Clone the repository:
-```bash
-git clone https://github.com/summerdawn-ai/mcpifier.git
-cd mcpifier
-```
-
-2. Build the solution:
-```bash
-dotnet build
-```
-
-3. Run the tests:
-```bash
-dotnet test
-```
-
-### Project Structure
-
-- `/src/Summerdawn.Mcpifier` - Core library with MCP protocol implementation
-- `/src/Summerdawn.Mcpifier.AspNetCore` - ASP.NET Core integration
-- `/src/Summerdawn.Mcpifier.Server` - Standalone server application
-- `/tests` - Test projects
+Please refer to the corresponding section in [README.md](README.md#development) to get started.
 
 ## How to Submit Changes
 
@@ -95,19 +66,6 @@ Please review [AGENTS.md](AGENTS.md) for complete coding style guidelines.
 - Maintain or improve code coverage
 - Tests must pass before PR can be merged
 - Integration tests should be added for significant features
-
-### Running Tests
-
-```bash
-# Run all tests
-dotnet test
-
-# Run tests for a specific project
-dotnet test tests/Summerdawn.Mcpifier.Tests
-
-# Run tests with coverage
-dotnet test --collect:"XPlat Code Coverage"
-```
 
 ## Code Review Process
 
