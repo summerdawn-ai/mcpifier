@@ -16,7 +16,7 @@
   <!-- NuGet properties -->
   <PropertyGroup>
     <PackageId>Summerdawn.Mcpifier.Server</PackageId>
-    <Description>Command-line Mcpifier server with stdio and http support. Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.</Description>
+    <Description>Command-line server and tool for Mcpifier - a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>

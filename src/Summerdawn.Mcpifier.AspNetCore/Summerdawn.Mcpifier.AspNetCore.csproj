@@ -16,7 +16,7 @@
   <!-- NuGet properties -->
   <PropertyGroup>
     <PackageId>Summerdawn.Mcpifier.AspNetCore</PackageId>
-    <Description>ASP.NET Core support for Mcpifier. Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.</Description>
+    <Description>ASP.NET Core integration and HTTP mode for Mcpifier - a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
