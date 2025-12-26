@@ -8,8 +8,10 @@ Mcpifier enables you to expose REST APIs as MCP tools without writing any code. 
 
 ### Key Benefits
 
-- **Zero Code Required** - Define tools entirely through JSON configuration
+- **Zero Code Required** - Define tools entirely through JSON configuration or generate from Swagger/OpenAPI
 - **No API Changes** - Works with existing REST APIs without modifications
+- **Automatic Tool Generation** - Generate tool mappings from Swagger/OpenAPI specifications
+- **Fully Customizable** - Generate mappings, then edit as needed before serving
 - **Standards-Based** - Implements MCP protocol and JSON-RPC 2.0 including MCP Authorization
 - **Multiple Transports** - Supports both HTTP and stdio communication
 - **Flexible Architecture** - Use as a library, ASP.NET Core middleware, or standalone server
@@ -38,6 +40,7 @@ Mcpifier enables you to expose REST APIs as MCP tools without writing any code. 
 - **ASP.NET Core** - For HTTP hosting scenarios
 - **Model Context Protocol (MCP)** - Anthropic's protocol for AI-tool integration
 - **JSON-RPC 2.0** - Standard RPC protocol used by MCP
+- **Microsoft.OpenApi** - OpenAPI/Swagger specification parsing and tool generation
 
 ## Architecture
 
@@ -91,7 +94,7 @@ dotnet tool install Summerdawn.Mcpifier.Server
 
 Then run:
 ```bash
-mcpifier-server --mode stdio
+mcpifier serve --mode stdio
 ```
 
 ### As a Standalone Binary
@@ -470,72 +473,121 @@ builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
 This keeps your tool definitions environment-independent and version-controllable.
 
-### Generating Mappings from OpenAPI Specs
+### Generating Mappings from Swagger/OpenAPI
 
-Use an AI agent to convert OpenAPI/Swagger specifications into Mcpifier mappings:
+Mcpifier can automatically generate tool mappings from OpenAPI/Swagger specifications.
 
-**Sample Prompt:**
+#### Using the CLI (Standalone Server)
+
+Generate mappings with the `generate` command:
+
+```bash
+# Generate from local file
+mcpifier generate --swagger swagger.json
+
+# Generate from URL
+mcpifier generate --swagger https://api.example.com/swagger.json
+
+# Specify custom output file
+mcpifier generate --swagger swagger.json --output my-tools.json
 ```
-Convert this OpenAPI endpoint specification into an Mcpifier tool mapping in JSON format.
 
-The output should have two sections:
-1. "mcp": containing name, description, and inputSchema (JSON Schema)
-2. "rest": containing method, path, query, and body
+This creates a `mappings.json` file (or custom name) with tool definitions for all endpoints in the specification.
 
-Use {paramName} syntax for parameter interpolation in path, query, and body.
+#### Using the Library (C# Code)
 
-OpenAPI Spec:
-[paste your swagger.json excerpt here]
-```
+Load tools directly from Swagger when configuring services:
 
-**Example Input (Swagger snippet):**
-```json
-{
-  "/users/{id}": {
-    "get": {
-      "summary": "Get user by ID",
-      "parameters": [
+```csharp
+// Load from file or URL
+builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
+    .AddToolsFromSwagger("swagger.json");
+
+// Or from URL
+builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
+    .AddToolsFromSwagger("https://api.example.com/swagger.json");
+
+// With filtering - exclude certain paths
+builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
+    .AddToolsFromSwagger("swagger.json", 
+        mappingPredicate: mapping => !mapping.Rest.Path.StartsWith("/users"));
+
+// With customization - modify mappings before use
+builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
+    .AddToolsFromSwagger("swagger.json",
+        mappingAction: mapping =>
         {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": { "type": "string" }
-        }
-      ]
-    }
-  }
-}
+            // Add prefix to all tool names
+            mapping.Mcp.Name = "api_" + mapping.Mcp.Name;
+        });
 ```
 
-**Example Output (Mcpifier mapping):**
-```json
-{
-  "mcp": {
-    "name": "get_user",
-    "description": "Get user by ID",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "User identifier"
-        }
-      },
-      "required": ["id"]
-    }
-  },
-  "rest": {
-    "method": "GET",
-    "path": "/users/{id}"
-  }
-}
+**Key Features:**
+- Automatically extracts base URL from Swagger if `Rest.BaseAddress` is not configured
+- Generates snake_case tool names from `operationId` or falls back to `{method}_{path}`
+- Handles path parameters, query parameters, and request bodies
+- Supports arrays, nested objects, enums, and various data types
+
+**Customization Workflow:**
+
+For full control, generate mappings first, then edit before serving:
+
+```bash
+# Step 1: Generate mappings
+mcpifier generate --swagger https://api.example.com/swagger.json
+
+# Step 2: Edit mappings.json to customize as needed
+# - Modify tool names, descriptions
+# - Add/remove tools
+# - Adjust parameter schemas
+# - Configure base address, headers
+
+# Step 3: Serve with your customized mappings
+mcpifier serve --mode http
 ```
 
 ## Quick Start
 
 ### For Library Users
 
-**Stdio:**
+**With Swagger/OpenAPI (Recommended):**
+
+```csharp
+// Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+// Add Mcpifier with auto-generated tools from Swagger
+builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
+    .AddAspNetCore()
+    .AddToolsFromSwagger("https://api.example.com/swagger.json");
+
+var app = builder.Build();
+
+// Map Mcpifier endpoint
+app.MapMcpifier("/mcp");
+
+app.Run();
+```
+
+**Minimal appsettings.json:**
+```json
+{
+  "Mcpifier": {
+    "Rest": {
+      "ForwardedHeaders": {
+        "Authorization": true
+      }
+    },
+    "ServerInfo": {
+      "Name": "my-api-server"
+    }
+  }
+}
+```
+
+Note: `BaseAddress` is automatically set from Swagger specification.
+
+**Stdio with Configuration:**
 
 ```csharp
 // Program.cs
@@ -563,18 +615,17 @@ app.Run();
 
 See [Summerdawn.Mcpifier README](src/Summerdawn.Mcpifier/README.md) for detailed scenarios.
 
-**ASP.NET Core:**
+**ASP.NET Core with Swagger:**
 
 ```csharp
 // Program.cs
 var builder = WebApplication.CreateBuilder(args);
 
-// Load tool mappings
-builder.Configuration.AddJsonFile("mappings.json");
-
-// Add Mcpifier services
+// Add Mcpifier with Swagger and filtering
 builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
-    .AddAspNetCore();
+    .AddAspNetCore()
+    .AddToolsFromSwagger("swagger.json",
+        mappingPredicate: m => !m.Rest.Path.StartsWith("/internal"));
 
 var app = builder.Build();
 
@@ -588,14 +639,30 @@ See [Summerdawn.Mcpifier.AspNetCore README](src/Summerdawn.Mcpifier.AspNetCore/R
 
 ### For Server Users
 
-**HTTP Mode:**
+**Quickstart 1: Serve Directly from Swagger**
+
 ```bash
-mcpifier-server --mode http
+# Install
+dotnet tool install -g Summerdawn.Mcpifier.Server
+
+# Serve directly from Swagger (HTTP or stdio)
+mcpifier serve --mode http --swagger https://api.example.com/swagger.json
 ```
 
-**Stdio Mode:**
+**Quickstart 2: Generate, Customize, and Serve**
+
 ```bash
-mcpifier-server --mode stdio
+# Install
+dotnet tool install -g Summerdawn.Mcpifier.Server
+
+# Generate mappings from Swagger
+mcpifier generate --swagger https://api.example.com/swagger.json
+
+# Edit mappings.json manually as needed
+# (customize tool names, descriptions, add/remove endpoints, etc.)
+
+# Serve with your customized mappings
+mcpifier serve --mode http
 ```
 
 See [Summerdawn.Mcpifier.Server README](src/Summerdawn.Mcpifier.Server/README.md) for complete documentation.
@@ -609,8 +676,8 @@ For stdio mode:
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpifier-server",
-      "args": ["--mode", "stdio"],
+      "command": "mcpifier",
+      "args": ["serve", "--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config"
       }
@@ -643,8 +710,8 @@ Some MCP clients support providing authentication tokens:
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpifier-server",
-      "args": ["--mode", "stdio"],
+      "command": "mcpifier",
+      "args": ["serve", "--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config"
       },
@@ -671,8 +738,8 @@ Edit Claude's config file (location varies by OS):
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpifier-server",
-      "args": ["--mode", "stdio"],
+      "command": "mcpifier",
+      "args": ["serve", "--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "/full/path/to/config/directory"
       }
@@ -687,8 +754,8 @@ Edit Claude's config file (location varies by OS):
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpifier-server",
-      "args": ["--mode", "stdio"],
+      "command": "mcpifier",
+      "args": ["serve", "--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "/full/path/to/config/directory"
       },

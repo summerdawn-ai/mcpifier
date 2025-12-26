@@ -46,7 +46,7 @@ public class McpifierRestSection
     /// <summary>
     /// Gets or sets the base address for REST API calls. Can be absolute or relative.
     /// </summary>
-    public string BaseAddress { get; set; } = "/";
+    public string BaseAddress { get; set; } = "";
 
     /// <summary>
     /// Gets or sets default HTTP headers to include in all REST API requests.

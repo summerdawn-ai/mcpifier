@@ -63,5 +63,30 @@ public class PropertySchema
     /// <summary>
     /// Gets or sets the property description.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Gets or sets the property format (e.g., date-time, int32).
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Format { get; set; }
+
+    /// <summary>
+    /// Gets or sets the enum values for the property.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<object>? Enum { get; set; }
+
+    /// <summary>
+    /// Gets or sets the items schema for array types.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PropertySchema? Items { get; set; }
+
+    /// <summary>
+    /// Gets or sets nested properties for object types.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, PropertySchema>? Properties { get; set; }
 }

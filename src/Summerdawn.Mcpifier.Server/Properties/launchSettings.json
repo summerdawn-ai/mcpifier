@@ -1,17 +1,34 @@
 {
   "profiles": {
-    "http": {
+    "serve --mode http": {
       "commandName": "Project",
       "commandLineArgs": "--mode http",
-      "externalUrlConfiguration": true, // Use "Kestrel" section from appsettings
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "externalUrlConfiguration": true,
+      "dotnetRunMessages": true
+    },
+    "serve --mode http --swagger": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode http --swagger swagger.json",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "externalUrlConfiguration": true,
+      "dotnetRunMessages": true
+    },
+    "serve --mode stdio": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode stdio",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true
     },
-    "stdio": {
+    "generate --swagger": {
       "commandName": "Project",
-      "commandLineArgs": "--mode stdio",
+      "commandLineArgs": "generate --swagger swagger.json",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },

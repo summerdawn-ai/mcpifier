@@ -6,16 +6,55 @@ Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an exi
 
 ## Overview
 
-Mcpifier enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpifier translates requests between MCP clients and your REST service.
+Mcpifier enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON or generate them automatically from Swagger/OpenAPI specifications, and Mcpifier translates requests between MCP clients and your REST service.
 
 Mcpifier Server is a ready-to-run MCP server that:
 
-- **Requires no coding** - Fully configured via JSON files
+- **Requires no coding** - Fully configured via JSON files or Swagger
 - **Proxies to REST APIs** - Forwards MCP tool calls to your REST endpoints
 - **Supports multiple transports** - HTTP and stdio modes
 - **Handles authentication** - Forwards authorization headers to your API (HTTP mode) or uses default headers (both modes)
+- **Generates tool mappings** - Auto-generate from Swagger/OpenAPI specifications
 
 This server is perfect for quickly exposing REST APIs to MCP clients like Claude Desktop or VS Code without writing any integration code.
+
+## Quickstart
+
+### Quickstart 1: Serve Directly from Swagger
+
+The fastest way to get started - no configuration files needed:
+
+```bash
+# Install
+dotnet tool install -g Summerdawn.Mcpifier.Server
+
+# Serve directly from Swagger (HTTP or stdio)
+mcpifier serve --mode http --swagger https://api.example.com/swagger.json
+
+# Or stdio mode
+mcpifier serve --mode stdio --swagger https://api.example.com/swagger.json
+```
+
+### Quickstart 2: Generate, Customize, and Serve
+
+For full control over tool mappings:
+
+```bash
+# Install
+dotnet tool install -g Summerdawn.Mcpifier.Server
+
+# Generate mappings from Swagger
+mcpifier generate --swagger https://api.example.com/swagger.json
+
+# This creates mappings.json - edit it to customize:
+# - Tool names and descriptions
+# - Add/remove endpoints
+# - Adjust parameter schemas
+# - Configure base address, headers
+
+# Serve with your customized mappings
+mcpifier serve --mode http
+```
 
 ## Installation
 
@@ -38,35 +77,90 @@ Download pre-built binaries from [GitHub Releases](https://github.com/summerdawn
 - Linux (x64, ARM64)
 - macOS (x64, ARM64)
 
-## Usage
+## Commands
 
-### HTTP Mode
+### serve (Default Command)
 
-For network-based MCP clients:
+Starts the Mcpifier server in HTTP or stdio mode.
 
+**Usage:**
 ```bash
-# If installed as a dotnet tool:
-mcpifier-server --mode http
+mcpifier serve --mode <http|stdio> [--swagger <file-or-url>]
 
-# Or with downloaded binary:
-./mcpifier-server --mode http
+# Or simply (serve is the default):
+mcpifier --mode <http|stdio> [--swagger <file-or-url>]
 ```
+
+**Options:**
+- `--mode`, `-m` (required): Server mode - `http` or `stdio`
+- `--swagger` (optional): File name or URL of Swagger/OpenAPI specification
+
+**Examples:**
+```bash
+# HTTP mode with Swagger
+mcpifier serve --mode http --swagger https://api.example.com/swagger.json
+
+# stdio mode with Swagger
+mcpifier serve --mode stdio --swagger swagger.json
+
+# HTTP mode with mappings.json
+mcpifier serve --mode http
+
+# Short form (serve is default)
+mcpifier --mode http --swagger swagger.json
+```
+
+### generate
+
+Generates tool mappings from a Swagger/OpenAPI specification and saves to a JSON file.
+
+**Usage:**
+```bash
+mcpifier generate --swagger <file-or-url> [--output <filename>]
+```
+
+**Options:**
+- `--swagger` (required): File name or URL of Swagger/OpenAPI specification
+- `--output` (optional): Custom output filename (default: `mappings.json`)
+
+**Examples:**
+```bash
+# Generate from local file
+mcpifier generate --swagger swagger.json
+
+# Generate from URL
+mcpifier generate --swagger https://api.example.com/swagger.json
+
+# Custom output file
+mcpifier generate --swagger swagger.json --output my-tools.json
+```
+
+**Generated Output Structure:**
+```json
+{
+  "mcpifier": {
+    "tools": [
+      {
+        "mcp": {
+          "name": "get_user_by_id",
+          "description": "Get user by ID",
+          "inputSchema": { ... }
+        },
+        "rest": {
+          "method": "GET",
+          "path": "/users/{id}"
+        }
+      }
+    ]
+  }
+}
+```
+
+## Usage
 
 The server starts on:
 - HTTP: `http://localhost:5157`
 - HTTPS: `https://localhost:7025`
-
-### Stdio Mode
-
-For process-based MCP clients (Claude Desktop, VS Code):
-
-```bash
-# If installed as a dotnet tool:
-mcpifier-server --mode stdio
-
-# Or with downloaded binary:
-./mcpifier-server --mode stdio
-```
 
 ## Configuration
 
@@ -173,8 +267,8 @@ For complete MCP client setup instructions for VS Code, Claude Desktop, and othe
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpifier-server",
-      "args": ["--mode", "stdio"],
+      "command": "mcpifier",
+      "args": ["serve", "--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config"
       }

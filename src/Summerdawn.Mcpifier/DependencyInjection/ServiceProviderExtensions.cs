@@ -25,7 +25,7 @@ internal static class ServiceProviderExtensions
 
             logger.LogError("No tool mappings were found in the app configuration. The expected location for configuration files is '{contentRoot}'.", contentRoot);
             
-            throw new InvalidOperationException($"No tool mappings were found in the app configuration.");
+            throw new InvalidOperationException("No tool mappings were found in the app configuration.");
         }
 
         return serviceProvider;

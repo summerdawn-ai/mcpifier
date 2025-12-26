@@ -29,6 +29,7 @@
     <InternalsVisibleTo Include="Summerdawn.Mcpifier.AspNetCore" />
     <InternalsVisibleTo Include="Summerdawn.Mcpifier.AspNetCore.Tests" />
     <InternalsVisibleTo Include="Summerdawn.Mcpifier.Tests" />
+    <InternalsVisibleTo Include="mcpifier" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +37,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.OpenApi" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 using Summerdawn.Mcpifier.Models;
 
 namespace Summerdawn.Mcpifier.Configuration;
@@ -36,10 +38,12 @@ public class RestConfiguration
     /// <summary>
     /// Gets or sets the query string with optional parameter placeholders.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Query { get; set; }
 
     /// <summary>
     /// Gets or sets the request body with optional parameter placeholders.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Body { get; set; }
 }

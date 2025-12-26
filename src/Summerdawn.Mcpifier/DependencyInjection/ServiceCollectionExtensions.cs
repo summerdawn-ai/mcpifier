@@ -80,6 +80,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<McpStdioServer>();
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpStdioServer>());
 
+        // Add Swagger converter.
+        services.AddSingleton<SwaggerConverter>();
+
         return new McpifierBuilder(services);
     }
 
