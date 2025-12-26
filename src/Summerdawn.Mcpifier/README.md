@@ -4,39 +4,31 @@ Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an exi
 
 ## Overview
 
-Mcpifier enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON or generate them automatically from Swagger/OpenAPI specifications, and Mcpifier translates requests between MCP clients and your REST service.
+Mcpifier can be used as a library, ASP.NET Core middleware, or a command-line server and tool. It supports automatic tool generation from Swagger/OpenAPI specifications using conventions that map REST endpoints to MCP tools, or full customization using JSON configuration files.
 
-This package provides the foundational components for building gateways from stdio MCP clients to REST APIs:
+This is the core package providing MCP protocol implementation, a Swagger/OpenAPI converter, REST API service, and stdio server.
 
-- **JSON-RPC 2.0 message handling** - Parse and dispatch MCP protocol messages
-- **MCP protocol implementation** - Server info, tool listing, and tool execution
-- **REST API service** - HTTP client with parameter interpolation
-- **STDIO support** - Process-based communication via stdio
-- **Swagger/OpenAPI integration** - Automatic tool generation from API specifications
+Other available packages:
 
-### When to Use This Package
+- [Summerdawn.Mcpifier.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpifier.AspNetCore): ASP.NET Core integration and HTTP server
+- [Summerdawn.Mcpifier.Server](https://www.nuget.org/packages/Summerdawn.Mcpifier.Server): Command-line server and tool
 
-Use `Summerdawn.Mcpifier` when you need:
-- Fine-grained control over MCP message handling
-- Custom hosting scenarios beyond ASP.NET Core
-- Integration with existing service architectures
-- STDIO-based communication for process integration
+## Getting Started
 
-**Most users should use `Summerdawn.Mcpifier.AspNetCore` instead**, which provides HTTP support using ASP.NET Core.
-
-## Quickstart
-
-### With Swagger/OpenAPI (Recommended)
-
-The fastest way to get started is to generate tools from your existing Swagger/OpenAPI specification:
+The fastest way to get started is to let Mcpifier generate tools from an existing Swagger/OpenAPI specification:
 
 ```csharp
 using Summerdawn.Mcpifier.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Add Mcpifier with automatic tool generation from Swagger
-builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
+// Add Mcpifier with automatic tool generation from Swagger/OpenAPI specification
+builder.Services
+    .AddMcpifier(options =>
+    {
+        options.Rest.DefaultHeaders = new() { ["Authorization"] = "Bearer 123...abc" };
+        options.ServerInfo = new() { Name = "my-mcp-server" };
+    })
     .AddToolsFromSwagger("https://api.example.com/swagger.json");
 
 // Send console logging to stderr for stdio mode
@@ -46,198 +38,239 @@ builder.Logging.AddConsole(options =>
 });
 
 var app = builder.Build();
+
+// Enable Mcpifier stdio server
 app.UseMcpifier();
+
 app.Run();
 ```
 
-**Minimal appsettings.json:**
-```json
-{
-  "Mcpifier": {
-    "Rest": {
-      "ForwardedHeaders": {
-        "Authorization": true
-      }
-    },
-    "ServerInfo": {
-      "Name": "my-mcp-server"
-    }
-  }
-}
+When a Swagger/OpenAPI document is loaded, the REST API base address is inferred from the specification unless already configured.
+
+See the [Usage](#usage) section below for a detailed description of available features and customization options.
+
+## Installation
+
+Install Mcpifier using the .NET CLI:
+
+```bash
+dotnet add package Summerdawn.Mcpifier
 ```
 
-Note: `BaseAddress` is automatically extracted from the Swagger specification.
+## Usage
 
-### With Manual Configuration
+### Service Registration
 
-If you prefer manual configuration or need full control:
+Call `AddMcpifier` on a [.NET Generic Host](https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host) builder to register and configure Mcpifier services. You can either provide an `IConfiguration` section from a configuration manager, or an action to configure the `McpifierOptions` instance directly:
 
 ```csharp
 using Summerdawn.Mcpifier.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Load tool mappings from file
-builder.Configuration.AddJsonFile("mappings.json");
-
-// Add Mcpifier services
+// Load configuration from appsettings etc.
 builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
+// Or configure directly
+builder.Services
+    .AddMcpifier(options =>
+    {
+        options.Rest.BaseAddress = "https://api.example.com";
+        options.Rest.DefaultHeaders = new() { ["Authorization"] = "Bearer 123...abc" };
+        options.ServerInfo = new() { Name = "my-mcp-server" };
+        // etc.
+    });
+```
+
+Make sure that logging statements are not sent to the console standard output when running in stdio mode:
+
+```csharp
+// Send console logging to stderr for stdio mode
 builder.Logging.AddConsole(options =>
 {
     options.LogToStandardErrorThreshold = LogLevel.Trace;
 });
-
-var app = builder.Build();
-app.UseMcpifier();
-app.Run();
 ```
 
-For complete configuration documentation including authorization, header forwarding, and all available settings, see the [main README](https://github.com/summerdawn-ai/mcpifier#configuration).
+See the [Configuration](#configuration) section for a full reference of all Mcpifier configuration settings.
 
-## Installation
+### Generating Tools from Swagger
 
-```bash
-dotnet add package Summerdawn.Mcpifier
-```
-
-## Configuration
-
-For detailed configuration including: 
-- All configuration settings and their meanings
-- Tool mappings structure
-- Parameter interpolation
-- Authorization scenarios (MCP Authorization, default headers, forwarded headers)
-- Loading from separate files
-- Generating from OpenAPI specs
-
-See the [main README Configuration section](https://github.com/summerdawn-ai/mcpifier#configuration).
-
-## Dependencies
-
-- **.NET 8.0** or later
-- **Microsoft.Extensions.Http** - HTTP client factory
-- **Microsoft.Extensions.Hosting.Abstractions** - Hosting abstractions
-- **Microsoft.AspNetCore.Http.Abstractions** - HTTP context abstractions
-- **Microsoft.OpenApi.Readers** - OpenAPI/Swagger specification parsing
-
-## Usage
-
-### Service Registration
+Call `AddToolsFromSwagger` with a Swagger/OpenAPI specification file name or URL to automatically generate tool mappings when the application is started:
 
 ```csharp
-using Summerdawn.Mcpifier.DependencyInjection;
-
-// In your service configuration
-services.AddMcpifier(configuration.GetSection("Mcpifier"));
-```
-
-### AddToolsFromSwagger - Core Functionality
-
-The `AddToolsFromSwagger` method enables automatic tool generation from OpenAPI/Swagger specifications:
-
-```csharp
-// Basic usage - load from file or URL
-builder.Services.AddMcpifier(configuration.GetSection("Mcpifier"))
+// Load from file
+builder.Services.AddMcpifier(options => { /* configure */ })
     .AddToolsFromSwagger("swagger.json");
 
 // Load from URL
-builder.Services.AddMcpifier(configuration.GetSection("Mcpifier"))
+builder.Services.AddMcpifier(options => { /* configure */ })
     .AddToolsFromSwagger("https://api.example.com/swagger.json");
 ```
 
-### Filtering Tools
+Tool mappings are generated in the format documented in the section [Tool Mapping](#tool-mapping), and can be modified as needed as described in the section [Adding Tools Manually](#adding-tools-manually).
 
-Filter out unwanted endpoints using a predicate:
+Loading a Swagger/OpenAPI specification will also **set the REST API base address** to the base URL specified in the specification, or the base address of the specification URL, if the Mcpifier configuration does not already specify a base address.
+
+#### Filtering Tools
+
+Filter out unwanted tool mappings using any predicate:
 
 ```csharp
-// Exclude all /users endpoints
-builder.Services.AddMcpifier(configuration.GetSection("Mcpifier"))
+// Exclude all /internal endpoints
+builder.Services.AddMcpifier(options => { /* configure */ })
     .AddToolsFromSwagger("swagger.json",
-        mappingPredicate: mapping => !mapping.Rest.Path.StartsWith("/users"));
+        mappingPredicate: mapping => !mapping.Rest.Path.StartsWith("/internal"));
 
 // Include only specific HTTP methods
-builder.Services.AddMcpifier(configuration.GetSection("Mcpifier"))
+builder.Services.AddMcpifier(options => { /* configure */ })
     .AddToolsFromSwagger("swagger.json",
         mappingPredicate: mapping => mapping.Rest.Method is "GET" or "POST");
-
-// Complex filtering
-builder.Services.AddMcpifier(configuration.GetSection("Mcpifier"))
-    .AddToolsFromSwagger("swagger.json",
-        mappingPredicate: mapping => 
-            !mapping.Rest.Path.StartsWith("/internal") &&
-            !mapping.Rest.Path.StartsWith("/admin"));
 ```
 
-### Customizing Mappings
+#### Customizing Tools
 
-Use an action to modify mappings before they're registered:
+Specify an action to modify tool mappings before they're registered:
 
 ```csharp
 // Add prefix to all tool names
-builder.Services.AddMcpifier(configuration.GetSection("Mcpifier"))
+builder.Services.AddMcpifier(options => { /* configure */ })
     .AddToolsFromSwagger("swagger.json",
         mappingAction: mapping =>
         {
-            mapping.Mcp.Name = "api_" + mapping.Mcp.Name;
+            mapping.Mcp.Name = "on_my_api_" + mapping.Mcp.Name;
         });
 
 // Modify descriptions
-builder.Services.AddMcpifier(configuration.GetSection("Mcpifier"))
+builder.Services.AddMcpifier(options => { /* configure */ })
     .AddToolsFromSwagger("swagger.json",
         mappingAction: mapping =>
         {
             mapping.Mcp.Description = $"[External API] {mapping.Mcp.Description}";
         });
 
-// Combined filter and action
-builder.Services.AddMcpifier(configuration.GetSection("Mcpifier"))
+// Combine filter and action
+builder.Services.AddMcpifier(options => { /* configure */ })
     .AddToolsFromSwagger("swagger.json",
-        mappingAction: mapping => mapping.Mcp.Name = "myapi_" + mapping.Mcp.Name,
+        mappingAction: mapping => mapping.Mcp.Name = "on_my_api_" + mapping.Mcp.Name,
         mappingPredicate: mapping => !mapping.Rest.Path.StartsWith("/internal"));
 ```
 
-### Customization Workflow
+### Adding Tools Manually
 
-For complete control, the `SwaggerConverter` can be used to load tools into configuration or save to a file:
+For complete control, you can generate tool mappings once using the `SwaggerConverter` class or the Mcpifier CLI and modify the resulting `mappings.json` file as needed:
 
 ```csharp
-// Get the converter from DI
-var converter = serviceProvider.GetRequiredService<SwaggerConverter>();
+using Summerdawn.Mcpifier.DependencyInjection;
+using Summerdawn.Mcpifier.Services;
 
-// Load and convert
-var mappings = await converter.LoadAndConvertAsync("swagger.json");
+// Build a temporary host for one-time mappings generation
+var builder = Host.CreateApplicationBuilder(args);
 
-// Save to file for later customization
-await converter.LoadAndConvertAsync("swagger.json", "mappings.json");
+// Register Swagger converter
+builder.Services.AddMcpifier(_ => { });
 
-// Now you can manually edit mappings.json, then load it:
-builder.Configuration.AddJsonFile("mappings.json");
+// Get Swagger converter from DI
+var swaggerConverter = builder.Build().Services.GetRequiredService<SwaggerConverter>(); 
+
+// Generate mappings from specification and save to file
+await swaggerConverter.LoadAndConvertAsync("https://api.example.com/swagger.json", "path/to/mappings.json");
+
+// Exit
+```
+
+This is intended for offline or one-time generation scenarios.
+
+After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file:
+
+```csharp
+using Summerdawn.Mcpifier.DependencyInjection;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+// Load the mappings file into the configuration
+builder.Configuration.AddJsonFile("path/to/mappings.json");
+
+// Configure Mcpifier with the resulting configuration including the tool mappings
 builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 ```
 
-This workflow enables:
-1. Generate mappings from Swagger
-2. Save to `mappings.json`
-3. Manually customize as needed
-4. Load and serve from the customized file
+### Starting the Server
 
-### Basic Configuration Example
+After configuration is complete, call `UseMcpifier` on the app host to enable the Mcpifier stdio server to run as a background service.
 
-```json
+```csharp
+var app = builder.Build();
+
+// Enable Mcpifier stdio server
+app.UseMcpifier();
+
+app.Run();
+```
+
+## Authorization
+
+MCP Authorization does not apply to stdio transport. In order to use Mcpifier in stdio mode with a REST API that requires authorization, you can use the `DefaultHeaders` configuration setting to provide an authorization header that is included in every request:
+
+```jsonc
 {
   "Mcpifier": {
     "Rest": {
       "BaseAddress": "https://api.example.com",
       "DefaultHeaders": {
-        "User-Agent": "MyApp-MCP/1.0"
+        // API key
+        "X-API-Key": "your-api-key-here",
+        // Or bearer token
+        "Authorization": "Bearer 123...abc"
+      }
+    }
+  }
+}
+```
+
+Instead of configuring this setting in `appsettings.json`, you can also [specify it as an environment variable](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration-providers#environment-variable-configuration-provider), for example:
+
+```powershell
+# PowerShell
+$env:MCPIFIER__REST__DEFAULTHEADERS__AUTHORIZATION="Bearer 123...abc"
+```
+
+## Configuration
+
+Mcpifier's configuration maps to the `McpifierOptions` class and is structured as follows:
+
+```jsonc
+{
+  "Mcpifier": {
+    // Rest API configuration
+    "Rest": {
+      "BaseAddress": "https://api.example.com",
+      "DefaultHeaders": { 
+          "User-Agent": "Mcpifier/1.0" 
+      },
+      // Forwarded headers (only in HTTP mode)
+      "ForwardedHeaders": {
+        "Authorization": true
       }
     },
+    // MCP server configuration
+    "ProtocolVersion": "2025-06-18",
     "ServerInfo": {
       "Name": "my-mcp-server",
       "Title": "My MCP Server",
       "Version": "1.0.0"
     },
+    "Instructions": "",
+    // MCP Authorization configuration (only in HTTP mode)
+    "Authorization": {
+      "RequireAuthorization": true,
+      "ResourceMetadata": {
+        "Resource": "https://mcp.example.com",
+        "AuthorizationServers": [ "https://auth.example.com/oauth" ],
+        "ScopesSupported": [ "https://mcp.example.com/access" ]
+      }
+    },
+    // Mappings from MCP tools to REST API calls - keep in separate JSON file
     "Tools": [
       {
         "mcp": {
@@ -264,46 +297,195 @@ This workflow enables:
 }
 ```
 
-For complete configuration documentation including authorization, header forwarding, and all available settings, see the [main README](https://github.com/summerdawn-ai/mcpifier#configuration).
+In order to keep tool mappings environment-independent and version-controllable, it is recommended that they are loaded from a separate `mappings.json` file, not included in `appsettings.json`:
 
-### Using with ASP.NET Core
-
-If you're building an ASP.NET Core application, use the `Summerdawn.Mcpifier.AspNetCore` package instead:
-
-```bash
-dotnet add package Summerdawn.Mcpifier.AspNetCore
+```csharp
+builder.Configuration.AddJsonFile("mappings.json");
 ```
 
-It provides simpler integration with endpoint routing and middleware.
+See the [Usage](#usage) section for instructions on how to load the configuration.
 
-## API Overview
+### Configuration Reference
 
-### Key Classes and Services
+#### Rest
 
-**RestApiService**
-- Executes HTTP requests to REST APIs
-- Handles parameter interpolation
-- Manages headers (default and forwarded)
+The settings in the `Rest` configuration section are related to the REST API:
 
-**JsonRpcDispatcher**
-- Parses JSON-RPC 2.0 messages
-- Routes requests to appropriate handlers
-- Formats responses according to JSON-RPC spec
+|Name|Type|Description|Example|
+|----|----|-----------|-------|
+|BaseAddress|`string` (required)|The Base URL for the target REST API - all REST API requests will be made relative to this URL|"https://api.example.com",<br>"/api" (only in HTTP mode)|
+|DefaultHeaders|`Dictionary<string,string>`|Headers to include in every REST API request|{ "User-Agent": "Mcpifier/1.0" }|
+|ForwardedHeaders|`Dictionary<string,bool>`|Headers to forward from the MCP tool call (only in HTTP mode)|{ "Authorization": true }|
 
-**IRpcHandler**
-- Interface for implementing RPC method handlers
-- Built-in handlers for MCP protocol methods:
-  - `initialize` - Server capability negotiation
-  - `tools/list` - List available tools
-  - `tools/call` - Execute a tool
+The `BaseAddress` may be [set from a loaded Swagger/OpenAPI specification](#generating-tools-from-swagger), if available and not already specified in the configuration.
 
-## Further Documentation
+It can be set to a relative URL if Mcpifier is used in HTTP mode (using [Summerdawn.Mcpifier.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpifier.AspNetCore)) alongside REST endpoints hosted in the same ASP.NET Core application. In stdio mode, it must be an absolute URL.
 
-- **Configuration Details**: [Main README](https://github.com/summerdawn-ai/mcpifier#configuration)
-- **MCP Client Setup**: [Main README](https://github.com/summerdawn-ai/mcpifier#configuring-mcp-clients-for-mcpifier)
-- **ASP.NET Core Integration**: [Summerdawn.Mcpifier.AspNetCore](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier.AspNetCore/README.md)
-- **Standalone Server**: [Summerdawn.Mcpifier.Server](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier.Server/README.md)
-- **GitHub Repository**: [summerdawn-ai/mcpifier](https://github.com/summerdawn-ai/mcpifier)
+`ForwardedHeaders` are only relevant in HTTP mode. In stdio mode, there are no headers to forward from the client.
+
+#### ProtocolVersion, ServerInfo, Instructions
+
+These settings configure the response of Mcpifier to an [MCP `initialize` request](https://modelcontextprotocol.io/specification/2025-06-18/basic/lifecycle):
+
+|Name|Type|Description|Example|
+|----|----|-----------|-------|
+|ProtocolVersion|`string`|The MCP protocol version, if not default|"2025-06-18"|
+|ServerInfo|`McpServerInfo`|The `serverInfo` section of the response|{ "Name": "my-mcp-server", "Title": "My MCP Server", "Version": "1.0.0" }|
+|Instructions|`string`|Optional  instructions for the client`|"Here's how to use this ..."|
+
+#### Authorization
+
+The settings in the `Authorization` section cover the implementation of the [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization) specification:
+
+|Name|Type|Description|Example|
+|----|----|-----------|-------|
+|RequireAuthorization|`bool`|Enable MCP Authorization flow for any unauthorized requests|`true`|
+|ResourceMetadata|`ProtectedResourceMetadata`|The OAuth 2.0 Protected Resource Metadata to serve at `/.well-known/oauth-protected-resource`|{ "Resource": "https://mcp.example.com", "AuthorizationServers": [ "https://auth.example.com/oauth" ], "ScopesSupported": [ "https://mcp.example.com/access" ] }|
+
+These settings are only relevant in HTTP mode using [Summerdawn.Mcpifier.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpifier.AspNetCore). MCP Authorization does not support stdio mode because there are no response headers to send to the client.
+
+#### Tools
+
+The `Tools` section defines tool mappings that are loaded from configuration rather than generated dynamically from Swagger/OpenAPI.
+
+See [Tool Mapping](#tool-mapping) below for a complete specification.
+
+## Tool Mapping
+
+Whether tool mappings are generated from a Swagger/OpenAPI specification or loaded from configuration, the result is an array of `McpifierToolMapping` instances, each of which  maps an MCP tool definition to a REST API endpoint with the following structure:
+
+```jsonc
+{
+  // MCP tool definition
+  "mcp": {
+    "name": "get_user",
+    "description": "Retrieve user information by ID",
+    // JSON Schema
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The user's unique identifier"
+        }
+      },
+      "required": ["userId"]
+    }
+  },
+  // REST endpoint definition
+  "rest": {
+    "method": "GET",
+    "path": "/users/{userId}",
+    "query": "include=profile",
+    "body": null
+  }
+}
+```
+
+### Tool Mapping Reference
+
+#### Mcp
+
+The `Mcp` section of each mapping defines an MCP tool as defined in the [MCP Tools](https://modelcontextprotocol.io/specification/2025-06-18/server/tools) specification:
+
+|Name|Type|Description|Example|
+|----|----|-----------|-------|
+|name|`string` (required)|Unique identifier for the tool|"get_user"|
+|title|`string`|Optional human-readable name of the tool for display purposes|"Retrieve user information by id"|
+|inputSchema|`InputSchema`|JSON Schema defining expected parameters|{ "type": "object", "properties": { "userId": { "type": "string", "description": "The user's unique identifier" } }, "required": ["userId"] }|
+
+Note that the `outputSchema` and `annotations` properties defined in the specification are currently not supported.
+
+#### Rest
+
+The `Rest` section of each mapping describes how Mcpifier calls the target REST API when a tool is invoked:
+
+|Name|Type|Description|Example|
+|----|----|-----------|-----|
+|method|`string` (required)|HTTP method to use for the REST call|"GET"|
+|path|`string` (required)|The template for the URL path to the base address|"/users/\{userId\}"|
+|query|`string`|The optional template for the query string appended to the request|"include=profile",<br>"from=\{from\}&to=\{to\}"|
+|body|`string`|The optional template for the request JSON body|"{ \"timestamp\": \{timestamp\}, \"metrics\": \{metrics\} }"|
+
+The `path`, `query` and `body` settings all support argument interpolation as defined in the [Argument Interpolation](#argument-interpolation) section below.
+
+### Argument Interpolation
+
+When executing a REST API request, any placeholders in the form `{argName}` in the `path`, `query` and `body` settings are automatically populated with the corresponding argument value from the MCP tool call's `arguments` object.
+
+#### Path Interpolation
+
+Path templates support argument placeholders, for example:
+
+```json
+"path": "/users/{userId}/posts/{postId}"
+```
+
+Path placeholders are replaced with the string value of the argument _without quotes_, for example:
+
+```
+/users/123/posts/abc
+```
+
+Path placeholders for absent arguments are replaced with an empty string. This will usually result in an invalid path, so any arguments used in a path template should be marked as `required` in the `inputSchema`.
+
+#### Query String Interpolation
+
+Query string templates support argument placeholders, for example:
+
+```json
+"query": "from={startDate}&to={endDate}&limit={maxResults}"
+```
+
+Query string placeholders are replaced with the string value of the argument _without quotes_, for example:
+
+```
+from=2025-12-01&to=2025-12-31&limit=10
+```
+
+Query string placeholders for absent arguments are _removed from the interpolated query along with the parameter definition itself_ if the parameter definition is of the form `"paramName={argName}"`, for example:
+
+```
+from=2025-12-01
+```
+
+#### Request Body Interpolation
+
+Request body templates support argument placeholders, for example:
+
+```json
+"body": "{ \"name\": {userName}, \"email\": {userEmail}, \"tags\": {tags} }"
+```
+
+Request body placeholders are replaced with the _JSON serialized representation_ of the argument, for example:summerdawn
+
+```json
+{ "name": "John Doe", "email": "johndoe@example.com", "tags": { "type": "user" } }
+```
+
+Request body placeholders for absent arguments are replaced with `null`, for example:
+
+```json
+{ "name": "John Doe", "email": "johndoe@example.com", "tags": null }
+```
+
+## Dependencies
+
+This package has the following dependencies:
+
+- **.NET 8.0** or later
+- **Microsoft.AspNetCore.Http.Abstractions**: HTTP context abstractions
+- **Microsoft.Extensions.Hosting.Abstractions**: Hosting abstractions
+- **Microsoft.Extensions.Http**: HTTP client factory
+- **Microsoft.OpenApi**: OpenAPI/Swagger specification parsing
+
+## Resources
+
+- [Mcpifier GitHub repository](https://github.com/summerdawn-ai/mcpifier)
+- [.NET Generic Host](https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host)
+- [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
+- [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
+- [OAuth 2.0 Protected Resource Metadata](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-resource-metadata)
 
 ## License
 

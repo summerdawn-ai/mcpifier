@@ -1,28 +1,21 @@
 # Summerdawn.Mcpifier.Server
 
-Ready-to-run MCP server with stdio and HTTP support. 
-
-Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.
+Command-line server and tool for Mcpifier - a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.
 
 ## Overview
 
-Mcpifier enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON or generate them automatically from Swagger/OpenAPI specifications, and Mcpifier translates requests between MCP clients and your REST service.
+Mcpifier can be used as a library, ASP.NET Core middleware, or a command-line server and tool. It supports automatic tool generation from Swagger/OpenAPI specifications using conventions that map REST endpoints to MCP tools, or full customization using JSON configuration files.
 
-Mcpifier Server is a ready-to-run MCP server that:
+This package provides a standalone command-line server and tool so that you can run Mcpifier in stdio or HTTP mode, or generate tool mappings from Swagger/OpenAPI specifications, without writing any code.
 
-- **Requires no coding** - Fully configured via JSON files or Swagger
-- **Proxies to REST APIs** - Forwards MCP tool calls to your REST endpoints
-- **Supports multiple transports** - HTTP and stdio modes
-- **Handles authentication** - Forwards authorization headers to your API (HTTP mode) or uses default headers (both modes)
-- **Generates tool mappings** - Auto-generate from Swagger/OpenAPI specifications
+Other available packages:
 
-This server is perfect for quickly exposing REST APIs to MCP clients like Claude Desktop or VS Code without writing any integration code.
+- [Summerdawn.Mcpifier](https://www.nuget.org/packages/Summerdawn.Mcpifier): Core package with MCP implementation and stdio server
+- [Summerdawn.Mcpifier.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpifier.AspNetCore): ASP.NET Core integration and HTTP server
 
-## Quickstart
+## Getting Started
 
-### Quickstart 1: Serve Directly from Swagger
-
-The fastest way to get started - no configuration files needed:
+The fastest way to get started is to let Mcpifier generate tools from an existing Swagger/OpenAPI specification:
 
 ```bash
 # Install
@@ -35,111 +28,132 @@ mcpifier serve --mode http --swagger https://api.example.com/swagger.json
 mcpifier serve --mode stdio --swagger https://api.example.com/swagger.json
 ```
 
-### Quickstart 2: Generate, Customize, and Serve
+When a Swagger/OpenAPI document is loaded, the REST API base address is inferred from the specification unless already configured.
 
-For full control over tool mappings:
+Alternatively, use Mcpifier to generate a `mappings.json` file from a Swagger/OpenAPI specification, which you can then customize before serving:
 
 ```bash
 # Install
 dotnet tool install -g Summerdawn.Mcpifier.Server
 
 # Generate mappings from Swagger
-mcpifier generate --swagger https://api.example.com/swagger.json
+mcpifier generate --swagger https://api.example.com/swagger.json --output mappings.json
 
-# This creates mappings.json - edit it to customize:
+# Edit mappings.json to customize:
 # - Tool names and descriptions
 # - Add/remove endpoints
 # - Adjust parameter schemas
-# - Configure base address, headers
 
 # Serve with your customized mappings
 mcpifier serve --mode http
 ```
 
+Any `mappings.json` file in the configured content directory is automatically loaded when the server starts, so no additional arguments are needed.
+
+See the [Usage](#usage) section below for a detailed description of available commands.
+
 ## Installation
 
-### As a .NET Tool (Recommended)
+### Installation as a .NET Tool
 
-Install globally:
+Install Mcpifier Server globally using the .NET CLI:
+
 ```bash
 dotnet tool install -g Summerdawn.Mcpifier.Server
 ```
 
 Or locally in a project:
+
 ```bash
 dotnet tool install Summerdawn.Mcpifier.Server
 ```
 
-### As a Standalone Binary
+### Installation as a Standalone Binary
 
-Download pre-built binaries from [GitHub Releases](https://github.com/summerdawn-ai/mcpifier/releases) for:
+You can download pre-built standalone binaries from Mcpifier's [GitHub Releases](https://github.com/summerdawn-ai/mcpifier/releases).
+
+Supported platforms:
+
 - Windows (x64, ARM64)
 - Linux (x64, ARM64)
 - macOS (x64, ARM64)
 
-## Commands
+## Usage
 
-### serve (Default Command)
+The Mcpifier command-line server supports the following commands:
 
-Starts the Mcpifier server in HTTP or stdio mode.
+### mcpifier serve
+
+The `serve`command starts Mcpifier as a server in HTTP or stdio mode.
 
 **Usage:**
+
 ```bash
 mcpifier serve --mode <http|stdio> [--swagger <file-or-url>]
 
-# Or simply (serve is the default):
+# Or simply (serve is default)
 mcpifier --mode <http|stdio> [--swagger <file-or-url>]
 ```
 
 **Options:**
+
 - `--mode`, `-m` (required): Server mode - `http` or `stdio`
 - `--swagger` (optional): File name or URL of Swagger/OpenAPI specification
 
 **Examples:**
+
 ```bash
 # HTTP mode with Swagger
 mcpifier serve --mode http --swagger https://api.example.com/swagger.json
 
 # stdio mode with Swagger
-mcpifier serve --mode stdio --swagger swagger.json
+mcpifier serve --mode stdio --swagger path/to/swagger.json
 
 # HTTP mode with mappings.json
 mcpifier serve --mode http
 
 # Short form (serve is default)
-mcpifier --mode http --swagger swagger.json
+mcpifier --mode http --swagger path/to/swagger.json
 ```
 
-### generate
+### mcpifier generate
 
-Generates tool mappings from a Swagger/OpenAPI specification and saves to a JSON file.
+The `generate` command generates tool mappings from a Swagger/OpenAPI specification and saves them to a JSON file, then exits.
 
 **Usage:**
+
 ```bash
 mcpifier generate --swagger <file-or-url> [--output <filename>]
 ```
 
 **Options:**
+
 - `--swagger` (required): File name or URL of Swagger/OpenAPI specification
 - `--output` (optional): Custom output filename (default: `mappings.json`)
 
 **Examples:**
+
 ```bash
 # Generate from local file
-mcpifier generate --swagger swagger.json
+mcpifier generate --swagger path/to/swagger.json
 
 # Generate from URL
 mcpifier generate --swagger https://api.example.com/swagger.json
 
 # Custom output file
-mcpifier generate --swagger swagger.json --output my-tools.json
+mcpifier generate --swagger path/to/swagger.json --output mappings-new.json
 ```
 
-**Generated Output Structure:**
-```json
+**Generated Output:**
+
+```jsonc
 {
-  "mcpifier": {
-    "tools": [
+  "Mcpifier": {
+    "Rest": {
+      // If available from the specification
+      "BaseAddress": "https://api.example.com"
+    },
+    "Tools": [
       {
         "mcp": {
           "name": "get_user_by_id",
@@ -151,124 +165,29 @@ mcpifier generate --swagger swagger.json --output my-tools.json
           "path": "/users/{id}"
         }
       }
+      // etc.
     ]
   }
 }
 ```
 
-## Usage
-
-The server starts on:
-- HTTP: `http://localhost:5157`
-- HTTPS: `https://localhost:7025`
-
-## Configuration
-
-Configuration is split between two files for flexibility:
-
-### appsettings.json (Environment-Specific)
-
-Contains environment-specific settings like API base URLs and server configuration:
-
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "Kestrel": {
-    "Endpoints": {
-      "Http": {
-        "Url": "http://0.0.0.0:5157"
-      },
-      "Https": {
-        "Url": "https://0.0.0.0:7025"
-      }
-    }
-  },
-  "Mcpifier": {
-    "Rest": {
-      "BaseAddress": "https://api.example.com",
-      "DefaultHeaders": {
-        "User-Agent": "Mcpifier/1.0"
-      },
-      "ForwardedHeaders": {
-        "Authorization": true
-      }
-    },
-    "ServerInfo": {
-      "Name": "my-mcp-server",
-      "Title": "My MCP Server",
-      "Version": "1.0.0"
-    },
-    "Authorization": {
-      "RequireAuthorization": false
-    }
-  }
-}
-```
-
-**Important Notes:**
-- `ForwardedHeaders` - Only applies in HTTP mode. Headers cannot be forwarded from clients in stdio mode.
-- `Authorization` section - Only applies in HTTP mode.
-
-### mappings.json (Environment-Independent)
-
-Contains tool definitions.  For complete documentation on tool structure, parameter interpolation, and examples, see the [main README Configuration section](https://github.com/summerdawn-ai/mcpifier#configuration).
-
-**Brief example:**
-
-```json
-{
-  "Mcpifier": {
-    "Tools": [
-      {
-        "mcp": {
-          "name": "get_user",
-          "description": "Get user by ID",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" }
-            },
-            "required": ["id"]
-          }
-        },
-        "rest": {
-          "method": "GET",
-          "path": "/users/{id}"
-        }
-      }
-    ]
-  }
-}
-```
-
-### Configuration Settings
-
-For complete documentation of all configuration settings including: 
-- `BaseAddress`, `DefaultHeaders`, `ForwardedHeaders`
-- `ServerInfo` (Name, Title, Version)
-- `Authorization` (RequireAuthorization, ResourceMetadata)
-- Tool mappings and parameter interpolation
-- Authorization scenarios
-
-See the [main README Configuration section](https://github.com/summerdawn-ai/mcpifier#configuration).
+See the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#tool-mapping) section for details on the tool mapping and the generated JSON file structure.
 
 ## Configuring MCP Clients
 
-For complete MCP client setup instructions for VS Code, Claude Desktop, and other clients, see the [main README](https://github.com/summerdawn-ai/mcpifier#configuring-mcp-clients-for-mcpifier).
+Mcpifier can be used with any MCP client that supports either stdio or HTTP transport modes. Below are configuration examples in the format that is used by most popular MCP clients, including Visual Studio, VS Code, and Claude.
 
-**Brief example for VS Code:**
+### Mcpifier in stdio mode
+
+To run the Mcpifier command-line server in stdio mode, add the following to your MCP client's configuration file:
 
 ```json
 {
-  "mcpServers": {
-    "my-api": {
+  "servers": {
+    "my-stdio-mcpifier": {
+      "type": "stdio",
       "command": "mcpifier",
-      "args": ["serve", "--mode", "stdio"],
+      "args": ["serve", "--mode", "stdio", "--swagger", "path/to/swagger.json"],
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config"
       }
@@ -277,52 +196,150 @@ For complete MCP client setup instructions for VS Code, Claude Desktop, and othe
 }
 ```
 
-## Error Handling
+### Mcpifier in HTTP mode
 
-The server passes through REST API errors unchanged:
+To connect to a running Mcpifier command-line server in HTTP mode, add the following to your MCP client's configuration file:
 
-**REST API Returns:**
-```http
-401 Unauthorized
-{ "error": "invalid_token" }
-```
-
-**MCP Server Returns:**
 ```json
 {
-  "error": {
-    "code": 401,
-    "message": "REST API error",
-    "data": {
-      "status": 401,
-      "body": {
-        "error": "invalid_token"
+  "servers": {
+    "my-stdio-mcpifier": {
+      "type": "http",
+      "url": "https://localhost:7025",
+      "env": {
+        "DOTNET_CONTENTROOT": "path/to/config"
       }
     }
   }
 }
 ```
 
-This allows MCP clients to see the actual error from your API.
+By default, the Mcpifier command-line server is configured to listen on `https://localhost:7025` and `http://0.0.0.0:5157` in HTTP mode. You can change this by modifying the `Kestrel` section in `appsettings.json`:
 
-## Security Considerations
+```json
+{
+  "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://0.0.0.0:5157"
+      },
+      "Https": {
+        "Url": "https://localhost:7025"
+      }
+    }
+  }
+}
+```
+
+## Authorization
+
+Mcpifier supports multiple strategies for handling authorization when accessing REST APIs that require it.
+
+### Static Authorization via Default Headers
+
+Use the `DefaultHeaders` configuration setting in `appsettings.json` to provide an authorization header that is included in every request. This works in stdio mode and HTTP mode:
+
+```json
+{
+  "Mcpifier": {
+    "Rest": {
+      "DefaultHeaders": {
+        "Authorization": "Bearer 123...abc"
+      }
+    }
+  }
+}
+```
+
+Instead of configuring this setting in `appsettings.json`, you can also [specify it as an environment variable](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration-providers#environment-variable-configuration-provider), for example:
+
+```json
+{
+  "servers": {
+    "my-stdio-mcpifier": {
+      "type": "http",
+      "url": "https://localhost:7025"
+      "env": {
+        "DOTNET_CONTENTROOT": "path/to/config",
+        "MCPIFIER__REST__DEFAULTHEADERS__AUTHORIZATION": "Bearer 123...abc"
+      }
+    }
+  }
+}
+```
+
+### Client-Provided Authorization via Forwarded Headers
+
+Some MCP clients support configuring request headers for http mode MCP servers:
+
+```json
+{
+  "servers": {
+    "my-stdio-mcpifier": {
+      "type": "http",
+      "url": "https://localhost:5001",
+      "headers": {
+        "Authorization": "Bearer 123...abc"
+      }
+    }
+  }
+}
+```
+
+By default, the Mcpifier command-line server is configured to forward `Authorization` headers from the client to the REST API in HTTP mode. This can be configured in `appsettings.json`.
+
+### OAuth with MCP Authorization
+
+If your MCP client supports the MCP Authorization protocol, you can enable it in `appsettings.json` and allow the client to acquire and use an OAuth token, which Mcpifier will forward to the REST API:
+
+```jsonc
+{
+  "Mcpifier": {
+    "Rest": {
+      "ForwardedHeaders": {
+        "Authorization": true
+      }
+    },
+    "Authorization": {
+      "RequireAuthorization": true,
+      "ResourceMetadata": {
+        "Resource": "https://mcp.example.com",
+        "AuthorizationServers": ["https://auth.example.com/oauth/v2.0"],
+        "ScopesSupported": ["https://mcp.example.com/access"]
+      }
+    }
+  }
+}
+```
+
+### Security Considerations
 
 1. **HTTPS Required**: Always use HTTPS in production to protect tokens in transit
-2. **No Token Validation**: The server does NOT validate tokens - authentication is delegated to your REST API
-3. **Header Forwarding** (HTTP mode only): Only headers explicitly configured in `ForwardedHeaders` are passed through
-4. **Token Logging**: Tokens are never logged in full; only truncated versions appear in debug logs
-5. **Trust Boundary**: The server trusts your REST API to handle authentication correctly
+2. **No Token Validation**: The command-line server does NOT validate tokens itself - authentication is delegated to the REST API
+3. **Trust Boundary**: The command-line server does not provide a trust boundary - it relies on the REST API to handle authentication and authorization correctly
+
+For more details about authorization, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#authorization) for stdio mode, and in the [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier.AspNetCore#authorization) for HTTP mode.
+
+## Configuration
+
+The Mcpifier command-line server can be configured by modifying the `appsettings.json` and `mappings.json` files located in the content directory. The content directory can be specified by the `DOTNET_CONTENTROOT` environment variable, and defaults to the current working directory otherwise.
+
+For the full list of settings, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#configuration).
+
+## Tool Mapping
+
+Tool mapping configuration settings and interpolation rules are documented in the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#tool-mapping).
 
 ## Logging
 
-The server logs:
+By default, the Mcpifier command-line server is configured to log:
 - Startup configuration summary
 - Tool count and names
 - Each tool call (name, method, URL)
+- Forwarded header names
 - REST API response status codes
-- Authorization header presence (truncated for security)
 
-**Configure logging level** in `appsettings.json`:
+You can configure the logging level in `appsettings.json`:
 
 ```json
 {
@@ -335,15 +352,14 @@ The server logs:
 }
 ```
 
+See [Logging in .NET and ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging) for more details on how to configure .NET logging.
+
 ## Troubleshooting
 
 ### Configuration Errors
 
-**Problem**: "No tools mappings have been found in the configuration"<br>
-**Solution**: Ensure `mappings.json` with at least one tool mapping exists in the directory specified by `DOTNET_CONTENTROOT` or the working directory.
-
-**Problem**: "Failed to configure Mcpifier services"<br>
-**Solution**: Validate your JSON syntax in both configuration files.
+**Problem**: Error "No tool mappings were found in the app configuration"<br>
+**Solution**: Ensure `mappings.json` with at least one tool mapping exists in the directory specified by `DOTNET_CONTENTROOT` or the working directory, or use the `--swagger` option to load mappings from a Swagger/OpenAPI specification.
 
 ### Connection Problems
 
@@ -359,12 +375,11 @@ The server logs:
 **Solution**:
 - For HTTP mode: Ensure `Authorization` header is configured in `ForwardedHeaders`
 - For stdio mode: Use `DefaultHeaders` to include authorization
-- Verify the MCP client is sending the authorization token (HTTP mode)
-- Check that the token is valid for your REST API
+- Check that the specified credential is valid for your REST API
 
 ### Debug Logging
 
-Enable detailed logging to diagnose issues:
+Enable detailed logging in `appsettings.json` to diagnose issues:
 
 ```json
 {
@@ -377,16 +392,7 @@ Enable detailed logging to diagnose issues:
 }
 ```
 
-**Note**: Debug logs may contain sensitive information. Don't use in production.
-
-## Further Documentation
-
-- **Configuration Details**: [Main README](https://github.com/summerdawn-ai/mcpifier#configuration)
-- **MCP Client Setup**: [Main README](https://github.com/summerdawn-ai/mcpifier#configuring-mcp-clients-for-mcpifier)
-- **Architecture Overview**: [Main README](https://github.com/summerdawn-ai/mcpifier#architecture)
-- **ASP.NET Core Integration**: [Summerdawn.Mcpifier.AspNetCore](../Summerdawn.Mcpifier.AspNetCore/README.md)
-- **Core Library**: [Summerdawn.Mcpifier](../Summerdawn.Mcpifier/README.md)
-- **GitHub Repository**: [summerdawn-ai/mcpifier](https://github.com/summerdawn-ai/mcpifier)
+Debug logs may contain sensitive information. Don't enable them in a production environment.
 
 ## License
 
