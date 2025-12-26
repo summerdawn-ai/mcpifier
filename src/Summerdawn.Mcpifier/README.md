@@ -331,7 +331,7 @@ These settings configure the response of Mcpifier to an [MCP `initialize` reques
 |----|----|-----------|-------|
 |ProtocolVersion|`string`|The MCP protocol version, if not default|"2025-06-18"|
 |ServerInfo|`McpServerInfo`|The `serverInfo` section of the response|{ "Name": "my-mcp-server", "Title": "My MCP Server", "Version": "1.0.0" }|
-|Instructions|`string`|Optional  instructions for the client`|"Here's how to use this ..."|
+|Instructions|`string`|Optional instructions for the client`|"Here's how to use this ..."|
 
 #### Authorization
 
@@ -352,7 +352,7 @@ See [Tool Mapping](#tool-mapping) below for a complete specification.
 
 ## Tool Mapping
 
-Whether tool mappings are generated from a Swagger/OpenAPI specification or loaded from configuration, the result is an array of `McpifierToolMapping` instances, each of which  maps an MCP tool definition to a REST API endpoint with the following structure:
+Whether tool mappings are generated from a Swagger/OpenAPI specification or loaded from configuration, the result is an array of `McpifierToolMapping` instances, each of which maps an MCP tool definition to a REST API endpoint with the following structure:
 
 ```jsonc
 {
@@ -457,7 +457,7 @@ Request body templates support argument placeholders, for example:
 "body": "{ \"name\": {userName}, \"email\": {userEmail}, \"tags\": {tags} }"
 ```
 
-Request body placeholders are replaced with the _JSON serialized representation_ of the argument, for example:summerdawn
+Request body placeholders are replaced with the _JSON serialized representation_ of the argument, for example:
 
 ```json
 { "name": "John Doe", "email": "johndoe@example.com", "tags": { "type": "user" } }

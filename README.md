@@ -52,7 +52,7 @@ The repository is structured as follows:
 - [.github](.github/): GitHub Actions CI/CD workflows
 - [src](src/)
   - [Summerdawn.Mcpifier](src/Summerdawn.Mcpifier/): Core library providing MCP protocol implementation, Swagger/OpenAPI converter, REST API service, and stdio server
-  - [Summerdawn.Mcpifier.AspNetCore](src/Summerdawn.Mcpifier.AspNetCore/): ASP.NET Core integration and http server
+  - [Summerdawn.Mcpifier.AspNetCore](src/Summerdawn.Mcpifier.AspNetCore/): ASP.NET Core integration and HTTP server
   - [Summerdawn.Mcpifier.Server](src/Summerdawn.Mcpifier.Server/): Command-line server and tool
 - [tests](tests/): Test projects for all projects
 

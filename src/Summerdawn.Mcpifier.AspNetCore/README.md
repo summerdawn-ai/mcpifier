@@ -34,7 +34,9 @@ builder.Services
     .AddAspNetCore()
     .AddToolsFromSwagger("https://api.example.com/swagger.json");
 
-builder.Services.AddCors();
+// Configure CORS as needed
+builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy =>
+    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
 
@@ -85,11 +87,15 @@ builder.Services
         options.ServerInfo = new() { Name = "my-mcp-server" };
     })
     .AddAspNetCore();
+
+// Configure CORS as needed
+builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy =>
+    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 ```
 
 Because HTTP mode integrates with ASP.NET Core's request pipeline, you can layer in middleware (`UseRouting`, `UseCors`, `UseAuthentication`, etc.) exactly as you would for any other web app.
 
-See the [Configuration](#configuration) section for a full reference of all Mcpifier configuration settings.
+For a full reference of all Mcpifier configuration settings, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#configuration).
 
 ### Generating Tools from Swagger
 
@@ -105,7 +111,7 @@ builder.Services.AddMcpifier(options => { /* configure */ }).AddAspNetCore()
     .AddToolsFromSwagger("https://api.example.com/swagger.json");
 ```
 
-Tool mappings are generated in the format documented in the section [Tool Mapping](#tool-mapping), and can be modified as needed as described in the section [Adding Tools Manually](#adding-tools-manually).
+Tool mappings can be modified as needed as described in the section [Adding Tools Manually](#adding-tools-manually). For the documentation of the generated tool mapping format, refer to the the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#tool-mapping).
 
 Loading a Swagger/OpenAPI specification will also **set the REST API base address** to the base URL specified in the specification, or the base address of the specification URL, if the Mcpifier configuration does not already specify a base address.
 

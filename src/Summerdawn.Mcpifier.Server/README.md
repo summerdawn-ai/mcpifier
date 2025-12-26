@@ -84,7 +84,7 @@ The Mcpifier command-line server supports the following commands:
 
 ### mcpifier serve
 
-The `serve`command starts Mcpifier as a server in HTTP or stdio mode.
+The `serve` command starts Mcpifier as a server in HTTP or stdio mode.
 
 **Usage:**
 
@@ -175,7 +175,7 @@ See the corresponding section in the [Mcpifier core documentation](https://githu
 
 ## Configuring MCP Clients
 
-Mcpifier can be used with any MCP client that supports either stdio or HTTP transport modes. Below are configuration examples in the format that is used by most popular MCP clients, including Visual Studio, VS Code, and Claude.
+Mcpifier can be used with any MCP client that supports either stdio or HTTP transport modes. Below are configuration examples in the in the common JSON schema used by most clients - adapt to your specific client's configuration file format as needed.
 
 ### Mcpifier in stdio mode
 
@@ -203,7 +203,7 @@ To connect to a running Mcpifier command-line server in HTTP mode, add the follo
 ```json
 {
   "servers": {
-    "my-stdio-mcpifier": {
+    "my-http-mcpifier": {
       "type": "http",
       "url": "https://localhost:7025",
       "env": {
@@ -256,9 +256,9 @@ Instead of configuring this setting in `appsettings.json`, you can also [specify
 ```json
 {
   "servers": {
-    "my-stdio-mcpifier": {
+    "my-http-mcpifier": {
       "type": "http",
-      "url": "https://localhost:7025"
+      "url": "https://localhost:7025",
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config",
         "MCPIFIER__REST__DEFAULTHEADERS__AUTHORIZATION": "Bearer 123...abc"
@@ -270,12 +270,12 @@ Instead of configuring this setting in `appsettings.json`, you can also [specify
 
 ### Client-Provided Authorization via Forwarded Headers
 
-Some MCP clients support configuring request headers for http mode MCP servers:
+Some MCP clients support configuring request headers for HTTP mode MCP servers:
 
 ```json
 {
   "servers": {
-    "my-stdio-mcpifier": {
+    "my-http-mcpifier": {
       "type": "http",
       "url": "https://localhost:5001",
       "headers": {
@@ -393,6 +393,14 @@ Enable detailed logging in `appsettings.json` to diagnose issues:
 ```
 
 Debug logs may contain sensitive information. Don't enable them in a production environment.
+
+## Resources
+
+- [Mcpifier GitHub repository](https://github.com/summerdawn-ai/mcpifier)
+- [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier)
+- [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier.AspNetCore)
+- [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
+- [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
 
 ## License
 
