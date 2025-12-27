@@ -30,12 +30,10 @@ public static class EndpointRouteBuilderExtensions
         var options = services.GetRequiredService<IOptions<McpifierOptions>>().Value;
         var logger = services.GetRequiredService<ILogger<McpifierBuilder>>();
 
-        // Log the mode and base address, but do not verify or throw -
-        // for all we know, the user may have injected a different HttpClient.
-        logger.LogInformation("Mcpifier is configured to listen to MCP traffic on HTTP and forward tool calls to '{restBaseAddress}'.", options.Rest.BaseAddress);
+        // Log the mode and base address.
+        services.LogBaseAddressOrThrow(mode: "HTTP");
 
-        services.ThrowIfNoMcpifierTools();
-        services.LogMcpifierTools();
+        services.LogMcpifierToolsOrThrow();
 
         // Set up protected resource metadata endpoint if configured.
         // This endpoint will _not_ be affected by configuration of the main route (e.g. RequireAuthorization).

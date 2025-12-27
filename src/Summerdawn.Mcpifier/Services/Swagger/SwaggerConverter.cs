@@ -58,8 +58,8 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to map Swagger tools.");
-            throw new InvalidOperationException("Failed to map Swagger tools.", ex);
+            logger.LogError("Failed to create tool mappings from Swagger specification '{Source}'.", swaggerFileNameOrUrl);
+            throw new InvalidOperationException($"Failed to create tool mappings from Swagger specification '{swaggerFileNameOrUrl}': {ex.Message}", ex);
         }
     }
 

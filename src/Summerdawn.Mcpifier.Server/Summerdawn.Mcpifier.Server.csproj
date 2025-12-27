@@ -7,6 +7,11 @@
     <AssemblyName>mcpifier</AssemblyName>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Show simple version number -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
   <!-- Settings for trimmed/AOT deployment -->
   <PropertyGroup>
     <!-- Enable trimming and AOT analyzers and warnings and indicate that NuGet package is trim-compatible -->

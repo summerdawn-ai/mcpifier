@@ -50,7 +50,8 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
                 // MCP uses simple Line-Delimited JSON.
                 string? requestPayload = await ReadLineAsync(reader, stoppingToken);
 
-                if (stoppingToken.IsCancellationRequested) break;
+                // Break if the token fires or the console reader catches the Ctrl+C first
+                if (requestPayload is null) break;
 
                 if (string.IsNullOrWhiteSpace(requestPayload))
                 {

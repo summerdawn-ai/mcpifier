@@ -105,7 +105,7 @@ public static class ServiceCollectionExtensions
 
         // Otherwise, get server address from an extension, e.g. Mcpifier.AspNetCore.
         var serverAddress = provider.GetKeyedService<Uri>("Mcpifier:ServerAddress") ??
-                            throw new InvalidOperationException("REST base address is relative, but no server address is available. Either configure an absolute " +
+                            throw new InvalidOperationException("The REST API base address is relative, but no server address is available. Either configure an absolute " +
                                                                 "base address, or ensure than the Mcpifier service builder registers a server address.");
 
         // Normalize "0.0.0.0" host to "localhost".

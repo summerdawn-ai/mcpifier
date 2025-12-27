@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-using Summerdawn.Mcpifier.Configuration;
 using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.DependencyInjection;
@@ -24,18 +23,13 @@ public static class HostExtensions
         var server = app.Services.GetService<McpStdioServer>() ??
                      throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpifier() in application startup code.");
 
-        var options = services.GetRequiredService<IOptions<McpifierOptions>>().Value;
-        var logger = services.GetRequiredService<ILogger<McpifierBuilder>>();
+        // Log the mode and base address.
+        services.LogBaseAddressOrThrow("stdio");
 
-        // Log the mode and base address, but do not verify or throw -
-        // for all we know, the user may have injected a different HttpClient.
-        logger.LogInformation("Mcpifier is configured to listen to MCP traffic on STDIO and forward tool calls to '{restBaseAddress}'.", options.Rest.BaseAddress);
+        // Log configured tools.
+        services.LogMcpifierToolsOrThrow();
 
-        // Verify any tools are configured.
-        services.ThrowIfNoMcpifierTools();
-        services.LogMcpifierTools();
-
-        // Warn if we're using settings that are not supported over STDIO.
+        // Warn if we're using settings that are not supported over stdio.
         services.WarnIfUnsupportedMcpifierStdioOptions();
 
         // Activate the registered background service.
