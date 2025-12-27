@@ -667,12 +667,22 @@ Debug logs may contain sensitive information. Don't enable them in a production 
 
 ## Resources
 
+### Mcpifier
+
 - [Mcpifier GitHub repository](https://github.com/summerdawn-ai/mcpifier)
+- [Mcpifier releases and changelog](https://github.com/summerdawn-ai/mcpifier/releases)
 - [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md)
 - [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier.AspNetCore/README.md)
+
+### Model Context Protocol
+
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
-- [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
+- [MCP Authorization documentation](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
+
+### .NET
+
 - [dotnet CLI documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/)
+- [.NET Configuration documentation](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration)
  
 ## License
 
