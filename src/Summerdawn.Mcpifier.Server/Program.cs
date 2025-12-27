@@ -211,7 +211,7 @@ public class Program
             catch (Exception ex)
             {
                 // Append note about README.md to exceptions thrown during app configuration.
-                throw new InvalidOperationException($"{ex.Message}\r\n\r\n{ReadmeHelpText}", ex);
+                throw new InvalidOperationException($"{ex.Message}\n\n{ReadmeHelpText}", ex);
             }
 
             await app.RunAsync();
@@ -248,7 +248,7 @@ public class Program
             catch (Exception ex)
             {
                 // Append note about README.md to exceptions thrown during app configuration.
-                throw new InvalidOperationException($"{ex.Message}\r\n\r\n{ReadmeHelpText}", ex);
+                throw new InvalidOperationException($"{ex.Message}\n\n{ReadmeHelpText}", ex);
             }
 
             await app.RunAsync();
@@ -283,7 +283,7 @@ public class Program
         catch (Exception ex)
         {
             // Append note about README.md to exceptions thrown during app configuration.
-            throw new InvalidOperationException($"{ex.Message}\r\n\r\n{ReadmeHelpText}", ex);
+            throw new InvalidOperationException($"{ex.Message}\n\n{ReadmeHelpText}", ex);
         }
     }
 }

@@ -60,8 +60,8 @@ internal static class ServiceProviderExtensions
             throw new InvalidOperationException("No tool mappings have been configured.");
         }
 
-        string toolsList = string.Join("\r\n", options.Tools.Select(tool => $"  - {tool.Mcp.Name}: {tool.Mcp.Description}"));
-        logger.LogInformation("Successfully loaded {toolCount} tools:\r\n{toolList}", options.Tools.Count, toolsList);
+        string toolsList = string.Join('\n', options.Tools.Select(tool => $"  - {tool.Mcp.Name}: {tool.Mcp.Description}"));
+        logger.LogInformation("Successfully loaded {toolCount} tools:\n{toolList}", options.Tools.Count, toolsList);
 
         return serviceProvider;
     }
