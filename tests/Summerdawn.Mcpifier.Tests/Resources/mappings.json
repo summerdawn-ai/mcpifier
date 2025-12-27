@@ -1,0 +1,151 @@
+{
+  "Mcpifier": {
+    "Tools": [
+      {
+        "mcp": {
+          "name": "user_get_current_user",
+          "description": "GET /me",
+          "inputSchema": {
+            "type": "object",
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "GET",
+          "path": "/me"
+        }
+      },
+      {
+        "mcp": {
+          "name": "user_register_user",
+          "description": "Registers the current user.",
+          "inputSchema": {
+            "type": "object",
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/me/register"
+        }
+      },
+      {
+        "mcp": {
+          "name": "user_link_user",
+          "description": "Links the current identity to an existing user.",
+          "inputSchema": {
+            "type": "object",
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/me/link"
+        }
+      },
+      {
+        "mcp": {
+          "name": "analysis_create_analysis",
+          "description": "Analyze measurements within a date range",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "to": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/vibe/analysis",
+          "query": "from={from}&to={to}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "measurement_create_measurement",
+          "description": "Create a new measurement",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "timestampLocal": {
+                "type": "string",
+                "description": "Local timestamp when the measurement applies (DateTimeOffset).",
+                "format": "date-time"
+              },
+              "metrics": {
+                "type": "object",
+                "description": "Dictionary of metric names to values\nFor v0.1, should contain \"energy\" with value 1-5"
+              }
+            },
+            "required": [
+              "timestampLocal",
+              "metrics"
+            ]
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/vibe/measurements",
+          "body": "{ \"timestampLocal\": {timestampLocal}, \"metrics\": {metrics} }"
+        }
+      },
+      {
+        "mcp": {
+          "name": "measurement_get_measurements",
+          "description": "Get measurements for the current user within a date range",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "Start date (local)",
+                "format": "date-time"
+              },
+              "to": {
+                "type": "string",
+                "description": "End date (local)",
+                "format": "date-time"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "GET",
+          "path": "/vibe/measurements",
+          "query": "from={from}&to={to}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "measurement_get_recent",
+          "description": "Get recent measurements for the current user",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "description": "Number of measurements to retrieve (default: 5)",
+                "format": "int32"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "GET",
+          "path": "/vibe/measurements/recent",
+          "query": "count={count}"
+        }
+      }
+    ]
+  }
+}

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -18,6 +19,8 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// </summary>
     /// <param name="swaggerFileNameOrUrl">The file name or URL of the Swagger/OpenAPI specification.</param>
     /// <param name="outputFileName">The output file name, default "mappings.json".</param>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "SwaggerConverterJsonContext supports all types in MinimalOptionsWrapper")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "SwaggerConverterJsonContext supports all types in MinimalOptionsWrapper")]
     public async Task LoadAndConvertAsync(string swaggerFileNameOrUrl, string? outputFileName = null)
     {
         outputFileName ??= "mappings.json";
@@ -47,7 +50,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
                 }
             };
 
-            var mappingsJson = JsonSerializer.Serialize<MinimalOptionsWrapper>(minimalOptions, SwaggerConverterJsonContext.Default.MinimalOptionsWrapper);
+            string mappingsJson = JsonSerializer.Serialize<MinimalOptionsWrapper>(minimalOptions, SwaggerConverterJsonContext.JsonOptions);
 
             await File.WriteAllTextAsync(outputFileName, mappingsJson);
 

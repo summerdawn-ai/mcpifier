@@ -335,6 +335,35 @@ public class SwaggerConverterTests
         Assert.Contains(tools, t => t.Mcp.Name == "delete_user" && t.Rest.Method == "DELETE");
     }
 
+    [Theory]
+    [InlineData("Resources/swagger.json","Resources/mappings.json")]
+    public async Task LoadAndConvert_WithGivenSwaggerFile_SavesExpectedMappingsFile(string swaggerPath, string mappingsPath)
+    {
+        // Arrange
+        var converter = CreateConverter();
+        string tempOutputFile = Path.Combine(Path.GetTempPath(), $"mappings_{Guid.NewGuid()}.json");
+
+        try
+        {
+            // Act
+            await converter.LoadAndConvertAsync(swaggerPath, tempOutputFile);
+
+            // Assert
+            string expectedMappingsJson = await File.ReadAllTextAsync(mappingsPath);
+            string actualMappingsJson = await File.ReadAllTextAsync(tempOutputFile);
+
+            Assert.Equal(expectedMappingsJson, actualMappingsJson);
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempOutputFile))
+            {
+                File.Delete(tempOutputFile);
+            }
+        }
+    }
+    
     private static SwaggerConverter CreateConverter()
     {
         var mockFactory = new Mock<IHttpClientFactory>();
