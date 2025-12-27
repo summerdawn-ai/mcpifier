@@ -10,6 +10,9 @@ namespace Summerdawn.Mcpifier.Server;
 /// </summary>
 public class Program
 {
+    private const string ReadmeUrl = "https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier.Server/README.md";
+    private const string ReadmeHelpText = $"For information on how to configure and run Mcpifier, see {ReadmeUrl}";
+
     /// <summary>
     /// Entry point for the Mcpifier server application.
     /// </summary>
@@ -47,7 +50,7 @@ public class Program
         // Create "generate" command
         var generateCommand = CreateGenerateCommand(settingsOption, noDefaultSettingsOption, args);
 
-        // Create root command with global options
+        // Create root command
         var rootCommand = new RootCommand("Mcpifier - an MCP-to-REST gateway that can run in HTTP or stdio mode")
         {
             serveCommand,
@@ -57,6 +60,9 @@ public class Program
         // Make "serve" the default command by adding its options to root and setting the same action.
         foreach (var option in serveCommand.Options) rootCommand.Options.Add(option);
         rootCommand.Action = serveCommand.Action;
+
+        // Add custom help text to root and all child commands.
+        rootCommand.AddHelpText(ReadmeHelpText);
 
         try
         {
@@ -205,7 +211,7 @@ public class Program
             catch (Exception ex)
             {
                 // Append note about README.md to exceptions thrown during app configuration.
-                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure and run Mcpifier.", ex);
+                throw new InvalidOperationException($"{ex.Message}\r\n\r\n{ReadmeHelpText}", ex);
             }
 
             await app.RunAsync();
@@ -242,7 +248,7 @@ public class Program
             catch (Exception ex)
             {
                 // Append note about README.md to exceptions thrown during app configuration.
-                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure and run Mcpifier.", ex);
+                throw new InvalidOperationException($"{ex.Message}\r\n\r\n{ReadmeHelpText}", ex);
             }
 
             await app.RunAsync();
@@ -277,7 +283,7 @@ public class Program
         catch (Exception ex)
         {
             // Append note about README.md to exceptions thrown during app configuration.
-            throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure and run Mcpifier.", ex);
+            throw new InvalidOperationException($"{ex.Message}\r\n\r\n{ReadmeHelpText}", ex);
         }
     }
 }
