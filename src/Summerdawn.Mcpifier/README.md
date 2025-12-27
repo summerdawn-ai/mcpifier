@@ -481,11 +481,20 @@ This package has the following dependencies:
 
 ## Resources
 
+### Mcpifier
+
 - [Mcpifier GitHub repository](https://github.com/summerdawn-ai/mcpifier)
-- [.NET Generic Host](https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host)
+- [Mcpifier releases and changelog](https://github.com/summerdawn-ai/mcpifier/releases)
+
+### Model Context Protocol
+
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
-- [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
+- [MCP Authorization documentation](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
 - [OAuth 2.0 Protected Resource Metadata](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-resource-metadata)
+
+### .NET
+
+- [.NET Generic Host documentation](https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host)
 
 ## License
 

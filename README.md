@@ -120,9 +120,14 @@ See [SECURITY.md](SECURITY.md) for guidance on reporting security issues.
 
 ## Resources
 
+### Model Context Protocol
+
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
-- [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
-- [.NET Native AOT deployment](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot)
+- [MCP Authorization documentation](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
+
+### .NET
+
+- [.NET Native AOT deployment documentation](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot)
 
 ## License
 

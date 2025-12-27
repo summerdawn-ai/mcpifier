@@ -316,11 +316,21 @@ Tool mapping configuration settings and interpolation rules are documented in th
 
 ## Resources
 
+### Mcpifier
+
 - [Mcpifier GitHub repository](https://github.com/summerdawn-ai/mcpifier)
+- [Mcpifier releases and changelog](https://github.com/summerdawn-ai/mcpifier/releases)
 - [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md)
+
+### Model Context Protocol
+
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
-- [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
+- [MCP Authorization documentation](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
 - [OAuth 2.0 Protected Resource Metadata](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-resource-metadata)
+
+### .NET
+
+- [ASP.NET Core documentation](https://learn.microsoft.com/en-us/aspnet/core/overview)
 
 ## License
 
