@@ -57,7 +57,14 @@ public class Program
         };
 
         // Make "serve" the default command by adding its options to root and setting the same action.
-        foreach (var option in serveCommand.Options) rootCommand.Add(option);
+        // Skip global options that are already added to root command.
+        foreach (var option in serveCommand.Options)
+        {
+            if (option != settingsOption && option != noDefaultSettingsOption)
+            {
+                rootCommand.Add(option);
+            }
+        }
         rootCommand.Action = serveCommand.Action;
 
         try
@@ -86,22 +93,36 @@ public class Program
             Required = false
         };
 
+        var mappingsOption = new Option<string>("--mappings")
+        {
+            Description = "The file path to a JSON file containing tool mappings.",
+            Required = false
+        };
+
         var serveCommand = new Command("serve", "Start the Mcpifier server in HTTP or stdio mode")
         {
             settingsOption,
             noDefaultSettingsOption,
             modeOption,
-            swaggerOption
+            swaggerOption,
+            mappingsOption
         };
 
         serveCommand.SetAction(async parseResult =>
         {
             string mode = parseResult.GetValue(modeOption)!;
             string? swaggerFileNameOrUrl = parseResult.GetValue(swaggerOption);
+            string? mappingsFile = parseResult.GetValue(mappingsOption);
             string[]? settingsFiles = parseResult.GetValue(settingsOption);
             bool noDefaultSettings = parseResult.GetValue(noDefaultSettingsOption);
 
-            await ServeAsync(mode, swaggerFileNameOrUrl, settingsFiles, noDefaultSettings, args);
+            // Validate that either --mappings or --swagger is specified, not both
+            if (swaggerFileNameOrUrl is not null && mappingsFile is not null)
+            {
+                throw new InvalidOperationException("Cannot specify both --swagger and --mappings options. Please use only one.");
+            }
+
+            await ServeAsync(mode, swaggerFileNameOrUrl, mappingsFile, settingsFiles, noDefaultSettings, args);
         });
 
         return serveCommand;
@@ -187,10 +208,11 @@ public class Program
     /// </summary>
     /// <param name="mode">The value for the `--mode` option.</param>
     /// <param name="swaggerFileNameOrUrl">The optional value for the `--swagger` option.</param>
+    /// <param name="mappingsFile">The optional value for the `--mappings` option.</param>
     /// <param name="settingsFiles">The optional values for the `--settings` option.</param>
     /// <param name="noDefaultSettings">The value for the `--no-default-settings` option.</param>
     /// <param name="args">The collection of command-line arguments.</param>
-    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string[]? settingsFiles, bool noDefaultSettings, string[] args)
+    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string? mappingsFile, string[]? settingsFiles, bool noDefaultSettings, string[] args)
     {
         if (mode == "http")
         {
@@ -207,6 +229,12 @@ public class Program
 
                 // Load custom settings files (after default settings if both are present)
                 AddCustomSettings(builder.Configuration, settingsFiles);
+
+                // Load mappings file (after custom settings if specified)
+                if (mappingsFile is not null)
+                {
+                    builder.Configuration.AddJsonFile(mappingsFile, optional: false, reloadOnChange: false);
+                }
 
                 // Configure HTTP MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
@@ -252,6 +280,12 @@ public class Program
 
                 // Load custom settings files (after default settings if both are present)
                 AddCustomSettings(builder.Configuration, settingsFiles);
+
+                // Load mappings file (after custom settings if specified)
+                if (mappingsFile is not null)
+                {
+                    builder.Configuration.AddJsonFile(mappingsFile, optional: false, reloadOnChange: false);
+                }
 
                 // Configure stdio MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
