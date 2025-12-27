@@ -23,10 +23,10 @@ internal class SwaggerConfigurationLoader(IHttpClientFactory httpClientFactory, 
                 logger.LogInformation("Loading Swagger specification from '{Source}'.", source.FileNameOrUrl);
 
                 // Read Swagger file (support file or URL).
-                string swaggerJson = LoadSwaggerAsync(source.FileNameOrUrl).Result;
+                string swaggerJson = LoadSwaggerAsync(source.FileNameOrUrl).GetAwaiter().GetResult();
 
                 // Parse Swagger into tools.
-                var swaggerOptions = converter.ConvertAsync(swaggerJson).Result;
+                var swaggerOptions = converter.ConvertAsync(swaggerJson).GetAwaiter().GetResult();
                 var (swaggerTools, swaggerBaseAddress) = (swaggerOptions.Tools, swaggerOptions.Rest?.BaseAddress);
 
                 // Try and infer base address from URL if not defined in Swagger file.
@@ -64,8 +64,8 @@ internal class SwaggerConfigurationLoader(IHttpClientFactory httpClientFactory, 
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to create tool mappings from Swagger specification '{Source}'.", source.FileNameOrUrl);
-                throw new InvalidOperationException($"Failed to create tool mappings from Swagger specification {source.FileNameOrUrl}: {ex.Message}", ex);
+                logger.LogError("Failed to create tool mappings from Swagger specification '{Source}'.", source.FileNameOrUrl);
+                throw new InvalidOperationException($"Failed to create tool mappings from Swagger specification '{source.FileNameOrUrl}': {ex.Message}", ex);
             }
         }
     }
