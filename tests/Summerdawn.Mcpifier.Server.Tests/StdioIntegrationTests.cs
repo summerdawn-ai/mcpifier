@@ -34,7 +34,7 @@ public class StdioIntegrationTests
 
         var builder = Host.CreateApplicationBuilder();
         
-        // Load test configuration (appsettings.json contains tools)
+        // Load test configuration (appsettings.json contains tool configurations)
         builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
         
         // Configure Mcpifier with stdio mode

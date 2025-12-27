@@ -174,7 +174,8 @@ public class Program
         using Stream? resourceStream = assembly.GetManifestResourceStream(resourceName);
         if (resourceStream is not null)
         {
-            // Copy to MemoryStream so it can be used by the configuration system
+            // Copy to MemoryStream so it can be used by the configuration system.
+            // The stream will be owned and disposed by JsonStreamConfigurationProvider when the app shuts down.
             var memoryStream = new MemoryStream();
             resourceStream.CopyTo(memoryStream);
             memoryStream.Position = 0;
