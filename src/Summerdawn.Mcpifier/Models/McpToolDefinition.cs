@@ -21,6 +21,7 @@ public class McpToolDefinition
     /// <summary>
     /// Gets or sets the tool description.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }
 
     /// <summary>
@@ -42,6 +43,7 @@ public class InputSchema
     /// <summary>
     /// Gets or sets the properties of the schema.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Dictionary<string, PropertySchema>? Properties { get; set; }
 
     /// <summary>
