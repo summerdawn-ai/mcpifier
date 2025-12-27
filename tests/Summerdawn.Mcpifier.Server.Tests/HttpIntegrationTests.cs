@@ -54,7 +54,11 @@ public class HttpIntegrationTests(McpifierServerFactory factory) : IClassFixture
         
         Assert.True(jsonDoc.RootElement.TryGetProperty("result", out var result));
         Assert.True(result.TryGetProperty("tools", out var tools));
-        Assert.NotEmpty(tools.EnumerateArray());
+
+        var toolsArray = tools.EnumerateArray().ToArray();
+
+        Assert.Equal(1, toolsArray.Length);
+        Assert.Equal("test_tool", toolsArray[0].GetProperty("name").GetString());
     }
 
     [Fact]

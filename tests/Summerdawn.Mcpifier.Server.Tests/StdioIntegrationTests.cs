@@ -33,10 +33,10 @@ public class StdioIntegrationTests
         });
 
         var builder = Host.CreateApplicationBuilder();
-        
+
         // Load test mappings
         builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: false);
-        
+
         // Configure Mcpifier with stdio mode
         builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
         
@@ -90,7 +90,11 @@ public class StdioIntegrationTests
             var jsonDoc = JsonDocument.Parse(responseJson);
             Assert.True(jsonDoc.RootElement.TryGetProperty("result", out var result));
             Assert.True(result.TryGetProperty("tools", out var tools));
-            Assert.NotEmpty(tools.EnumerateArray());
+
+            var toolsArray = tools.EnumerateArray().ToArray();
+
+            Assert.Equal(1, toolsArray.Length);
+            Assert.Equal("test_tool", toolsArray[0].GetProperty("name").GetString());
         }
         finally
         {

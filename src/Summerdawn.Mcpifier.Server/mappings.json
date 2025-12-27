@@ -1,7 +1,0 @@
-{
-  "Mcpifier": {
-    "Tools": [
-      // Add your tool mappings here, or use --swagger to load a Swagger/OpenAPI specification
-    ]
-  }
-}
