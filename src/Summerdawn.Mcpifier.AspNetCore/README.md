@@ -95,7 +95,7 @@ builder.Services.AddCors(cors => cors.AddDefaultPolicy(policy =>
 
 Because HTTP mode integrates with ASP.NET Core's request pipeline, you can layer in middleware (`UseRouting`, `UseCors`, `UseAuthentication`, etc.) exactly as you would for any other web app.
 
-For a full reference of all Mcpifier configuration settings, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#configuration).
+For a full reference of all Mcpifier configuration settings, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md#configuration).
 
 ### Generating Tools from Swagger
 
@@ -111,7 +111,7 @@ builder.Services.AddMcpifier(options => { /* configure */ }).AddAspNetCore()
     .AddToolsFromSwagger("https://api.example.com/swagger.json");
 ```
 
-Tool mappings can be modified as needed as described in the section [Adding Tools Manually](#adding-tools-manually). For the documentation of the generated tool mapping format, refer to the the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#tool-mapping).
+Tool mappings can be modified as needed as described in the section [Adding Tools Manually](#adding-tools-manually). For the documentation of the generated tool mapping format, refer to the the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md#tool-mapping).
 
 Loading a Swagger/OpenAPI specification will also **set the REST API base address** to the base URL specified in the specification, or the base address of the specification URL, if the Mcpifier configuration does not already specify a base address.
 
@@ -302,11 +302,11 @@ When enabled, any MCP requests (not just tool calls!) without an `Authorization`
 
 ## Configuration
 
-For the full list of settings, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#configuration).
+For the full list of settings, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md#configuration).
 
 ## Tool Mapping
 
-Tool mapping configuration settings and interpolation rules are documented in the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#tool-mapping).
+Tool mapping configuration settings and interpolation rules are documented in the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md#tool-mapping).
 
 ## Dependencies
 
@@ -317,7 +317,7 @@ Tool mapping configuration settings and interpolation rules are documented in th
 ## Resources
 
 - [Mcpifier GitHub repository](https://github.com/summerdawn-ai/mcpifier)
-- [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier)
+- [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md)
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
 - [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
 - [OAuth 2.0 Protected Resource Metadata](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-resource-metadata)

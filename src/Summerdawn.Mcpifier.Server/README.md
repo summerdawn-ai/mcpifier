@@ -195,7 +195,7 @@ mcpifier generate --swagger path/to/swagger.json --output path/to/mappings.json
 }
 ```
 
-See the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#tool-mapping) for details on the tool mapping and the generated JSON file structure.
+See the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md#tool-mapping) for details on the tool mapping and the generated JSON file structure.
 
 ## Configuring MCP Clients
 
@@ -329,7 +329,7 @@ If your MCP client supports the MCP Authorization protocol, you can enable it by
 2. **No Token Validation**: The command-line server does NOT validate tokens itself - authentication is delegated to the REST API
 3. **Trust Boundary**: The command-line server does not provide a trust boundary - it relies on the REST API to handle authentication and authorization correctly
 
-For more details about authorization, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#authorization) for stdio mode, and in the [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier.AspNetCore/README.md#authorization) for HTTP mode.
+For more details about authorization, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md#authorization) for stdio mode, and in the [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier.AspNetCore/README.md#authorization) for HTTP mode.
 
 ## Configuration
 
@@ -567,7 +567,7 @@ mcpifier serve --mode http --settings base.json --settings dev.json
 
 ### Configuration Reference
 
-For the complete list of available settings and their descriptions, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#configuration).
+For the complete list of available settings and their descriptions, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md#configuration).
 
 ## Tool Mapping
 
@@ -583,7 +583,7 @@ By default, the content directory is the current working directory, but this can
 
 ### Tool Mapping Reference
 
-The tool mapping configuration format and interpolation rules are documented in the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#tool-mapping).
+The tool mapping configuration format and interpolation rules are documented in the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md#tool-mapping).
 
 ## Logging
 
@@ -668,8 +668,8 @@ Debug logs may contain sensitive information. Don't enable them in a production 
 ## Resources
 
 - [Mcpifier GitHub repository](https://github.com/summerdawn-ai/mcpifier)
-- [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier)
-- [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier.AspNetCore)
+- [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier/README.md)
+- [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/blob/main/src/Summerdawn.Mcpifier.AspNetCore/README.md)
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
 - [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
 - [dotnet CLI documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/)
