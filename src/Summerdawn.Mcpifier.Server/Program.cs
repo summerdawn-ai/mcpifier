@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Reflection;
 
 using Summerdawn.Mcpifier.DependencyInjection;
 using Summerdawn.Mcpifier.Services;
@@ -117,6 +118,31 @@ public class Program
     }
 
     /// <summary>
+    /// Adds the embedded appsettings.json as the first configuration source.
+    /// </summary>
+    /// <param name="configurationManager">The configuration manager to add the source to.</param>
+    private static void AddEmbeddedAppSettings(ConfigurationManager configurationManager)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceName = "Summerdawn.Mcpifier.Server.appsettings.json";
+        
+        using Stream? resourceStream = assembly.GetManifestResourceStream(resourceName);
+        if (resourceStream is not null)
+        {
+            // Copy to MemoryStream so it can be used by the configuration system
+            var memoryStream = new MemoryStream();
+            resourceStream.CopyTo(memoryStream);
+            memoryStream.Position = 0;
+            
+            // Insert at position 0 to make it the first source
+            configurationManager.Sources.Insert(0, new Microsoft.Extensions.Configuration.Json.JsonStreamConfigurationSource
+            {
+                Stream = memoryStream
+            });
+        }
+    }
+
+    /// <summary>
     /// Starts the Mcpifier server in the specified mode.
     /// </summary>
     /// <param name="mode">The value for the `--mode` option.</param>
@@ -131,9 +157,8 @@ public class Program
             {
                 var builder = WebApplication.CreateBuilder();
 
-                // Load tool mappings from separate file.
-                // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
-                builder.Configuration.AddJsonFile("mappings.json", optional: true);
+                // Load embedded appsettings.json as first configuration source
+                AddEmbeddedAppSettings(builder.Configuration);
 
                 // Configure HTTP MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
@@ -171,9 +196,8 @@ public class Program
             {
                 var builder = Host.CreateApplicationBuilder(args);
 
-                // Load tool mappings from separate file.
-                // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
-                builder.Configuration.AddJsonFile("mappings.json", optional: true);
+                // Load embedded appsettings.json as first configuration source
+                AddEmbeddedAppSettings(builder.Configuration);
 
                 // Configure stdio MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
@@ -215,6 +239,9 @@ public class Program
         try
         {
             var builder = Host.CreateApplicationBuilder(args);
+
+            // Load embedded appsettings.json as first configuration source
+            AddEmbeddedAppSettings(builder.Configuration);
 
             builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 

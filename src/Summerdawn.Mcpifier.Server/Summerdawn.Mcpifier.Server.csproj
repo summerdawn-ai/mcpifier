@@ -36,4 +36,20 @@
     <None Include="README.md" Pack="true" PackagePath="\" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Embed appsettings.json as a resource and prevent it from being copied as content -->
+    <Content Remove="appsettings.json" />
+    <EmbeddedResource Include="appsettings.json" />
+    
+    <!-- Exclude appsettings.Development.json from packing and publishing -->
+    <None Remove="appsettings.Development.json" />
+    <Content Remove="appsettings.Development.json" />
+    <Compile Remove="appsettings.Development.json" />
+    <None Include="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      <Pack>false</Pack>
+    </None>
+  </ItemGroup>
+
 </Project>
