@@ -176,8 +176,8 @@ public class Program
         {
             // Copy to MemoryStream for configuration system use.
             // NOTE: The MemoryStream is intentionally NOT disposed here. The JsonStreamConfigurationProvider
-            // takes ownership of the stream and will dispose it when the configuration provider is disposed
-            // during application shutdown. This is the standard pattern for stream-based configuration sources.
+            // takes ownership of the stream and will dispose it when the provider itself is disposed as part
+            // of the configuration system's lifecycle. This is the standard pattern for stream-based configuration sources.
             var memoryStream = new MemoryStream();
             resourceStream.CopyTo(memoryStream);
             memoryStream.Position = 0;
