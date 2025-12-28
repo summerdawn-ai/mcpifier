@@ -208,6 +208,11 @@ public class Program
                 // Use HTTP MCP gateway.
                 app.MapMcpifier();
             }
+            catch (DirectoryNotFoundException ex)
+            {
+                // Special-case DirectoryNotFoundException with missing error message.
+                throw new InvalidOperationException($"Directory not found: {ex.Message}\n\n{ReadmeHelpText}", ex);
+            }
             catch (Exception ex)
             {
                 // Append note about README.md to exceptions thrown during app configuration.
@@ -245,6 +250,11 @@ public class Program
                 // Use stdio MCP gateway.
                 app.UseMcpifier();
             }
+            catch (DirectoryNotFoundException ex)
+            {
+                // Special-case DirectoryNotFoundException with missing error message.
+                throw new InvalidOperationException($"Directory not found: {ex.Message}\n\n{ReadmeHelpText}", ex);
+            }
             catch (Exception ex)
             {
                 // Append note about README.md to exceptions thrown during app configuration.
@@ -279,6 +289,11 @@ public class Program
             var converter = app.Services.GetRequiredService<SwaggerConverter>();
 
             await converter.LoadAndConvertAsync(swaggerFileNameOrUrl, outputFileName);
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            // Special-case DirectoryNotFoundException with missing error message.
+            throw new InvalidOperationException($"Directory not found: {ex.Message}\n\n{ReadmeHelpText}", ex);
         }
         catch (Exception ex)
         {

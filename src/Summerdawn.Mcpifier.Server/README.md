@@ -80,9 +80,9 @@ Supported platforms:
 
 The pre-built binaries are standalone, AOT-compiled executables that do not require a separate .NET runtime installation.
 
-### Executing Directly with dnx
+### Running from Package with dnx
 
-If you have the .NET 10 or later SDK installed, you can run the Mcpifier server directly using `dotnet tool exec` or `dnx` without installing it as a global or local tool, for example:
+If you have the .NET 10 or later SDK installed, you can run the Mcpifier server directly from its package using `dotnet tool exec` or `dnx` without installing it as a global or local tool, for example:
 
 ```bash
 dotnet tool exec Summerdawn.Mcpifier.Server --yes -- serve --mode http --swagger https://api.example.com/swagger.json
@@ -221,6 +221,25 @@ To run the Mcpifier command-line server in stdio mode, add the following to your
   }
 }
 ```
+
+Alternatively, you can use the .NET `dnx` tool to run the server directly from its package:
+
+```json
+{
+  "servers": {
+    "my-stdio-mcpifier": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": ["Summerdawn.Mcpifier.Server", "--yes", "--", "serve", "--mode", "stdio", "--swagger", "path/to/swagger.json"],
+      "env": {
+        "DOTNET_CONTENTROOT": "path/to/config"
+      }
+    }
+  }
+}
+```
+
+Refer to the [Installation](#running-from-package-with-dnx) section for more information.
 
 ### Mcpifier in HTTP mode
 

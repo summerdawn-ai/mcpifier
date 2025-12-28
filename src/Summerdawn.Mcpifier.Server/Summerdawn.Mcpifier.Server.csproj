@@ -26,6 +26,7 @@
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>mcpifier</ToolCommandName>
+    <PackageType>McpServer</PackageType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,7 +45,9 @@
     <!-- Exclude appsettings.*.json from packing and publishing -->
     <Content Update="appsettings.*.json" CopyToOutputDirectory="PreserveNewest" Pack="false" CopyToPublishDirectory="Never" />
     <!-- Include README.md in packing and publishing -->
-    <None Include="README.md" Pack="true" PackagePath="\" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="README.md" Pack="true" PackagePath="/" CopyToPublishDirectory="PreserveNewest" />
+    <!-- Include MCP metadata in package -->
+    <None Include=".mcp/server.json" Pack="true" PackagePath="/.mcp/" />
   </ItemGroup>
 
 </Project>
