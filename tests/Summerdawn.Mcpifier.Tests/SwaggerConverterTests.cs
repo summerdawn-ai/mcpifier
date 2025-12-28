@@ -337,6 +337,7 @@ public class SwaggerConverterTests
 
     [Theory]
     [InlineData("Resources/swagger.json","Resources/mappings.json")]
+    [InlineData("Resources/complex-swagger.json", "Resources/complex-mappings.json")]
     public async Task LoadAndConvert_WithGivenSwaggerFile_SavesExpectedMappingsFile(string swaggerPath, string mappingsPath)
     {
         // Arrange

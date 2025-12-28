@@ -1,0 +1,436 @@
+{
+  "Mcpifier": {
+    "Tools": [
+      {
+        "mcp": {
+          "name": "get_api_object",
+          "description": "GET /api/object",
+          "inputSchema": {
+            "type": "object",
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "GET",
+          "path": "/api/object"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_object",
+          "description": "POST /api/object",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "foo": {
+                "type": "string"
+              },
+              "bar": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/object",
+          "body": "{ \"foo\": {foo}, \"bar\": {bar} }"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_object_array",
+          "description": "POST /api/objectArray",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/objectArray",
+          "body": "{requestBody}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_object_array_with_query",
+          "description": "POST /api/objectArrayWithQuery",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              },
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/objectArrayWithQuery",
+          "query": "id={id}",
+          "body": "{requestBody}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_string_array",
+          "description": "POST /api/stringArray",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/stringArray",
+          "body": "{requestBody}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_string_array_with_query",
+          "description": "POST /api/stringArrayWithQuery",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/stringArrayWithQuery",
+          "query": "id={id}",
+          "body": "{requestBody}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_int_array",
+          "description": "POST /api/intArray",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/intArray",
+          "body": "{requestBody}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_int_array_with_query",
+          "description": "POST /api/intArrayWithQuery",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/intArrayWithQuery",
+          "query": "id={id}",
+          "body": "{requestBody}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_string",
+          "description": "POST /api/string",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "string"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/string",
+          "body": "{requestBody}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_string_with_query",
+          "description": "POST /api/stringWithQuery",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/stringWithQuery",
+          "query": "id={id}",
+          "body": "{requestBody}"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_object_with_query",
+          "description": "POST /api/objectWithQuery",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "foo": {
+                "type": "string"
+              },
+              "bar": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/objectWithQuery",
+          "query": "id={id}",
+          "body": "{ \"foo\": {foo}, \"bar\": {bar} }"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_nested_object",
+          "description": "POST /api/NestedObject",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              },
+              "single": {
+                "type": "object",
+                "properties": {
+                  "foo": {
+                    "type": "string"
+                  },
+                  "bar": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/NestedObject",
+          "body": "{ \"components\": {components}, \"single\": {single} }"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_nested_object_with_query",
+          "description": "POST /api/NestedObjectWithQuery",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": "string"
+                    },
+                    "bar": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              },
+              "single": {
+                "type": "object",
+                "properties": {
+                  "foo": {
+                    "type": "string"
+                  },
+                  "bar": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/NestedObjectWithQuery",
+          "query": "id={id}",
+          "body": "{ \"components\": {components}, \"single\": {single} }"
+        }
+      },
+      {
+        "mcp": {
+          "name": "post_api_nested_object_array",
+          "description": "POST /api/NestedObjectArray",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "requestBody": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "components": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "foo": {
+                            "type": "string"
+                          },
+                          "bar": {
+                            "type": "integer",
+                            "format": "int32"
+                          }
+                        }
+                      }
+                    },
+                    "single": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": "string"
+                        },
+                        "bar": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": []
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/NestedObjectArray",
+          "body": "{requestBody}"
+        }
+      }
+    ]
+  }
+}
