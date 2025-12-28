@@ -1,0 +1,53 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.summerdawn-ai/mcpifier",
+  "title": "Mcpifier",
+  "description": "Mcpifier is a zero-code MCP gateway that exposes an existing REST API as an MCP server.",
+  "repository": {
+    "url": "https://github.com/summerdawn-ai/mcpifier",
+    "source": "github",
+    "subfolder": "src/Summerdawn.Mcpifier.Server"
+  },
+  "version": "1.1.0",
+  "packages": [
+    {
+      "registryType": "nuget",
+      "registryBaseUrl": "https://api.nuget.org/v3/index.json",
+      "identifier": "Summerdawn.Mcpifier.Server",
+      "version": "1.1.0",
+      "runtimeHint": "dnx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "named",
+          "name": "--mode",
+          "value": "stdio",
+          "description": "Run Mcpifier server in stdio mode"
+        },
+        {
+          "type": "named",
+          "name": "--swagger",
+          "placeholder": "https://api.example.com/swagger/v1/swagger.json",
+          "description": "Path or URL of the Swagger/OpenAPI specification JSON file from which to generate tool mappings",
+          "isRequired": true
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "MCPIFIER__REST__FORWARDEDHEADERS__AUTHORIZATION",
+          "value": "false",
+          "description": "Turn off forwarded headers in stdio mode"
+        },
+        {
+          "name": "DOTNET_CONTENTROOT",
+          "placeholder": "path/to/config",
+          "description": "Optional directory containing appsettings.json or mappings.json to load automatically",
+          "isRequired": false,
+          "format": "filepath"
+        }
+      ]
+    }
+  ]
+}
