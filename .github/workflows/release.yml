@@ -63,7 +63,7 @@ jobs:
         run: dotnet restore Mcpifier.slnx
       
       - name: Build solution
-        run: dotnet build Mcpifier.slnx -c Release --no-restore
+        run: dotnet build Mcpifier.slnx -c Release --no-restore -p:Version=${{ github.event.inputs.version }}
       
       - name: Pack NuGet packages
         run: |
