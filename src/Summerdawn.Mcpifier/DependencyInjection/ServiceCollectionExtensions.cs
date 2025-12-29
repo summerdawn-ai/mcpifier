@@ -56,6 +56,13 @@ public static class ServiceCollectionExtensions
             var options = provider.GetRequiredService<IOptions<McpifierOptions>>();
             var baseAddress = GetBaseAddress(provider);
 
+            // Make sure base address path has a trailing slash so requests
+            // with relative URIs are guaranteed to not replace part of it.
+            if (!baseAddress.AbsolutePath.EndsWith("/"))
+            {
+                baseAddress = (new UriBuilder(baseAddress) { Path = baseAddress.AbsolutePath + "/" }).Uri;
+            }
+
             client.BaseAddress = baseAddress;
 
             foreach (var defaultHeader in options.Value.Rest.DefaultHeaders)
