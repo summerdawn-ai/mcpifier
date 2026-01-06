@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.ObjectModel;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Summerdawn.Mcpifier.Models;
@@ -8,6 +9,7 @@ namespace Summerdawn.Mcpifier.Models;
 /// </summary>
 [JsonSerializable(typeof(JsonRpcRequest))]
 [JsonSerializable(typeof(JsonRpcResponse))]
+[JsonSerializable(typeof(ReadOnlyDictionary<string, object?>))] // JsonRpcResponse.EmptyResult
 [JsonSerializable(typeof(McpInitializeParams))]
 [JsonSerializable(typeof(McpInitializeResult))]
 [JsonSerializable(typeof(McpToolDefinition))]

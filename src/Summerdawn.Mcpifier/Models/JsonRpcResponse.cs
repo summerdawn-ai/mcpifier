@@ -11,7 +11,7 @@ public sealed class JsonRpcResponse
     /// <summary>
     /// Gets an empty result dictionary used for successful responses without a result.
     /// </summary>
-    public static readonly IReadOnlyDictionary<string, object?> EmptyResult = new Dictionary<string, object?>();
+    public static readonly IReadOnlyDictionary<string, object?> EmptyResult = new Dictionary<string, object?>().AsReadOnly();
 
     /// <summary>
     /// Gets a JsonElement representing a null identifier.
