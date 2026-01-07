@@ -45,19 +45,19 @@ Use descriptive branch names:
 5. Address any feedback from reviewers
 6. Once approved, a maintainer will merge your PR
 
-## Coding Standards
+## Code Style
 
-This project follows specific C# coding conventions documented in [AGENTS.md](AGENTS.md). Key points:
+Code style preferences and rules for Mcpifier are defined in [.editorconfig](.editorconfig) and are automatically evaluated on build.
 
-- Use primary constructors for classes unless special initialization logic is needed
-- Use camelCase for private fields without underscore prefix
-- Use explicit access modifiers on all members
-- Use explicit types for primitive types (not `var` for `bool`, `int`, `string`, etc.)
-- Use collection expressions (`[]`, `[1, 2, 3]`) for creating collections
-- Do not use fully qualified type names; add `using` statements instead
-- Do not add unnecessary `using` statements
+### Code Cleanup
 
-Please review [AGENTS.md](AGENTS.md) for complete coding style guidelines.
+You can run this command to automatically apply code style preferences and rules to your code:
+
+```bash
+dotnet format
+```
+
+Run this before committing to ensure your code adheres to the project's formatting standards.
 
 ## Testing Requirements
 
