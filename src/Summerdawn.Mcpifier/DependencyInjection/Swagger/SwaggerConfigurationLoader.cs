@@ -14,7 +14,7 @@ internal class SwaggerConfigurationLoader(IHttpClientFactory httpClientFactory, 
     public void PostConfigure(string? name, McpifierOptions options)
     {
         // Only run once (IPostConfigureOptions can be called multiple times).
-        if (Interlocked.CompareExchange(ref hasRun, 1, 0) != 0) return;
+        if (Interlocked.CompareExchange(ref hasRun, 1, 0) != 0) { return; }
 
         foreach (var source in sources)
         {
@@ -34,7 +34,7 @@ internal class SwaggerConfigurationLoader(IHttpClientFactory httpClientFactory, 
                 {
                     swaggerBaseAddress = TryGetBaseAddress(source.FileNameOrUrl);
                 }
-                
+
                 // Apply filter if provided.
                 if (source.MappingFilter is not null)
                 {

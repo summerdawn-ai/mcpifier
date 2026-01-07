@@ -31,7 +31,7 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
     public async Task<(bool success, int statusCode, string responseBody)> ExecuteToolAsync(McpifierToolMapping tool, Dictionary<string, JsonElement> arguments, Dictionary<string, string> forwardedHeaders)
     {
         // Build the URL with path interpolation
-        var path = InterpolatePath(tool.Rest.Path, arguments);
+        string path = InterpolatePath(tool.Rest.Path, arguments);
 
         // Add query parameters
         if (tool.Rest.Query is not null)
@@ -42,7 +42,7 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
 
         // Make sure the path is relative to the base address even if the REST path has a leading "/".
         // Swagger uses leading slashes in paths, but they mess with URL composition.
-        if (path.StartsWith('/')) path = path[1..];
+        if (path.StartsWith('/')) { path = path[1..]; }
 
         logger.LogInformation("Executing tool {ToolName}: {Method} {Path}", tool.Mcp.Name, tool.Rest.Method, path);
 
@@ -59,7 +59,7 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
         // Add body if present
         if (tool.Rest.Body != null)
         {
-            var body = InterpolateBody(tool.Rest.Body, arguments);
+            string body = InterpolateBody(tool.Rest.Body, arguments);
             request.Content = new StringContent(body, Encoding.UTF8, "application/json");
         }
 
@@ -67,8 +67,8 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
         try
         {
             var response = await httpClient.SendAsync(request);
-            var statusCode = (int)response.StatusCode;
-            var responseBody = await response.Content.ReadAsStringAsync();
+            int statusCode = (int)response.StatusCode;
+            string responseBody = await response.Content.ReadAsStringAsync();
 
             logger.LogInformation("REST API response: {StatusCode} for tool {ToolName}", statusCode, tool.Mcp.Name);
 
@@ -88,13 +88,13 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
 
     private static string InterpolatePath(string path, Dictionary<string, JsonElement> arguments)
     {
-        var result = path;
+        string result = path;
         var matches = PlaceholderRegex.Matches(path);
 
         foreach (Match match in matches)
         {
-            var paramName = match.Groups[1].Value;
-            var paramValue = arguments.TryGetValue(paramName, out var argValue) ? Uri.EscapeDataString(argValue.ToString()) : "";
+            string paramName = match.Groups[1].Value;
+            string paramValue = arguments.TryGetValue(paramName, out var argValue) ? Uri.EscapeDataString(argValue.ToString()) : "";
 
             result = result.Replace($"{{{paramName}}}", paramValue);
         }
@@ -106,15 +106,15 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
     {
         // First, remove query parameters where the argument is not provided
         string cleanedQuery = RemoveAbsentArguments(query, arguments);
-        
+
         // Then interpolate the remaining parameters
-        var result = cleanedQuery;
+        string result = cleanedQuery;
         var matches = PlaceholderRegex.Matches(cleanedQuery);
 
         foreach (Match match in matches)
         {
-            var paramName = match.Groups[1].Value;
-            var paramValue = arguments.TryGetValue(paramName, out var argValue) ? Uri.EscapeDataString(argValue.ToString()) : "";
+            string paramName = match.Groups[1].Value;
+            string paramValue = arguments.TryGetValue(paramName, out var argValue) ? Uri.EscapeDataString(argValue.ToString()) : "";
 
             result = result.Replace($"{{{paramName}}}", paramValue);
         }
@@ -136,22 +136,22 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
     /// <returns>Query string with unsupported parameters removed.</returns>
     private static string RemoveAbsentArguments(string query, Dictionary<string, JsonElement> arguments)
     {
-        var result = query;
+        string result = query;
         var matches = PlaceholderAssignmentRegex.Matches(query);
-        
+
         // Process matches in reverse to maintain correct indices when removing
         for (int i = matches.Count - 1; i >= 0; i--)
         {
             var match = matches[i];
-            var argName = match.Groups[2].Value;
-            
+            string argName = match.Groups[2].Value;
+
             // If the argument doesn't exist, remove the entire parameter assignment
             if (!arguments.ContainsKey(argName))
             {
                 result = result.Remove(match.Index, match.Length);
             }
         }
-        
+
         // Cleanup: remove orphaned & characters
         // Replace multiple consecutive & with single &
         result = Regex.Replace(result, "&+", "&");
@@ -159,7 +159,7 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
         result = result.TrimStart('&');
         // Remove trailing &
         result = result.TrimEnd('&');
-        
+
         return result;
     }
 
@@ -172,8 +172,8 @@ public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logge
 
         foreach (Match match in matches)
         {
-            var paramName = match.Groups[1].Value;
-            var paramValue = arguments.TryGetValue(paramName, out var argValue) ? argValue.GetRawText() : "null";
+            string paramName = match.Groups[1].Value;
+            string paramValue = arguments.TryGetValue(paramName, out var argValue) ? argValue.GetRawText() : "null";
 
             result = result.Replace($"{{{paramName}}}", paramValue);
         }

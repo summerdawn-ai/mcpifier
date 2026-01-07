@@ -21,7 +21,7 @@ public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogge
         if (!rpcRequest.IsValidVersion())
         {
             logger.LogWarning("Invalid JSON-RPC version received: {Version}", rpcRequest.Version);
-         
+
             return JsonRpcResponse.InvalidRequest(rpcRequest.Id);
         }
 
@@ -49,5 +49,5 @@ public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogge
             logger.LogError(ex, "Unexpected error handling JSON-RPC method {Method}", rpcRequest.Method);
             return JsonRpcResponse.InternalError(rpcRequest.Id, $"Internal error: {ex.Message}");
         }
-    }   
+    }
 }

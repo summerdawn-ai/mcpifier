@@ -29,8 +29,8 @@ public sealed class McpToolsCallRpcHandler(RestApiService restApiService, IOptio
         var (isValid, errorMessage) = ToolValidator.ValidateArguments(tool.Mcp, parameters.Arguments);
         if (!isValid)
         {
-            var message = errorMessage ?? "Invalid arguments";
-            
+            string message = errorMessage ?? "Invalid arguments";
+
             logger.LogWarning("Invalid arguments for tool {ToolName}: {Error}", parameters.Name, message);
 
             return JsonRpcResponse.ErrorResponse(request.Id, 400, message);

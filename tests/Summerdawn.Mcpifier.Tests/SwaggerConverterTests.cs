@@ -336,7 +336,7 @@ public class SwaggerConverterTests
     }
 
     [Theory]
-    [InlineData("Resources/swagger.json","Resources/mappings.json")]
+    [InlineData("Resources/swagger.json", "Resources/mappings.json")]
     [InlineData("Resources/complex-swagger.json", "Resources/complex-mappings.json")]
     public async Task LoadAndConvert_WithGivenSwaggerFile_SavesExpectedMappingsFile(string swaggerPath, string mappingsPath)
     {
@@ -364,7 +364,7 @@ public class SwaggerConverterTests
             }
         }
     }
-    
+
     private static SwaggerConverter CreateConverter()
     {
         var mockFactory = new Mock<IHttpClientFactory>();

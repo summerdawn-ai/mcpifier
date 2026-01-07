@@ -72,7 +72,7 @@ public class McpRouteHandlerTests
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
-        var successResponse = JsonRpcResponse.Success(JsonDocument.Parse("\"test-id\"").RootElement, new McpToolsCallResult { Content  = [JsonDocument.Parse("{ \"result\": \"success\" }").RootElement ] });
+        var successResponse = JsonRpcResponse.Success(JsonDocument.Parse("\"test-id\"").RootElement, new McpToolsCallResult { Content = [JsonDocument.Parse("{ \"result\": \"success\" }").RootElement] });
         mockDispatcher
             .Setup(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(successResponse);
@@ -112,7 +112,7 @@ public class McpRouteHandlerTests
         context.Request.ContentType = "application/json";
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => 
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await handler.HandleMcpRequestAsync(context));
     }
 
@@ -126,7 +126,7 @@ public class McpRouteHandlerTests
         var handler = new McpRouteHandler(mockDispatcher.Object, mockOptions.Object, mockLogger.Object);
 
         var context = new DefaultHttpContext();
-        var invalidJson = "{ invalid json }";
+        string invalidJson = "{ invalid json }";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(invalidJson));
         context.Request.ContentType = "application/json";
         context.Response.Body = new MemoryStream();
@@ -136,7 +136,7 @@ public class McpRouteHandlerTests
 
         // Assert
         Assert.Equal(400, context.Response.StatusCode);
-        
+
         context.Response.Body.Position = 0;
         var responseJson = await JsonSerializer.DeserializeAsync<JsonElement>(context.Response.Body);
         Assert.True(responseJson.TryGetProperty("error", out var error));
@@ -156,7 +156,7 @@ public class McpRouteHandlerTests
         var handler = new McpRouteHandler(mockDispatcher.Object, mockOptions.Object, mockLogger.Object);
 
         var context = new DefaultHttpContext();
-        var nullJson = "null";
+        string nullJson = "null";
         context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(nullJson));
         context.Request.ContentType = "application/json";
         context.Response.Body = new MemoryStream();
@@ -166,7 +166,7 @@ public class McpRouteHandlerTests
 
         // Assert
         Assert.Equal(400, context.Response.StatusCode);
-        
+
         context.Response.Body.Position = 0;
         var responseJson = await JsonSerializer.DeserializeAsync<JsonElement>(context.Response.Body);
         Assert.True(responseJson.TryGetProperty("error", out var error));

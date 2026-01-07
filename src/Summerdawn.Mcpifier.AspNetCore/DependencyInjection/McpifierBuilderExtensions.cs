@@ -40,7 +40,7 @@ public static class McpifierBuilderExtensions
     {
         var serverFeatures = provider.GetService<IServer>();
         var addressesFeature = serverFeatures?.Features.Get<IServerAddressesFeature>();
-        var serverAddress = addressesFeature?.Addresses.FirstOrDefault();
+        string? serverAddress = addressesFeature?.Addresses.FirstOrDefault();
 
         return Uri.TryCreate(serverAddress, UriKind.Absolute, out var uri) ? uri : null;
     }

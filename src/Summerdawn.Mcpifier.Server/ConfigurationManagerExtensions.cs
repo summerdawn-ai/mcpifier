@@ -47,7 +47,7 @@ internal static class ConfigurationManagerExtensions
     public static void AddJsonResource(this ConfigurationManager configurationManager, string resourceName)
     {
         var assembly = Assembly.GetExecutingAssembly();
-        
+
         using var resourceStream = assembly.GetManifestResourceStream($"{ResourceNamespace}.{resourceName}") ??
                                    throw new ArgumentException($"Resource {resourceName} not found in assembly.");
 
@@ -59,7 +59,7 @@ internal static class ConfigurationManagerExtensions
         var memoryStream = new MemoryStream();
         resourceStream.CopyTo(memoryStream);
         memoryStream.Position = 0;
-        
+
         // Insert at position 0 to make it the first source
         configurationManager.Sources.Insert(0, new JsonStreamConfigurationSource
         {

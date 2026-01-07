@@ -18,16 +18,16 @@ internal static class ToolValidator
     public static (bool isValid, string? errorMessage) ValidateArguments(McpToolDefinition mcpTool, Dictionary<string, JsonElement> arguments)
     {
         var schema = mcpTool.InputSchema;
-        
+
         if (schema.Required is { Count: > 0 })
         {
-            foreach (var requiredField in schema.Required)
+            foreach (string requiredField in schema.Required)
             {
                 if (!arguments.TryGetValue(requiredField, out var argument))
                 {
                     return (false, $"Required field '{requiredField}' is missing");
                 }
-                
+
                 if (argument.ValueKind == JsonValueKind.Null)
                 {
                     return (false, $"Required field '{requiredField}' cannot be null");

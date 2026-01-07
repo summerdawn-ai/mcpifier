@@ -25,7 +25,7 @@ internal static class ServiceProviderExtensions
         if (string.IsNullOrWhiteSpace(restBaseAddress))
         {
             logger.LogError("No REST API base address has been configured.");
-            
+
             throw new InvalidOperationException("No REST API base address has been configured.");
         }
 

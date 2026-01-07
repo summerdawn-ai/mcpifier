@@ -25,7 +25,7 @@ public class McpToolsCallRpcHandlerTests
         var mockLogger = new Mock<ILogger<RestApiService>>();
         var restApiService = new RestApiService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
-        
+
         var handler = new McpToolsCallRpcHandler(
             restApiService,
             options,
@@ -54,7 +54,7 @@ public class McpToolsCallRpcHandlerTests
         var mockLogger = new Mock<ILogger<RestApiService>>();
         var restApiService = new RestApiService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
-        
+
         var handler = new McpToolsCallRpcHandler(
             restApiService,
             options,
@@ -86,7 +86,7 @@ public class McpToolsCallRpcHandlerTests
         var mockLogger = new Mock<ILogger<RestApiService>>();
         var restApiService = new RestApiService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
-        
+
         var handler = new McpToolsCallRpcHandler(
             restApiService,
             options,
@@ -105,10 +105,10 @@ public class McpToolsCallRpcHandlerTests
         // Assert
         Assert.Null(response.Error);
         Assert.NotNull(response.Result);
-        
+
         var result = JsonSerializer.Deserialize<McpToolsCallResult>(
             JsonSerializer.SerializeToElement(response.Result));
-        
+
         Assert.NotNull(result);
         Assert.True(result.IsError);
         Assert.NotEmpty(result.Content);
@@ -120,7 +120,7 @@ public class McpToolsCallRpcHandlerTests
         // Arrange
         var tool = CreateTestTool("test_tool", requiredProperties: ["message"]);
         var options = CreateOptions([tool]);
-        var jsonResponse = "{\"status\":\"success\",\"data\":\"test\"}";
+        string jsonResponse = "{\"status\":\"success\",\"data\":\"test\"}";
         var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(jsonResponse)
@@ -129,7 +129,7 @@ public class McpToolsCallRpcHandlerTests
         var mockLogger = new Mock<ILogger<RestApiService>>();
         var restApiService = new RestApiService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
-        
+
         var handler = new McpToolsCallRpcHandler(
             restApiService,
             options,
@@ -148,15 +148,15 @@ public class McpToolsCallRpcHandlerTests
         // Assert
         Assert.Null(response.Error);
         Assert.NotNull(response.Result);
-        
+
         var result = JsonSerializer.Deserialize<McpToolsCallResult>(
             JsonSerializer.SerializeToElement(response.Result));
-        
+
         Assert.NotNull(result);
         Assert.False(result.IsError);
         Assert.NotEmpty(result.Content);
         Assert.NotNull(result.StructuredContent);
-        
+
         // Verify structured content is parsed JSON
         var structuredContent = result.StructuredContent.Value;
         Assert.Equal(JsonValueKind.Object, structuredContent.ValueKind);

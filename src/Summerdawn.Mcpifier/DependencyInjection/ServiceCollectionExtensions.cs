@@ -108,7 +108,10 @@ public static class ServiceCollectionExtensions
         }
 
         // Return configured base address if absolute.
-        if (baseAddress.IsAbsoluteUri) return baseAddress;
+        if (baseAddress.IsAbsoluteUri)
+        {
+            return baseAddress;
+        }
 
         // Otherwise, get server address from an extension, e.g. Mcpifier.AspNetCore.
         var serverAddress = provider.GetKeyedService<Uri>("Mcpifier:ServerAddress") ??
