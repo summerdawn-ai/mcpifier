@@ -8,6 +8,7 @@
     <File Path="SECURITY.md" />
   </Folder>
   <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path="Directory.Build.props" />
   </Folder>
