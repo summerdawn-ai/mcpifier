@@ -13,5 +13,5 @@ public interface IRpcHandler
     /// Handles a JSON-RPC request and returns a response.
     /// </summary>
     /// <exception cref="JsonException">Thrown when deserialization of request parameters fails.</exception>
-    Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default);
+    public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default);
 }

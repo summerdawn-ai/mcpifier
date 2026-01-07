@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,6 +36,8 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="mcpifierConfiguration">The configuration section containing Mcpifier settings.</param>
     /// <returns>A <see cref="McpifierBuilder"/> that can be used to further configure Mcpifier.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Configuration binding is source-generated via <EnableConfigurationBindingGenerator>, just 'dotnet format' doesn't notice")]
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = "Configuration binding is source-generated via <EnableConfigurationBindingGenerator>, just 'dotnet format' doesn't notice")]
     public static McpifierBuilder AddMcpifier(this IServiceCollection services, IConfiguration mcpifierConfiguration)
     {
         // Configure options from provided config section.
@@ -108,7 +112,10 @@ public static class ServiceCollectionExtensions
         }
 
         // Return configured base address if absolute.
-        if (baseAddress.IsAbsoluteUri) return baseAddress;
+        if (baseAddress.IsAbsoluteUri)
+        {
+            return baseAddress;
+        }
 
         // Otherwise, get server address from an extension, e.g. Mcpifier.AspNetCore.
         var serverAddress = provider.GetKeyedService<Uri>("Mcpifier:ServerAddress") ??

@@ -58,7 +58,7 @@ public class Program
         };
 
         // Make "serve" the default command by adding its options to root and setting the same action.
-        foreach (var option in serveCommand.Options) rootCommand.Options.Add(option);
+        foreach (var option in serveCommand.Options) { rootCommand.Options.Add(option); }
         rootCommand.Action = serveCommand.Action;
 
         // Add custom help text to root and all child commands.

@@ -8,10 +8,10 @@ public interface IStdio
     /// <summary>
     /// Gets the standard input stream.
     /// </summary>
-    Stream GetStandardInput();
+    public Stream GetStandardInput();
 
     /// <summary>
     /// Gets the standard output stream.
     /// </summary>
-    Stream GetStandardOutput();
+    public Stream GetStandardOutput();
 }

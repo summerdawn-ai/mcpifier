@@ -18,9 +18,9 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
     public async Task HandleMcpRequestAsync(HttpContext context)
     {
         var startTime = DateTime.UtcNow;
-        var method = context.Request.Method;
+        string method = context.Request.Method;
         var path = context.Request.Path;
-        var traceId = context.TraceIdentifier;
+        string traceId = context.TraceIdentifier;
 
         try
         {
@@ -88,7 +88,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
         }
         finally
         {
-            var elapsedMs = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            double elapsedMs = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             logger.LogInformation("MCP request: {Method} {Path} -> {StatusCode} in {ElapsedMs}ms [TraceId: {TraceId}]",
                 method, (string)path, context.Response.StatusCode, elapsedMs, traceId);
@@ -107,7 +107,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
             context.Response.StatusCode = StatusCodes.Status200OK;
 
             await context.Response.WriteAsJsonAsync<ProtectedResourceMetadata?>(metadata, JsonRpcAndMcpJsonContext.Default.ProtectedResourceMetadata!);
-            
+
             logger.LogDebug("Served protected resource metadata for path {Path}", context.Request.Path);
         }
         catch (Exception ex)

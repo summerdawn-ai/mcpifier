@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 using Microsoft.Extensions.Logging;
 
@@ -27,7 +27,7 @@ public class McpStdioServerTests
         var server = new McpStdioServer(mockStdio.Object, mockDispatcher.Object, mockLogger.Object);
 
         var request = new { jsonrpc = "2.0", method = "test.method" };
-        var requestJson = JsonSerializer.Serialize(request);
+        string requestJson = JsonSerializer.Serialize(request);
         var outputStream = new MemoryStream();
         var writer = new StreamWriter(outputStream) { AutoFlush = true };
 
@@ -37,7 +37,7 @@ public class McpStdioServerTests
         // Assert
         await writer.FlushAsync();
         outputStream.Position = 0;
-        var responseText = new StreamReader(outputStream).ReadToEnd();
+        string responseText = new StreamReader(outputStream).ReadToEnd();
         Assert.Empty(responseText); // No response for notifications
 
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -59,7 +59,7 @@ public class McpStdioServerTests
         var server = new McpStdioServer(mockStdio.Object, mockDispatcher.Object, mockLogger.Object);
 
         var request = new { jsonrpc = "2.0", method = "test.method", id = "test-id" };
-        var requestJson = JsonSerializer.Serialize(request);
+        string requestJson = JsonSerializer.Serialize(request);
         var outputStream = new MemoryStream();
         var writer = new StreamWriter(outputStream) { AutoFlush = true };
 
@@ -69,7 +69,7 @@ public class McpStdioServerTests
         // Assert
         await writer.FlushAsync();
         outputStream.Position = 0;
-        var responseText = new StreamReader(outputStream).ReadToEnd();
+        string responseText = new StreamReader(outputStream).ReadToEnd();
         Assert.NotEmpty(responseText);
 
         var response = JsonDocument.Parse(responseText);
@@ -96,7 +96,7 @@ public class McpStdioServerTests
         var server = new McpStdioServer(mockStdio.Object, mockDispatcher.Object, mockLogger.Object);
 
         var request = new { jsonrpc = "2.0", method = "test.method", id = "test-id" };
-        var requestJson = JsonSerializer.Serialize(request);
+        string requestJson = JsonSerializer.Serialize(request);
         var outputStream = new MemoryStream();
         var writer = new StreamWriter(outputStream) { AutoFlush = true };
 
@@ -106,7 +106,7 @@ public class McpStdioServerTests
         // Assert
         await writer.FlushAsync();
         outputStream.Position = 0;
-        var responseText = new StreamReader(outputStream).ReadToEnd();
+        string responseText = new StreamReader(outputStream).ReadToEnd();
         Assert.NotEmpty(responseText);
 
         var response = JsonDocument.Parse(responseText);
@@ -130,7 +130,7 @@ public class McpStdioServerTests
         var server = new McpStdioServer(mockStdio.Object, mockDispatcher.Object, mockLogger.Object);
 
         var request = new { jsonrpc = "2.0", method = "test.method", id = "test-id" };
-        var requestJson = JsonSerializer.Serialize(request);
+        string requestJson = JsonSerializer.Serialize(request);
         var outputStream = new MemoryStream();
         var writer = new StreamWriter(outputStream) { AutoFlush = true };
 
@@ -149,7 +149,7 @@ public class McpStdioServerTests
 
         var server = new McpStdioServer(mockStdio.Object, mockDispatcher.Object, mockLogger.Object);
 
-        var invalidJson = "{ invalid json }";
+        string invalidJson = "{ invalid json }";
         var outputStream = new MemoryStream();
         var writer = new StreamWriter(outputStream) { AutoFlush = true };
 
@@ -159,7 +159,7 @@ public class McpStdioServerTests
         // Assert
         await writer.FlushAsync();
         outputStream.Position = 0;
-        var responseText = new StreamReader(outputStream).ReadToEnd();
+        string responseText = new StreamReader(outputStream).ReadToEnd();
         Assert.NotEmpty(responseText);
 
         var response = JsonDocument.Parse(responseText);
@@ -180,7 +180,7 @@ public class McpStdioServerTests
 
         var server = new McpStdioServer(mockStdio.Object, mockDispatcher.Object, mockLogger.Object);
 
-        var nullJson = "null";
+        string nullJson = "null";
         var outputStream = new MemoryStream();
         var writer = new StreamWriter(outputStream) { AutoFlush = true };
 
@@ -190,7 +190,7 @@ public class McpStdioServerTests
         // Assert
         await writer.FlushAsync();
         outputStream.Position = 0;
-        var responseText = new StreamReader(outputStream).ReadToEnd();
+        string responseText = new StreamReader(outputStream).ReadToEnd();
         Assert.NotEmpty(responseText);
 
         var response = JsonDocument.Parse(responseText);

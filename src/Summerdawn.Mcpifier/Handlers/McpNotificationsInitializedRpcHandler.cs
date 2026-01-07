@@ -11,7 +11,7 @@ public sealed class McpNotificationsInitializedRpcHandler(ILogger<McpNotificatio
     public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default)
     {
         logger.LogDebug("Handling notifications/initialized request with id {RequestId}", rpcRequest.Id);
-        
+
         return Task.FromResult(JsonRpcResponse.Empty);
     }
 }

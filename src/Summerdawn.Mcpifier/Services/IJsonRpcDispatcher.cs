@@ -13,5 +13,5 @@ public interface IJsonRpcDispatcher
     /// <param name="rpcRequest">The JSON-RPC request to dispatch.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A JSON-RPC response.</returns>
-    Task<JsonRpcResponse> DispatchAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken);
+    public Task<JsonRpcResponse> DispatchAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken);
 }

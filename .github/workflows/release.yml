@@ -110,7 +110,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build Server for ${{ matrix.rid }}
-        run: dotnet publish src/Summerdawn.Mcpifier.Server/Summerdawn.Mcpifier.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
+        run: dotnet publish src/Summerdawn.Mcpifier.Server/Summerdawn.Mcpifier.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:NoWarn=IDE0005 -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
 
       - name: Package Server for ${{ matrix.rid }} (Windows)
         if: runner.os == 'Windows'

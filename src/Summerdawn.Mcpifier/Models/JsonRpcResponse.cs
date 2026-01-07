@@ -98,7 +98,7 @@ public sealed class JsonRpcResponse
     /// <param name="id">The request identifier.</param>
     /// <returns>An invalid request error response.</returns>
     public static JsonRpcResponse InvalidRequest(JsonElement id) => ErrorResponse(id, InvalidRequestCode, "Invalid Request");
-    
+
     /// <summary>
     /// Creates an invalid params error response.
     /// </summary>

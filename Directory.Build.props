@@ -1,6 +1,17 @@
 <Project>
 
   <PropertyGroup>
+    <!-- Trigger code style rules from .editorconfig on build -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+
+    <!-- Enable documentation file generation to enable IDE0005 (unused usings) warnings -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Ignore CS1591 warnings about missing XML comments triggered by `GenerateDocumentationFile` -->
+    <NoWarn>$(NoWarn);1701;1702;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Shared NuGet package metadata -->
     <Authors>summerdawn.ai</Authors>
     <Company>summerdawn.ai</Company>
@@ -17,11 +28,6 @@
     <!-- Include PDBs in authored .nupkg -->
     <DebugSymbols>true</DebugSymbols>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Generate XML documentation files -->
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
 </Project>

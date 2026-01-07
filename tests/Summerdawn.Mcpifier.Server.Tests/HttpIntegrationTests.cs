@@ -49,9 +49,9 @@ public class HttpIntegrationTests(McpifierServerFactory factory) : IClassFixture
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
+        string content = await response.Content.ReadAsStringAsync();
         var jsonDoc = JsonDocument.Parse(content);
-        
+
         Assert.True(jsonDoc.RootElement.TryGetProperty("result", out var result));
         Assert.True(result.TryGetProperty("tools", out var tools));
 
@@ -65,7 +65,7 @@ public class HttpIntegrationTests(McpifierServerFactory factory) : IClassFixture
     public async Task ToolsCallRequest_WithMockedHttpClient_ReturnsExpectedResponse()
     {
         // Arrange
-        var expectedResponseBody = "{\"message\":\"test response\"}";
+        string expectedResponseBody = "{\"message\":\"test response\"}";
         var mockHandler = new MockHttpMessageHandler((request, cancellationToken) =>
         {
             // Verify the request was made to the expected endpoint
@@ -111,19 +111,19 @@ public class HttpIntegrationTests(McpifierServerFactory factory) : IClassFixture
         var response = await client.PostAsJsonAsync("/", request);
 
         // Assert
-        var content = await response.Content.ReadAsStringAsync();
-        
+        string content = await response.Content.ReadAsStringAsync();
+
         // If we get an error, output it for debugging
         if (!response.IsSuccessStatusCode)
         {
             throw new Exception($"Request failed with {response.StatusCode}: {content}");
         }
-        
+
         var jsonDoc = JsonDocument.Parse(content);
-        
+
         Assert.True(jsonDoc.RootElement.TryGetProperty("result", out var result));
         Assert.True(result.TryGetProperty("content", out var resultContent));
-        
+
         // Verify the mock handler was called
         Assert.True(mockHandler.WasCalled);
     }

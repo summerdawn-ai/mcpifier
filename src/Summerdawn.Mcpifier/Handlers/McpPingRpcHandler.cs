@@ -11,7 +11,7 @@ public sealed class McpPingRpcHandler(ILogger<McpPingRpcHandler> logger) : IRpcH
     public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default)
     {
         logger.LogDebug("Handling ping request with id {RequestId}", rpcRequest.Id);
-        
+
         return Task.FromResult(JsonRpcResponse.Success(rpcRequest.Id));
     }
 }

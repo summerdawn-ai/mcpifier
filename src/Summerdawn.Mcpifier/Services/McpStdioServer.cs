@@ -51,7 +51,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
                 string? requestPayload = await ReadLineAsync(reader, stoppingToken);
 
                 // Break if the token fires or the console reader catches the Ctrl+C first
-                if (requestPayload is null) break;
+                if (requestPayload is null) { break; }
 
                 if (string.IsNullOrWhiteSpace(requestPayload))
                 {
@@ -117,7 +117,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
                 rpcRequest.Method, rpcRequest.Id);
 
             var rpcResponse = await dispatcher.DispatchAsync(rpcRequest, stoppingToken);
-            
+
             if (rpcResponse.IsEmpty())
             {
                 // Don't send a response for notifications
@@ -129,7 +129,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
         }
         finally
         {
-            var elapsedMs = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            double elapsedMs = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             logger.LogInformation("MCP request: {Method} with id {RequestId} completed in {ElapsedMs}ms",
                 rpcMethod ?? "unknown", requestId, elapsedMs);
@@ -142,15 +142,15 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
         {
             // ReadLineAsync doesn't properly cancel on stdin, so we check the token separately.
             var readTask = reader.ReadLineAsync(CancellationToken.None).AsTask();
-            
+
             var completedTask = await Task.WhenAny(readTask, Task.Delay(Timeout.Infinite, stoppingToken));
-                    
+
             if (completedTask != readTask)
             {
                 // Cancellation was requested
                 return null;
             }
-                    
+
             return await readTask;
         }
         catch (OperationCanceledException)

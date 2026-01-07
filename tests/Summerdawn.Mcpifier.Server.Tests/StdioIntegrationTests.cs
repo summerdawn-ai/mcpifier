@@ -39,17 +39,17 @@ public class StdioIntegrationTests
 
         // Configure Mcpifier with stdio mode
         builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
-        
+
         // Replace IStdio with TestStdio
         builder.Services.AddSingleton<IStdio>(testStdio);
-        
+
         // Replace RestApiService HttpClient with mock handler
         builder.Services.AddHttpClient<RestApiService>((sp, client) =>
         {
             client.BaseAddress = new Uri("http://example.com");
         })
         .ConfigurePrimaryHttpMessageHandler(() => mockHandler);
-        
+
         // Redirect console logging to stderr
         builder.Logging.AddConsole(options =>
         {
@@ -77,11 +77,11 @@ public class StdioIntegrationTests
                 @params = new { }
             };
 
-            var requestJson = JsonSerializer.Serialize(request) + "\n";
+            string requestJson = JsonSerializer.Serialize(request) + "\n";
             await testStdio.WriteLineAsync(requestJson);
 
             // Read the response with timeout
-            var responseJson = await testStdio.ReadLineAsync(TimeSpan.FromSeconds(5));
+            string? responseJson = await testStdio.ReadLineAsync(TimeSpan.FromSeconds(5));
 
             // Assert
             Assert.NotNull(responseJson);
@@ -127,7 +127,7 @@ public class TestStdio : IStdio
         // Create streams from pipes
         // Server reads from inputPipe.Reader (test writes to inputPipe.Writer)
         inputStream = inputPipe.Reader.AsStream();
-        
+
         // Server writes to outputPipe.Writer (test reads from outputPipe.Reader)
         outputStream = outputPipe.Writer.AsStream();
     }
@@ -140,7 +140,7 @@ public class TestStdio : IStdio
     /// </summary>
     public async Task WriteLineAsync(string line)
     {
-        var bytes = Encoding.UTF8.GetBytes(line);
+        byte[] bytes = Encoding.UTF8.GetBytes(line);
         await inputPipe.Writer.WriteAsync(bytes);
         await inputPipe.Writer.FlushAsync();
     }
@@ -151,10 +151,10 @@ public class TestStdio : IStdio
     public async Task<string?> ReadLineAsync(TimeSpan timeout)
     {
         using var cts = new CancellationTokenSource(timeout);
-        
+
         var reader = new StreamReader(outputPipe.Reader.AsStream(), Encoding.UTF8);
         var readTask = reader.ReadLineAsync(cts.Token);
-        
+
         try
         {
             return await readTask;

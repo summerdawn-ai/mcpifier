@@ -186,7 +186,7 @@ public class RestApiServiceTests
 
         // Build arguments from the provided arg names
         var arguments = new Dictionary<string, JsonElement>();
-        foreach (var argName in argumentNames)
+        foreach (string argName in argumentNames)
         {
             arguments[argName] = JsonSerializer.SerializeToElement(argName);
         }
@@ -312,7 +312,7 @@ public class RestApiServiceTests
 
         // Assert
         Assert.NotNull(capturedBody);
-        var expectedBody = "{\"user\":{\"name\":\"Jane\",\"email\":\"jane@example.com\"},\"metadata\":{\"source\":\"test\",\"timestamp\":123456789}}";
+        string expectedBody = "{\"user\":{\"name\":\"Jane\",\"email\":\"jane@example.com\"},\"metadata\":{\"source\":\"test\",\"timestamp\":123456789}}";
         Assert.Equal(expectedBody, capturedBody);
     }
 
