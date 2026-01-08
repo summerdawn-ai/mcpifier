@@ -1,37 +1,45 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Net;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 using Summerdawn.Mcpifier.Abstractions;
-using Summerdawn.Mcpifier.DependencyInjection;
 using Summerdawn.Mcpifier.Services;
+
+using Xunit.Abstractions;
 
 namespace Summerdawn.Mcpifier.Server.Tests;
 
 /// <summary>
 /// Integration tests for stdio mode using in-memory streams.
 /// </summary>
-public class StdioIntegrationTests
+[SuppressMessage("ReSharper", "StringLiteralTypo")]
+public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelper output) : IClassFixture<McpifierHostFactory>
 {
-    public static TheoryData<string, string, string, bool> GetEndToEndTestCases()
+    private static readonly JsonSerializerOptions NormalizedJsonOptions = new()
     {
-        // Can reference the same test data as HTTP tests
-        return HttpIntegrationTests.GetEndToEndTestCases();
-    }
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        WriteIndented = false
+    };
 
     [Theory]
-    [MemberData(nameof(GetEndToEndTestCases))]
-    public async Task StdioServer_EndToEnd_AllScenarios(
-        string testName,
-        string mcpRequest,
-        string expectedResponse,
-        bool shouldVerifyMockCalled)
+    [MemberData(nameof(HttpIntegrationTests.GetDataForIntegrationTests_Mcp), MemberType = typeof(HttpIntegrationTests))]
+    public Task HandleRequest_WithMcpMethod_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
+
+    [Theory]
+    [MemberData(nameof(HttpIntegrationTests.GetDataForIntegrationTests_Http), MemberType = typeof(HttpIntegrationTests))]
+    public Task HandleRequest_WithToolCall_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
+
+    [Theory]
+    [MemberData(nameof(HttpIntegrationTests.GetDataForIntegrationTests_Invalid), MemberType = typeof(HttpIntegrationTests))]
+    public Task HandleRequest_WithInvalidRequest_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
+
+    private async Task HandleRequest_WithGivenRequest_ReturnsExpectedResponse(string scenario, string mcpRequest, string expectedResponse)
     {
         // Arrange
         var testStdio = new TestStdio();
@@ -44,22 +52,17 @@ public class StdioIntegrationTests
 
         var mockHandler = new MockHttpMessageHandler(mockResponses);
 
-        var builder = Host.CreateApplicationBuilder();
-        builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: false);
-        builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
-        builder.Services.AddSingleton<IStdio>(testStdio);
-        builder.Services.AddHttpClient<RestApiService>((sp, client) =>
+        var host = factory.WithApplicationBuilder(builder =>
         {
-            client.BaseAddress = new Uri("http://example.com");
-        })
-        .ConfigurePrimaryHttpMessageHandler(() => mockHandler);
-
-        builder.Logging.AddConsole(options =>
-        {
-            options.LogToStandardErrorThreshold = LogLevel.Trace;
+            // Mock stdio and HTTP API.
+            builder.Services.AddSingleton<IStdio>(testStdio);
+            builder.Services.AddHttpClient<RestApiService>((sp, client) =>
+                {
+                    client.BaseAddress = new Uri("http://example.com");
+                })
+                .ConfigurePrimaryHttpMessageHandler(() => mockHandler);
         });
 
-        var host = builder.Build();
         var stdioServer = host.Services.GetRequiredService<McpStdioServer>();
         stdioServer.Activate();
 
@@ -72,18 +75,16 @@ public class StdioIntegrationTests
             await testStdio.WriteLineAsync(mcpRequest + "\n");
             string? actualResponse = await testStdio.ReadLineAsync(TimeSpan.FromSeconds(5));
 
+            actualResponse = NormalizeJson(actualResponse);
+
+            output.WriteLine("Scenario:          {0}", scenario);
+            output.WriteLine("Request:           {0}", mcpRequest);
+            output.WriteLine("Expected response: {0}", expectedResponse);
+            output.WriteLine("Actual response:   {0}", actualResponse);
+
             // Assert
             Assert.NotNull(actualResponse);
-
-            var expected = JsonDocument.Parse(expectedResponse);
-            var actual = JsonDocument.Parse(actualResponse);
-
-            AssertJsonEquals(expected.RootElement, actual.RootElement, testName);
-
-            if (shouldVerifyMockCalled)
-            {
-                Assert.True(mockHandler.WasCalled, $"Test '{testName}': Expected mock HTTP handler to be called");
-            }
+            Assert.Equal(expectedResponse, actualResponse);
         }
         finally
         {
@@ -92,36 +93,12 @@ public class StdioIntegrationTests
         }
     }
 
-    private void AssertJsonEquals(JsonElement expected, JsonElement actual, string testName, string path = "$")
+    private static string? NormalizeJson(string? json)
     {
-        Assert.Equal(expected.ValueKind, actual.ValueKind);
+        if (json is null) { return null; }
 
-        switch (expected.ValueKind)
-        {
-            case JsonValueKind.Object:
-                foreach (var prop in expected.EnumerateObject())
-                {
-                    Assert.True(actual.TryGetProperty(prop.Name, out var actualProp),
-                        $"Test '{testName}': Missing property '{prop.Name}' at {path}");
-                    AssertJsonEquals(prop.Value, actualProp, testName, $"{path}.{prop.Name}");
-                }
-                break;
-
-            case JsonValueKind.Array:
-                var expectedArray = expected.EnumerateArray().ToList();
-                var actualArray = actual.EnumerateArray().ToList();
-                Assert.Equal(expectedArray.Count, actualArray.Count);
-
-                for (int i = 0; i < expectedArray.Count; i++)
-                {
-                    AssertJsonEquals(expectedArray[i], actualArray[i], testName, $"{path}[{i}]");
-                }
-                break;
-
-            default:
-                Assert.Equal(expected.ToString(), actual.ToString());
-                break;
-        }
+        using var document = JsonDocument.Parse(json);
+        return JsonSerializer.Serialize(document.RootElement, NormalizedJsonOptions);
     }
 }
 
