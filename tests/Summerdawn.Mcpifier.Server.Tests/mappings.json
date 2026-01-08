@@ -7,22 +7,41 @@
       {
         "mcp": {
           "name": "test_tool",
-          "description": "A test tool for integration testing.",
+          "description": "test tool",
           "inputSchema": {
             "type": "object",
-            "properties": {
-              "message": {
-                "type": "string",
-                "description": "Test message."
-              }
-            },
-            "required": [ "message" ]
+            "required": []
           }
         },
         "rest": {
           "method": "POST",
-          "path": "/api/test",
-          "body": "{ \"message\": {message} }"
+          "path": "/api/test"
+        }
+      },
+      {
+        "mcp": {
+          "name": "test_tool_404",
+          "description": "Tool that returns 404",
+          "inputSchema": {
+            "type": "object"
+          }
+        },
+        "rest": {
+          "method": "GET",
+          "path": "/api/notfound"
+        }
+      },
+      {
+        "mcp": {
+          "name": "test_tool_500",
+          "description": "Tool that returns 500",
+          "inputSchema": {
+            "type": "object"
+          }
+        },
+        "rest": {
+          "method": "GET",
+          "path": "/api/servererror"
         }
       }
     ]

@@ -19,95 +19,108 @@ namespace Summerdawn.Mcpifier.Server.Tests;
 /// </summary>
 public class StdioIntegrationTests
 {
-    [Fact]
-    public async Task StdioServer_WithInMemoryStreams_ProcessesJsonRpcRequest()
+    public static TheoryData<string, string, string, bool> GetEndToEndTestCases()
+    {
+        // Can reference the same test data as HTTP tests
+        return HttpIntegrationTests.GetEndToEndTestCases();
+    }
+
+    [Theory]
+    [MemberData(nameof(GetEndToEndTestCases))]
+    public async Task StdioServer_EndToEnd_AllScenarios(
+        string testName,
+        string mcpRequest,
+        string expectedResponse,
+        bool shouldVerifyMockCalled)
     {
         // Arrange
         var testStdio = new TestStdio();
-        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) =>
+        var mockResponses = new Dictionary<string, (HttpStatusCode, string)>
         {
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("{\"status\":\"ok\"}")
-            });
-        });
+            ["/api/test"] = (HttpStatusCode.OK, """{"status":"ok"}"""),
+            ["/api/notfound"] = (HttpStatusCode.NotFound, """{"error":"not found"}"""),
+            ["/api/servererror"] = (HttpStatusCode.InternalServerError, """{"error":"server error"}""")
+        };
+
+        var mockHandler = new MockHttpMessageHandler(mockResponses);
 
         var builder = Host.CreateApplicationBuilder();
-
-        // Load test mappings
         builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: false);
-
-        // Configure Mcpifier with stdio mode
         builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
-
-        // Replace IStdio with TestStdio
         builder.Services.AddSingleton<IStdio>(testStdio);
-
-        // Replace RestApiService HttpClient with mock handler
         builder.Services.AddHttpClient<RestApiService>((sp, client) =>
         {
             client.BaseAddress = new Uri("http://example.com");
         })
         .ConfigurePrimaryHttpMessageHandler(() => mockHandler);
 
-        // Redirect console logging to stderr
         builder.Logging.AddConsole(options =>
         {
             options.LogToStandardErrorThreshold = LogLevel.Trace;
         });
 
         var host = builder.Build();
-
-        // Get the McpStdioServer and activate it
         var stdioServer = host.Services.GetRequiredService<McpStdioServer>();
         stdioServer.Activate();
 
-        // Start the host in the background
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var hostTask = host.RunAsync(cts.Token);
 
         try
         {
-            // Act - Write a JSON-RPC request
-            var request = new
-            {
-                jsonrpc = "2.0",
-                id = 1,
-                method = "tools/list",
-                @params = new { }
-            };
-
-            string requestJson = JsonSerializer.Serialize(request) + "\n";
-            await testStdio.WriteLineAsync(requestJson);
-
-            // Read the response with timeout
-            string? responseJson = await testStdio.ReadLineAsync(TimeSpan.FromSeconds(5));
+            // Act
+            await testStdio.WriteLineAsync(mcpRequest + "\n");
+            string? actualResponse = await testStdio.ReadLineAsync(TimeSpan.FromSeconds(5));
 
             // Assert
-            Assert.NotNull(responseJson);
-            Assert.NotEmpty(responseJson);
+            Assert.NotNull(actualResponse);
 
-            var jsonDoc = JsonDocument.Parse(responseJson);
-            Assert.True(jsonDoc.RootElement.TryGetProperty("result", out var result));
-            Assert.True(result.TryGetProperty("tools", out var tools));
+            var expected = JsonDocument.Parse(expectedResponse);
+            var actual = JsonDocument.Parse(actualResponse);
 
-            var toolsArray = tools.EnumerateArray().ToArray();
+            AssertJsonEquals(expected.RootElement, actual.RootElement, testName);
 
-            Assert.Equal(1, toolsArray.Length);
-            Assert.Equal("test_tool", toolsArray[0].GetProperty("name").GetString());
+            if (shouldVerifyMockCalled)
+            {
+                Assert.True(mockHandler.WasCalled, $"Test '{testName}': Expected mock HTTP handler to be called");
+            }
         }
         finally
         {
-            // Cleanup
             await cts.CancelAsync();
-            try
-            {
-                await hostTask;
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when cancelling the host
-            }
+            try { await hostTask; } catch (OperationCanceledException) { }
+        }
+    }
+
+    private void AssertJsonEquals(JsonElement expected, JsonElement actual, string testName, string path = "$")
+    {
+        Assert.Equal(expected.ValueKind, actual.ValueKind);
+
+        switch (expected.ValueKind)
+        {
+            case JsonValueKind.Object:
+                foreach (var prop in expected.EnumerateObject())
+                {
+                    Assert.True(actual.TryGetProperty(prop.Name, out var actualProp),
+                        $"Test '{testName}': Missing property '{prop.Name}' at {path}");
+                    AssertJsonEquals(prop.Value, actualProp, testName, $"{path}.{prop.Name}");
+                }
+                break;
+
+            case JsonValueKind.Array:
+                var expectedArray = expected.EnumerateArray().ToList();
+                var actualArray = actual.EnumerateArray().ToList();
+                Assert.Equal(expectedArray.Count, actualArray.Count);
+
+                for (int i = 0; i < expectedArray.Count; i++)
+                {
+                    AssertJsonEquals(expectedArray[i], actualArray[i], testName, $"{path}[{i}]");
+                }
+                break;
+
+            default:
+                Assert.Equal(expected.ToString(), actual.ToString());
+                break;
         }
     }
 }
