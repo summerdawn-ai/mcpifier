@@ -109,7 +109,7 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
         {
             "ToolsList",
             """{"jsonrpc":"2.0","id":3,"method":"tools/list","params":{}}""",
-            """{"jsonrpc":"2.0","id":3,"result":{"tools":[{"name":"test_tool","description":"test tool","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_404","description":"Tool that returns 404","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_500","description":"Tool that returns 500","inputSchema":{"type":"object","required":[]}}]}}"""
+            """{"jsonrpc":"2.0","id":3,"result":{"tools":[{"name":"test_tool","description":"Tool","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_arguments","description":"Tool with arguments","inputSchema":{"type":"object","properties":{"bar":{"type":"integer","format":"int32"},"foo":{"type":"string"}},"required":["foo"]}},{"name":"test_tool_404","description":"Tool that returns 404","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_500","description":"Tool that returns 500","inputSchema":{"type":"object","required":[]}}]}}"""
         }
     };
 
@@ -178,18 +178,23 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
         },
         {
             "ToolCall_NonExistent",
-            """{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"non_existent_tool","arguments":{}}}""",
-            """{"jsonrpc":"2.0","id":7,"error":{"code":-32602,"message":"Invalid params"}}"""
+            """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"non_existent_tool","arguments":{}}}""",
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Tool 'non_existent_tool' not found"}}}"""
         },
         {
-            "ToolCall_MissingArguments",
-            """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"arguments":{}}}""",
-            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params"}}"""
+            "ToolCall_InvalidArguments_Missing",
+            """{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"test_tool_arguments","arguments":{"bar":3}}}""",
+            """{"jsonrpc":"2.0","id":2,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Required field 'foo' is missing"}}}"""
+        },
+        {
+            "ToolCall_InvalidArguments_WrongType",
+            """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"test_tool_arguments","arguments":{"foo":{}}}}""",
+            """{"jsonrpc":"2.0","id":3,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Field 'foo' has invalid type. Expected: string"}}}"""
         },
         {
             "ToolCall_InvalidArguments_NotObject",
-            """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"test_tool","arguments":"invalid"}}""",
-            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Failed to deserialize params: The JSON value could not be converted to System.Collections.Generic.Dictionary`2[System.String,System.Text.Json.JsonElement]. Path: $.arguments | LineNumber: 0 | BytePositionInLine: 41."}}}"""
+            """{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"test_tool_arguments","arguments":"invalid"}}""",
+            """{"jsonrpc":"2.0","id":4,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Failed to deserialize params: The JSON value could not be converted to System.Collections.Generic.Dictionary`2[System.String,System.Text.Json.JsonElement]. Path: $.arguments | LineNumber: 0 | BytePositionInLine: 51."}}}"""
         }
     };
 
