@@ -181,19 +181,22 @@ await swaggerConverter.LoadAndConvertAsync("https://api.example.com/swagger.json
 
 This is intended for offline or one-time generation scenarios.
 
-After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file:
+After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file using the `AddToolsFromMappings` extension method:
 
 ```csharp
 using Summerdawn.Mcpifier.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Load the mappings file into the configuration
-builder.Configuration.AddJsonFile("path/to/mappings.json");
-
-// Configure Mcpifier with the resulting configuration including the tool mappings
+// Load Mcpifier configuration from appsettings
 builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
+
+// Load tool mappings from a JSON file
+builder.Services.AddMcpifier(options => { /* configure */ })
+    .AddToolsFromMappings("path/to/mappings.json");
 ```
+
+**Note:** Tools should be loaded using `.AddToolsFromSwagger()` or `.AddToolsFromMappings()` rather than directly in `appsettings.json`. The `Tools` section in the configuration file is primarily for documentation and reference purposes.
 
 ### Starting the Server
 
@@ -297,13 +300,7 @@ Mcpifier's configuration maps to the `McpifierOptions` class and is structured a
 }
 ```
 
-In order to keep tool mappings environment-independent and version-controllable, it is recommended that they are loaded from a separate `mappings.json` file, not included in `appsettings.json`:
-
-```csharp
-builder.Configuration.AddJsonFile("mappings.json");
-```
-
-See the [Usage](#usage) section for instructions on how to load the configuration.
+**Note:** Tools should be loaded using `.AddToolsFromSwagger()` or `.AddToolsFromMappings()` rather than directly in `appsettings.json`. The `Tools` section above is shown for reference to understand the structure, but tool mappings are best managed in separate `mappings.json` files for better maintainability.
 
 ### Configuration Reference
 
@@ -392,7 +389,9 @@ The `Mcp` section of each mapping defines an MCP tool as defined in the [MCP Too
 |----|----|-----------|-------|
 |name|`string` (required)|Unique identifier for the tool|"get_user"|
 |title|`string`|Optional human-readable name of the tool for display purposes|"Retrieve user information by id"|
-|inputSchema|`InputSchema`|JSON Schema defining expected parameters|{ "type": "object", "properties": { "userId": { "type": "string", "description": "The user's unique identifier" } }, "required": ["userId"] }|
+|inputSchema|`object`|Full JSON Schema defining expected parameters (supports all JSON Schema features)|{ "type": "object", "properties": { "userId": { "type": "string", "description": "The user's unique identifier" } }, "required": ["userId"] }|
+
+The `inputSchema` property now supports the full JSON Schema specification for comprehensive input validation. This allows you to define complex parameter structures, nested objects, arrays, enums, patterns, and all other JSON Schema features.
 
 Note that the `outputSchema` and `annotations` properties defined in the specification are currently not supported.
 
@@ -474,6 +473,7 @@ Request body placeholders for absent arguments are replaced with `null`, for exa
 This package has the following dependencies:
 
 - **.NET 8.0** or later
+- **JsonSchema.Net**: JSON Schema validation library
 - **Microsoft.AspNetCore.Http.Abstractions**: HTTP context abstractions
 - **Microsoft.Extensions.Hosting.Abstractions**: Hosting abstractions
 - **Microsoft.Extensions.Http**: HTTP client factory
