@@ -16,6 +16,7 @@ namespace Summerdawn.Mcpifier.Tests;
 public class RestApiServiceTests
 {
     [Fact]
+    [Obsolete]
     public async Task ExecuteToolAsync_InterpolatesPathParameters()
     {
         // Arrange
@@ -63,6 +64,7 @@ public class RestApiServiceTests
     }
 
     [Fact]
+    [Obsolete]
     public async Task ExecuteToolAsync_InterpolatesPathParameters_WithSpecialCharacters()
     {
         // Arrange
@@ -109,6 +111,7 @@ public class RestApiServiceTests
     }
 
     [Fact]
+    [Obsolete]
     public async Task ExecuteToolAsync_InterpolatesQueryParameters()
     {
         // Arrange
@@ -167,6 +170,7 @@ public class RestApiServiceTests
     [InlineData("x={arg}", new string[] { }, "?")]
     [InlineData("p1={a1}&p2={a2}&p3={a3}&p4={a4}", new[] { "a1", "a3" }, "?p1=a1&p3=a3")]
     [InlineData("v={weird&param}&limit={other weird}", new[] { "weird&param" }, "?v=weird%26param")]
+    [Obsolete]
     public async Task ExecuteToolAsync_InterpolatesQueryParameters_WithMissingArguments(string query, string[] argumentNames, string expectedQuery)
     {
         // Arrange
@@ -216,6 +220,7 @@ public class RestApiServiceTests
     }
 
     [Fact]
+    [Obsolete]
     public async Task ExecuteToolAsync_InterpolatesBodyParameters()
     {
         // Arrange
@@ -265,6 +270,7 @@ public class RestApiServiceTests
     }
 
     [Fact]
+    [Obsolete]
     public async Task ExecuteToolAsync_InterpolatesBodyParameters_WithNestedObjects()
     {
         // Arrange
@@ -317,6 +323,7 @@ public class RestApiServiceTests
     }
 
     [Fact]
+    [Obsolete]
     public async Task ExecuteToolAsync_InterpolatesBodyParameters_WithMissingArguments()
     {
         // Arrange
@@ -364,6 +371,7 @@ public class RestApiServiceTests
     }
 
     [Fact]
+    [Obsolete]
     public async Task ExecuteToolAsync_CombinesPathQueryAndBodyInterpolation()
     {
         // Arrange

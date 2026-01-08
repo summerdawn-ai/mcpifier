@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
+using Json.Schema;
+
 using Microsoft.OpenApi;
 
 using Summerdawn.Mcpifier.Configuration;
@@ -155,7 +157,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     private async Task<McpifierToolMapping> ConvertOperationAsync(string path, HttpMethod type, OpenApiOperation operation)
     {
         string toolName = GenerateToolName(operation, path, type);
-        var inputSchema = await BuildInputSchemaAsync(operation);
+        var (schemaObject, schemaElement) = await BuildInputSchemaAsync(operation);
         var restConfig = BuildRestConfiguration(path, type, operation);
 
         return new McpifierToolMapping
@@ -164,7 +166,8 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
             {
                 Name = toolName,
                 Description = operation.Summary ?? operation.Description ?? $"{type} {path}",
-                InputSchema = inputSchema
+                InputSchemaObject = schemaObject,
+                InputSchema = schemaElement
             },
             Rest = restConfig
         };
@@ -174,8 +177,11 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// Builds the input schema from operation parameters and request body.
     /// </summary>
     /// <param name="operation">The OpenAPI operation.</param>
-    /// <returns>An input schema.</returns>
-    private async Task<InputSchema> BuildInputSchemaAsync(OpenApiOperation operation)
+    /// <returns>A tuple containing the JsonSchema object and JsonElement for serialization.</returns>
+    [Obsolete]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+    private async Task<(JsonSchema schemaObject, JsonElement schemaElement)> BuildInputSchemaAsync(OpenApiOperation operation)
     {
         var inputSchema = new InputSchema();
 
@@ -191,7 +197,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
                 // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
                 // arrays for nullable types that break our deserialization.
                 string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
-                inputSchema = JsonSerializer.Deserialize<InputSchema>(json, JsonRpcAndMcpJsonContext.Default.InputSchema)!;
+                inputSchema = JsonSerializer.Deserialize<InputSchema>(json)!;
             }
             else if (schema is not null)
             {
@@ -200,7 +206,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
                 string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
                 inputSchema.Properties = new()
                 {
-                    ["requestBody"] = JsonSerializer.Deserialize<PropertySchema>(json, JsonRpcAndMcpJsonContext.Default.PropertySchema)!
+                    ["requestBody"] = JsonSerializer.Deserialize<PropertySchema>(json)!
                 };
             }
         }
@@ -218,7 +224,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
             // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
             // arrays for nullable types that break our deserialization.
             string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
-            var propertySchema = JsonSerializer.Deserialize<PropertySchema>(json, JsonRpcAndMcpJsonContext.Default.PropertySchema)!;
+            var propertySchema = JsonSerializer.Deserialize<PropertySchema>(json)!;
 
             // Prefer param description over schema description.
             propertySchema.Description = param.Description ?? propertySchema.Description;
@@ -231,7 +237,16 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
             }
         }
 
-        return inputSchema;
+        // Serialize the inputSchema to JSON string
+        string schemaJson = JsonSerializer.Serialize(inputSchema);
+
+        // Parse into JsonSchema for validation
+        var schemaObject = JsonSchema.FromText(schemaJson);
+
+        // Parse into JsonElement for serialization
+        var schemaElement = JsonDocument.Parse(schemaJson).RootElement.Clone();
+
+        return (schemaObject, schemaElement);
     }
 
     /// <summary>
