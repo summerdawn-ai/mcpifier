@@ -1,33 +1,55 @@
 using System.Net;
-using System.Net.Http.Json;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using Summerdawn.Mcpifier.Services;
 
+using Xunit.Abstractions;
+
 namespace Summerdawn.Mcpifier.Server.Tests;
 
 /// <summary>
 /// Integration tests for HTTP mode using WebApplicationFactory.
 /// </summary>
-public class HttpIntegrationTests(McpifierServerFactory factory) : IClassFixture<McpifierServerFactory>
+public class HttpIntegrationTests(McpifierServerFactory factory, ITestOutputHelper output) : IClassFixture<McpifierServerFactory>
 {
-    [Fact]
-    public async Task ToolsListRequest_ReturnsExpectedTools()
+    private static readonly JsonSerializerOptions NormalizedJsonOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        WriteIndented = false
+    };
+
+    [Theory]
+    [MemberData(nameof(StdioIntegrationTests.GetDataForHandleRequests_Mcp), MemberType = typeof(StdioIntegrationTests))]
+    public Task HandleRequest_WithMcpMethod_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
+
+    [Theory]
+    [MemberData(nameof(StdioIntegrationTests.GetDataForHandleRequests_Http), MemberType = typeof(StdioIntegrationTests))]
+    public Task HandleRequest_WithToolCall_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
+
+    [Theory]
+    [MemberData(nameof(StdioIntegrationTests.GetDataForHandleRequests_Invalid), MemberType = typeof(StdioIntegrationTests))]
+    public Task HandleRequest_WithInvalidRequest_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
+
+    private async Task HandleRequest_WithGivenRequest_ReturnsExpectedResponse(string scenario, string mcpRequest, string expectedResponse)
     {
         // Arrange
-        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        var mockResponses = new Dictionary<string, (HttpStatusCode, string)>
         {
-            Content = new StringContent("{\"status\":\"ok\"}")
-        }));
+            ["/api/test"] = (HttpStatusCode.OK, """{"status":"ok"}"""),
+            ["/api/notfound"] = (HttpStatusCode.NotFound, """{"error":"not found"}"""),
+            ["/api/servererror"] = (HttpStatusCode.InternalServerError, """{"error":"server error"}""")
+        };
+
+        var mockHandler = new MockHttpMessageHandler(mockResponses);
 
         var client = factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureServices(services =>
             {
-                // Configure the HttpClient for RestApiService with a mock handler
-                // This overrides the handler configuration from the main application
                 services.AddHttpClient<RestApiService>((sp, client) =>
                 {
                     client.BaseAddress = new Uri("http://example.com");
@@ -36,109 +58,32 @@ public class HttpIntegrationTests(McpifierServerFactory factory) : IClassFixture
             });
         }).CreateClient();
 
-        var request = new
-        {
-            jsonrpc = "2.0",
-            id = 1,
-            method = "tools/list",
-            @params = new { }
-        };
-
         // Act
-        var response = await client.PostAsJsonAsync("/", request);
+        string actualResponse;
 
-        // Assert
-        response.EnsureSuccessStatusCode();
-        string content = await response.Content.ReadAsStringAsync();
-        var jsonDoc = JsonDocument.Parse(content);
-
-        Assert.True(jsonDoc.RootElement.TryGetProperty("result", out var result));
-        Assert.True(result.TryGetProperty("tools", out var tools));
-
-        var toolsArray = tools.EnumerateArray().ToArray();
-
-        Assert.Equal(1, toolsArray.Length);
-        Assert.Equal("test_tool", toolsArray[0].GetProperty("name").GetString());
-    }
-
-    [Fact]
-    public async Task ToolsCallRequest_WithMockedHttpClient_ReturnsExpectedResponse()
-    {
-        // Arrange
-        string expectedResponseBody = "{\"message\":\"test response\"}";
-        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) =>
+        try
         {
-            // Verify the request was made to the expected endpoint
-            Assert.Equal(HttpMethod.Post, request.Method);
-            Assert.Contains("/api/test", request.RequestUri?.ToString());
-
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(expectedResponseBody)
-            });
-        });
-
-        var client = factory.WithWebHostBuilder(builder =>
+            var response = await client.PostAsync("/", new StringContent(mcpRequest, Encoding.UTF8, "application/json"));
+            actualResponse = await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
         {
-            builder.ConfigureServices(services =>
-            {
-                // Configure the HttpClient for RestApiService with a mock handler
-                // This overrides the handler configuration from the main application
-                services.AddHttpClient<RestApiService>((sp, client) =>
-                {
-                    client.BaseAddress = new Uri("http://example.com");
-                })
-                .ConfigurePrimaryHttpMessageHandler(() => mockHandler);
-            });
-        }).CreateClient();
-
-        var request = new
-        {
-            jsonrpc = "2.0",
-            id = 2,
-            method = "tools/call",
-            @params = new
-            {
-                name = "test_tool",
-                arguments = new
-                {
-                    message = "test message"
-                }
-            }
-        };
-
-        // Act
-        var response = await client.PostAsJsonAsync("/", request);
-
-        // Assert
-        string content = await response.Content.ReadAsStringAsync();
-
-        // If we get an error, output it for debugging
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception($"Request failed with {response.StatusCode}: {content}");
+            throw new Exception($"Test '{scenario}' failed during request: {ex.Message}", ex);
         }
 
-        var jsonDoc = JsonDocument.Parse(content);
+        actualResponse = NormalizeJson(actualResponse);
 
-        Assert.True(jsonDoc.RootElement.TryGetProperty("result", out var result));
-        Assert.True(result.TryGetProperty("content", out var resultContent));
+        output.WriteLine("Scenario:          {0}", scenario);
+        output.WriteLine("Request:           {0}", mcpRequest);
+        output.WriteLine("Expected response: {0}", expectedResponse);
+        output.WriteLine("Actual response:   {0}", actualResponse);
 
-        // Verify the mock handler was called
-        Assert.True(mockHandler.WasCalled);
+        Assert.Equal(expectedResponse, actualResponse);
     }
-}
 
-/// <summary>
-/// Mock HttpMessageHandler for testing outbound REST calls.
-/// </summary>
-public class MockHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler) : HttpMessageHandler
-{
-    public bool WasCalled { get; private set; }
-
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    private static string NormalizeJson(string json)
     {
-        WasCalled = true;
-        return await handler(request, cancellationToken);
+        using var document = JsonDocument.Parse(json);
+        return JsonSerializer.Serialize(document.RootElement, NormalizedJsonOptions);
     }
 }
