@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -14,6 +15,7 @@ namespace Summerdawn.Mcpifier.Server.Tests;
 /// <summary>
 /// Integration tests for HTTP mode using WebApplicationFactory.
 /// </summary>
+[SuppressMessage("ReSharper", "StringLiteralTypo")]
 public class HttpIntegrationTests(McpifierServerFactory factory, ITestOutputHelper output) : IClassFixture<McpifierServerFactory>
 {
     private static readonly JsonSerializerOptions NormalizedJsonOptions = new()

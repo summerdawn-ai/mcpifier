@@ -169,12 +169,12 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
         {
             "MethodNotFound",
             """{"jsonrpc":"2.0","id":1,"method":"unknown_method","params":{}}""",
-            """{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not found"}}"""
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not found","data":{"methodName":"unknown_method"}}}"""
         },
         {
             "InvalidParams_NotObject",
             """{"jsonrpc":"2.0","id":1,"method":"tools/list","params":"invalid"}""",
-            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params"}}"""
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Failed to deserialize params: The JSON value could not be converted to Summerdawn.Mcpifier.Models.McpToolsListParams. Path: $ | LineNumber: 0 | BytePositionInLine: 9."}}}"""
         },
         {
             "ToolCall_NonExistent",
@@ -189,7 +189,7 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
         {
             "ToolCall_InvalidArguments_NotObject",
             """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"test_tool","arguments":"invalid"}}""",
-            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params"}}"""
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Failed to deserialize params: The JSON value could not be converted to System.Collections.Generic.Dictionary`2[System.String,System.Text.Json.JsonElement]. Path: $.arguments | LineNumber: 0 | BytePositionInLine: 41."}}}"""
         }
     };
 

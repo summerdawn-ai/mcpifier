@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -103,17 +104,17 @@ public sealed class JsonRpcResponse
     /// Creates an invalid params error response.
     /// </summary>
     /// <param name="id">The request identifier.</param>
-    /// <param name="message">The error message.</param>
+    /// <param name="errorMessage">The error message.</param>
     /// <returns>An invalid params error response.</returns>
-    public static JsonRpcResponse InvalidParams(JsonElement id, string message) => ErrorResponse(id, InvalidParamsCode, message);
+    public static JsonRpcResponse InvalidParams(JsonElement id, string errorMessage) => ErrorResponse(id, InvalidParamsCode, "Invalid params", dataItem: errorMessage);
 
     /// <summary>
     /// Creates an internal error response.
     /// </summary>
     /// <param name="id">The request identifier.</param>
-    /// <param name="message">The error message.</param>
+    /// <param name="errorMessage">The error message.</param>
     /// <returns>An internal error response.</returns>
-    public static JsonRpcResponse InternalError(JsonElement id, string message) => ErrorResponse(id, InternalErrorCode, message);
+    public static JsonRpcResponse InternalError(JsonElement id, string errorMessage) => ErrorResponse(id, InternalErrorCode, "Internal error", dataItem: errorMessage);
 
     /// <summary>
     /// Creates a method not found error response.
@@ -121,7 +122,19 @@ public sealed class JsonRpcResponse
     /// <param name="id">The request identifier.</param>
     /// <param name="methodName">The method name that was not found.</param>
     /// <returns>A method not found error response.</returns>
-    public static JsonRpcResponse MethodNotFound(JsonElement id, string methodName) => ErrorResponse(id, MethodNotFoundCode, $"Method '{methodName}' not found");
+    public static JsonRpcResponse MethodNotFound(JsonElement id, string methodName) => ErrorResponse(id, MethodNotFoundCode, "Method not found", dataItem: methodName);
+
+    /// <summary>
+    /// Creates an error response with the specified code, message, and data.
+    /// </summary>
+    /// <param name="id">The request identifier.</param>
+    /// <param name="code">The error code.</param>
+    /// <param name="message">The error message.</param>
+    /// <param name="dataItem">Single item to include as additional error data.</param>
+    /// <param name="dataKey">Optional custom name for <paramref name="dataItem"/>.</param>
+    /// <returns>An error response.</returns>
+    public static JsonRpcResponse ErrorResponse(JsonElement id, int code, string message, string dataItem, [CallerArgumentExpression(nameof(dataItem))] string dataKey = "") =>
+        ErrorResponse(id, code, message, new Dictionary<string, object?> { [dataKey] = dataItem }.AsReadOnly());
 
     /// <summary>
     /// Creates an error response with the specified code, message, and data.
