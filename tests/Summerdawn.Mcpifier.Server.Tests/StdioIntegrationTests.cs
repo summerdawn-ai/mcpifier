@@ -28,15 +28,15 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
     };
 
     [Theory]
-    [MemberData(nameof(HttpIntegrationTests.GetDataForIntegrationTests_Mcp), MemberType = typeof(HttpIntegrationTests))]
+    [MemberData(nameof(GetDataForHandleRequests_Mcp))]
     public Task HandleRequest_WithMcpMethod_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
 
     [Theory]
-    [MemberData(nameof(HttpIntegrationTests.GetDataForIntegrationTests_Http), MemberType = typeof(HttpIntegrationTests))]
+    [MemberData(nameof(GetDataForHandleRequests_Http))]
     public Task HandleRequest_WithToolCall_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
 
     [Theory]
-    [MemberData(nameof(HttpIntegrationTests.GetDataForIntegrationTests_Invalid), MemberType = typeof(HttpIntegrationTests))]
+    [MemberData(nameof(GetDataForHandleRequests_Invalid))]
     public Task HandleRequest_WithInvalidRequest_ReturnsExpectedResponse(string testName, string mcpRequest, string expectedResponse) => HandleRequest_WithGivenRequest_ReturnsExpectedResponse(testName, mcpRequest, expectedResponse);
 
     private async Task HandleRequest_WithGivenRequest_ReturnsExpectedResponse(string scenario, string mcpRequest, string expectedResponse)
@@ -92,6 +92,96 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
             try { await hostTask; } catch (OperationCanceledException) { }
         }
     }
+
+    public static TheoryData<string, string, string> GetDataForHandleRequests_Mcp() => new()
+    {
+        // Format: (scenario, mcpRequest, expectedResponse)
+        {
+            "Ping",
+            """{"jsonrpc":"2.0","id":1,"method":"ping"}""",
+            """{"jsonrpc":"2.0","id":1,"result":{}}"""
+        },
+        {
+            "Initialize",
+            """{"jsonrpc":"2.0","id":2,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}""",
+            """{"jsonrpc":"2.0","id":2,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"mcpifier","version":"1.0"}}}"""
+        },
+        {
+            "ToolsList",
+            """{"jsonrpc":"2.0","id":3,"method":"tools/list","params":{}}""",
+            """{"jsonrpc":"2.0","id":3,"result":{"tools":[{"name":"test_tool","description":"test tool","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_404","description":"Tool that returns 404","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_500","description":"Tool that returns 500","inputSchema":{"type":"object","required":[]}}]}}"""
+        }
+    };
+
+    public static TheoryData<string, string, string> GetDataForHandleRequests_Http() => new()
+    {
+        // Format: (scenario, mcpRequest, expectedResponse)
+        {
+            "Success",
+            """{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"test_tool","arguments":{}}}""",
+            """{"jsonrpc":"2.0","id":4,"result":{"content":[{"type":"text","text":"{\"status\":\"ok\"}"}],"structuredContent":{"status":"ok"},"isError":false}}"""
+        },
+        {
+            "404",
+            """{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"test_tool_404","arguments":{}}}""",
+            """{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"REST API returned error code 404: '{\"error\":\"not found\"}'"}],"isError":true}}"""
+        },
+        {
+            "500",
+            """{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"test_tool_500","arguments":{}}}""",
+            """{"jsonrpc":"2.0","id":6,"result":{"content":[{"type":"text","text":"REST API returned error code 500: '{\"error\":\"server error\"}'"}],"isError":true}}"""
+        }
+    };
+
+    public static TheoryData<string, string, string> GetDataForHandleRequests_Invalid() => new()
+    {
+        // Format: (scenario, mcpRequest, expectedResponse)
+        {
+            "MalformedJson",
+            """"{"jsonrpc":"2.0","id":1,"method":"ping"""",
+            """{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error"}}"""
+        },
+        {
+            "MissingJsonRpc",
+            """{"id":1,"method":"ping"}""",
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32600,"message":"Invalid Request"}}"""
+        },
+        {
+            "InvalidMethod_NotString",
+            """{"jsonrpc":"2.0","id":1,"method":123}""",
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32600,"message":"Invalid Request"}}"""
+        },
+        {
+            "MissingMethod",
+            """{"jsonrpc":"2.0","id":1}""",
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32600,"message":"Invalid Request"}}"""
+        },
+        {
+            "MethodNotFound",
+            """{"jsonrpc":"2.0","id":1,"method":"unknown_method","params":{}}""",
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not found"}}"""
+        },
+        {
+            "InvalidParams_NotObject",
+            """{"jsonrpc":"2.0","id":1,"method":"tools/list","params":"invalid"}""",
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params"}}"""
+        },
+        {
+            "ToolCall_NonExistent",
+            """{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"non_existent_tool","arguments":{}}}""",
+            """{"jsonrpc":"2.0","id":7,"error":{"code":-32602,"message":"Invalid params"}}"""
+        },
+        {
+            "ToolCall_MissingArguments",
+            """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"arguments":{}}}""",
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params"}}"""
+        },
+        {
+            "ToolCall_InvalidArguments_NotObject",
+            """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"test_tool","arguments":"invalid"}}""",
+            """{"jsonrpc":"2.0","id":1,"error":{"code":-32602,"message":"Invalid params"}}"""
+        }
+    };
 
     private static string? NormalizeJson(string? json)
     {

@@ -8,13 +8,17 @@ using Summerdawn.Mcpifier.Models;
 
 namespace Summerdawn.Mcpifier.Server.Tests;
 
+/// <summary>
+/// Factory for a host from a HostApplicationBuilder configured for Mcpifier stdio testing.
+/// </summary>
 public class McpifierHostFactory
 {
     public IHost WithApplicationBuilder(Action<HostApplicationBuilder> builderAction)
     {
         var builder = Host.CreateApplicationBuilder();
 
-        builder.Configuration.AddJsonFile("mappings.json", optional: false, reloadOnChange: false);
+        builder.Configuration.AddJsonFile("Resources/test-mappings.json", optional: false, reloadOnChange: false);
+
         builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
         // Set server info for testing
