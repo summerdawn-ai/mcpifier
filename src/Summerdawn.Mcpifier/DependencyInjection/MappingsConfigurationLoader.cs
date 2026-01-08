@@ -28,8 +28,8 @@ internal class MappingsConfigurationLoader(IEnumerable<MappingsConfigurationSour
             {
                 logger.LogInformation("Loading JSON mappings from '{FileName}'.", source.FileName);
 
-                // Read JSON file.
-                string json = File.ReadAllTextAsync(source.FileName).GetAwaiter().GetResult();
+                // Read JSON file synchronously (PostConfigure cannot be async)
+                string json = File.ReadAllText(source.FileName);
 
                 // Deserialize to a wrapper class containing a Tools list
                 var wrapper = JsonSerializer.Deserialize<MappingsWrapper>(json);
@@ -59,7 +59,7 @@ internal class MappingsConfigurationLoader(IEnumerable<MappingsConfigurationSour
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to load tool mappings from JSON mappings file '{FileName}'.", source.FileName);
+                logger.LogError(ex, "Failed to load tool mappings from JSON mappings file '{FileName}'.", source.FileName);
                 throw new InvalidOperationException($"Failed to load tool mappings from JSON mappings file '{source.FileName}': {ex.Message}", ex);
             }
         }

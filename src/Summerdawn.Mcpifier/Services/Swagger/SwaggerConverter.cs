@@ -244,7 +244,8 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         var schemaObject = JsonSchema.FromText(schemaJson);
 
         // Parse into JsonElement for serialization
-        var schemaElement = JsonDocument.Parse(schemaJson).RootElement.Clone();
+        using var document = JsonDocument.Parse(schemaJson);
+        var schemaElement = document.RootElement.Clone();
 
         return (schemaObject, schemaElement);
     }
