@@ -137,6 +137,16 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
     {
         // Format: (scenario, mcpRequest, expectedResponse)
         {
+            "EmptyJson",
+            """ """,
+            """{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error"}}"""
+        },
+        {
+            "WrongJson_NotObject",
+            """null""",
+            """{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error"}}"""
+        },
+        {
             "MalformedJson",
             """"{"jsonrpc":"2.0","id":1,"method":"ping"""",
             """{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error"}}"""

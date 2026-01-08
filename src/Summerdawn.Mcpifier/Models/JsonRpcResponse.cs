@@ -84,7 +84,7 @@ public sealed class JsonRpcResponse
     /// Creates a parse error response.
     /// </summary>
     /// <returns>A parse error response.</returns>
-    public static JsonRpcResponse ParseError() => ErrorResponse(NullId, ParseErrorCode, "Parse Error");
+    public static JsonRpcResponse ParseError() => ErrorResponse(NullId, ParseErrorCode, "Parse error");
 
     /// <summary>
     /// Creates an invalid request error response.

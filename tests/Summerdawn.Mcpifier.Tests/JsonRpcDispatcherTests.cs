@@ -10,6 +10,8 @@ using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.Tests;
 
+using static JsonRpcResponse;
+
 public class JsonRpcDispatcherTests
 {
     [Fact]
@@ -17,7 +19,7 @@ public class JsonRpcDispatcherTests
     {
         // Arrange
         var mockHandler = new Mock<IRpcHandler>();
-        var expectedResponse = JsonRpcResponse.Success(JsonDocument.Parse("\"test-id\"").RootElement, new { result = "success" });
+        var expectedResponse = Success(JsonDocument.Parse("\"test-id\"").RootElement, new { result = "success" });
         mockHandler
             .Setup(h => h.HandleAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResponse);
@@ -65,7 +67,7 @@ public class JsonRpcDispatcherTests
         // Assert
         Assert.NotNull(response);
         Assert.NotNull(response.Error);
-        Assert.Equal(-32600, response.Error.Code);
+        Assert.Equal(InvalidRequestCode, response.Error.Code);
         Assert.Equal("Invalid Request", response.Error.Message);
         mockHandler.Verify(h => h.HandleAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -91,7 +93,7 @@ public class JsonRpcDispatcherTests
         // Assert
         Assert.NotNull(response);
         Assert.NotNull(response.Error);
-        Assert.Equal(-32601, response.Error.Code);
+        Assert.Equal(MethodNotFoundCode, response.Error.Code);
         Assert.Contains("unknown.method", response.Error.Message);
         Assert.Contains("not found", response.Error.Message);
     }
@@ -122,7 +124,7 @@ public class JsonRpcDispatcherTests
         // Assert
         Assert.NotNull(response);
         Assert.NotNull(response.Error);
-        Assert.Equal(-32602, response.Error.Code);
+        Assert.Equal(InvalidParamsCode, response.Error.Code);
         Assert.Contains("Invalid params", response.Error.Message);
         Assert.Contains("Invalid parameter format", response.Error.Message);
     }
@@ -153,7 +155,7 @@ public class JsonRpcDispatcherTests
         // Assert
         Assert.NotNull(response);
         Assert.NotNull(response.Error);
-        Assert.Equal(-32603, response.Error.Code);
+        Assert.Equal(InternalErrorCode, response.Error.Code);
         Assert.Contains("Internal error", response.Error.Message);
         Assert.Contains("Something went wrong", response.Error.Message);
     }

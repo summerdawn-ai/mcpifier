@@ -10,6 +10,8 @@ using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.Tests;
 
+using static JsonRpcResponse;
+
 public class McpStdioServerTests
 {
     [Fact]
@@ -19,7 +21,7 @@ public class McpStdioServerTests
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
         mockDispatcher
             .Setup(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(JsonRpcResponse.Empty);
+            .ReturnsAsync(Empty);
 
         var mockLogger = new Mock<ILogger<McpStdioServer>>();
         var mockStdio = new Mock<IStdio>();
@@ -48,7 +50,7 @@ public class McpStdioServerTests
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
-        var errorResponse = JsonRpcResponse.MethodNotFound(JsonDocument.Parse("\"test-id\"").RootElement, "test.method");
+        var errorResponse = MethodNotFound(JsonDocument.Parse("\"test-id\"").RootElement, "test.method");
         mockDispatcher
             .Setup(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(errorResponse);
@@ -75,7 +77,7 @@ public class McpStdioServerTests
         var response = JsonDocument.Parse(responseText);
         Assert.True(response.RootElement.TryGetProperty("error", out var error));
         Assert.True(error.TryGetProperty("code", out var code));
-        Assert.Equal(-32601, code.GetInt32()); // MethodNotFound
+        Assert.Equal(MethodNotFoundCode, code.GetInt32());
 
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -85,7 +87,7 @@ public class McpStdioServerTests
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
-        var successResponse = JsonRpcResponse.Success(JsonDocument.Parse("\"test-id\"").RootElement, new McpToolsCallResult { Content = [JsonDocument.Parse("{ \"result\": \"success\" }").RootElement] });
+        var successResponse = Success(JsonDocument.Parse("\"test-id\"").RootElement, new McpToolsCallResult { Content = [JsonDocument.Parse("{ \"result\": \"success\" }").RootElement] });
         mockDispatcher
             .Setup(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(successResponse);
@@ -165,13 +167,13 @@ public class McpStdioServerTests
         var response = JsonDocument.Parse(responseText);
         Assert.True(response.RootElement.TryGetProperty("error", out var error));
         Assert.True(error.TryGetProperty("code", out var code));
-        Assert.Equal(-32700, code.GetInt32()); // ParseError
+        Assert.Equal(ParseErrorCode, code.GetInt32());
 
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task HandleMcpRequestAsync_NullRequest_InvalidRequestResponseSent()
+    public async Task HandleMcpRequestAsync_NullRequest_ParseErrorResponseSent()
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
@@ -196,7 +198,7 @@ public class McpStdioServerTests
         var response = JsonDocument.Parse(responseText);
         Assert.True(response.RootElement.TryGetProperty("error", out var error));
         Assert.True(error.TryGetProperty("code", out var code));
-        Assert.Equal(-32600, code.GetInt32()); // InvalidRequest
+        Assert.Equal(ParseErrorCode, code.GetInt32());
 
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }

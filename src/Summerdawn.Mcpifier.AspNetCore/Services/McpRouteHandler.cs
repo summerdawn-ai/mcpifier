@@ -39,18 +39,36 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
             }
 
             // Otherwise dispatch the request to the dispatcher.
+            JsonElement rpcRequestId = default;
             JsonRpcRequest? rpcRequest;
             try
             {
-                rpcRequest = await context.Request.ReadFromJsonAsync<JsonRpcRequest>(JsonRpcAndMcpJsonContext.Default.JsonRpcRequest);
+                using var reader = new StreamReader(context.Request.Body);
+                string requestPayload = await reader.ReadToEndAsync();
+
+                // Try to parse as JsonDocument first to extract id if possible.
+                using var requestDocument = JsonDocument.Parse(requestPayload);
+                if (requestDocument.RootElement.TryGetProperty("id", out var idProperty))
+                {
+                    rpcRequestId = idProperty.Clone();
+                }
+
+                // Then deserialize to request object.
+                rpcRequest = requestDocument.Deserialize<JsonRpcRequest>(JsonRpcAndMcpJsonContext.Default.JsonRpcRequest);
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
                 logger.LogWarning(ex, "Failed to deserialize MCP request as JSON-RPC.");
 
+                // If we could parse JSON but deserialization failed (e.g., wrong types), it's InvalidRequest
+                // If we couldn't even parse JSON, it's ParseError
+                var errorResponse = rpcRequestId.ValueKind != JsonValueKind.Undefined
+                    ? JsonRpcResponse.InvalidRequest(rpcRequestId)
+                    : JsonRpcResponse.ParseError();
+
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.ParseError(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
+                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(errorResponse, JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
 
                 return;
             }
@@ -61,7 +79,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
 
                 context.Response.StatusCode = StatusCodes.Status200OK;
 
-                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
+                await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.ParseError(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
 
                 return;
             }
