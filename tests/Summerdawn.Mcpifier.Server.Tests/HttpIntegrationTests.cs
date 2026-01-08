@@ -269,9 +269,14 @@ public class MockHttpMessageHandler : HttpMessageHandler
         }
 
         // Otherwise use dictionary lookup
+        if (responses == null)
+        {
+            throw new InvalidOperationException("Either customHandler or responses must be provided");
+        }
+
         string path = request.RequestUri?.PathAndQuery ?? "";
 
-        foreach (var (key, (status, body)) in responses!)
+        foreach (var (key, (status, body)) in responses)
         {
             if (path.Contains(key))
             {
