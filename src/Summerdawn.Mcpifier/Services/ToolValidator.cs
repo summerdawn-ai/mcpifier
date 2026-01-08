@@ -1,4 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+
+using Json.Schema;
 
 using Summerdawn.Mcpifier.Models;
 
@@ -15,61 +18,53 @@ internal static class ToolValidator
     /// <param name="mcpTool">The MCP tool definition containing the input schema.</param>
     /// <param name="arguments">The arguments to validate.</param>
     /// <returns>A tuple indicating whether validation succeeded and an optional error message.</returns>
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.SerializeToElement<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.SerializeToElement<TValue>(TValue, JsonSerializerOptions)")]
     public static (bool isValid, string? errorMessage) ValidateArguments(McpToolDefinition mcpTool, Dictionary<string, JsonElement> arguments)
     {
-        var schema = mcpTool.InputSchema;
+        // Convert arguments dictionary to JsonElement
+        var argumentsJson = JsonSerializer.SerializeToElement(arguments);
 
-        if (schema.Required is { Count: > 0 })
+        // Evaluate schema using Json.Schema.Net
+        var options = new EvaluationOptions
         {
-            foreach (string requiredField in schema.Required)
-            {
-                if (!arguments.TryGetValue(requiredField, out var argument))
-                {
-                    return (false, $"Required field '{requiredField}' is missing");
-                }
+            OutputFormat = OutputFormat.List
+        };
 
-                if (argument.ValueKind == JsonValueKind.Null)
-                {
-                    return (false, $"Required field '{requiredField}' cannot be null");
-                }
-            }
+        var results = mcpTool.InputSchemaObject.Evaluate(argumentsJson, options);
+
+        if (results.IsValid)
+        {
+            return (true, null);
         }
 
-        // Simple type checking if properties are defined
-        if (schema.Properties != null)
-        {
-            foreach (var arg in arguments)
-            {
-                if (schema.Properties.TryGetValue(arg.Key, out var propertySchema))
-                {
-                    if (!ValidateType(arg.Value, propertySchema.Type))
-                    {
-                        return (false, $"Field '{arg.Key}' has invalid type. Expected: {propertySchema.Type}");
-                    }
-                }
-            }
-        }
+        // Build error message from validation results
+        var errors = new List<string>();
+        CollectErrors(results, errors);
 
-        return (true, null);
+        string errorMessage = errors.Count > 0
+            ? string.Join("; ", errors)
+            : "Validation failed";
+
+        return (false, errorMessage);
     }
 
-    private static bool ValidateType(JsonElement value, string expectedType)
+    private static void CollectErrors(EvaluationResults results, List<string> errors)
     {
-        // Allow null or undefined unless value is required.
-        if (value is { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined })
+        if (results.HasErrors && results.Errors != null)
         {
-            return true;
+            foreach (var (key, value) in results.Errors)
+            {
+                errors.Add($"{key}: {value}");
+            }
         }
 
-        return expectedType.ToLower() switch
+        if (results.Details != null)
         {
-            "string" => value is { ValueKind: JsonValueKind.String },
-            "number" => value is { ValueKind: JsonValueKind.Number },
-            "integer" => value is { ValueKind: JsonValueKind.Number },
-            "boolean" => value is { ValueKind: JsonValueKind.True or JsonValueKind.False },
-            "object" => value is { ValueKind: JsonValueKind.Object },
-            "array" => value is { ValueKind: JsonValueKind.Array },
-            _ => true // Unknown types pass validation
-        };
+            foreach (var detail in results.Details)
+            {
+                CollectErrors(detail, errors);
+            }
+        }
     }
 }

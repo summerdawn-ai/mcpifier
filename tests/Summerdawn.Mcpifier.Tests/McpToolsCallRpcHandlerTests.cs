@@ -173,6 +173,7 @@ public class McpToolsCallRpcHandlerTests
         return Options.Create(options);
     }
 
+    [Obsolete]
     private static McpifierToolMapping CreateTestTool(string name, string[]? requiredProperties = null)
     {
         return new McpifierToolMapping

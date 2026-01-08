@@ -1,4 +1,7 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using Json.Schema;
 
 namespace Summerdawn.Mcpifier.Models;
 
@@ -25,70 +28,14 @@ public class McpToolDefinition
     public string? Description { get; set; }
 
     /// <summary>
-    /// Gets or sets the input schema for the tool.
+    /// Internal storage as JsonSchema for validation.
     /// </summary>
-    public InputSchema InputSchema { get; set; } = new();
-}
-
-/// <summary>
-/// Represents a JSON Schema for tool input validation.
-/// </summary>
-public class InputSchema
-{
-    /// <summary>
-    /// Gets or sets the schema type. Typically "object".
-    /// </summary>
-    public string Type { get; set; } = "object";
+    [JsonIgnore]
+    public JsonSchema InputSchemaObject { get; set; } = new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
 
     /// <summary>
-    /// Gets or sets the properties of the schema.
+    /// Input schema as JsonElement for JSON serialization (MCP protocol).
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, PropertySchema>? Properties { get; set; }
-
-    /// <summary>
-    /// Gets or sets the list of required property names.
-    /// </summary>
-    public List<string> Required { get; set; } = [];
-}
-
-/// <summary>
-/// Represents a property in a JSON Schema.
-/// </summary>
-public class PropertySchema
-{
-    /// <summary>
-    /// Gets or sets the property type.
-    /// </summary>
-    public string Type { get; set; } = "string";
-
-    /// <summary>
-    /// Gets or sets the property description.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// Gets or sets the property format (e.g., date-time, int32).
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Format { get; set; }
-
-    /// <summary>
-    /// Gets or sets the enum values for the property.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<object>? Enum { get; set; }
-
-    /// <summary>
-    /// Gets or sets the items schema for array types.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public PropertySchema? Items { get; set; }
-
-    /// <summary>
-    /// Gets or sets nested properties for object types.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, PropertySchema>? Properties { get; set; }
+    [JsonPropertyName("inputSchema")]
+    public JsonElement InputSchema { get; set; }
 }

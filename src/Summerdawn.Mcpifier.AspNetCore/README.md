@@ -186,7 +186,7 @@ await swaggerConverter.LoadAndConvertAsync("https://api.example.com/swagger.json
 
 This is intended for offline or one-time generation scenarios.
 
-After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file:
+After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file using the `AddToolsFromMappings` extension method:
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
@@ -195,12 +195,16 @@ using Summerdawn.Mcpifier.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load the mappings file into the configuration
-builder.Configuration.AddJsonFile("path/to/mappings.json");
-
-// Configure Mcpifier with the resulting configuration including the tool mappings
+// Load Mcpifier configuration from appsettings
 builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
+
+// Load tool mappings from a JSON file
+builder.Services.AddMcpifier(options => { /* configure */ })
+    .AddToolsFromMappings("path/to/mappings.json")
+    .AddAspNetCore();
 ```
+
+**Note:** Tools should be loaded using `.AddToolsFromSwagger()` or `.AddToolsFromMappings()` rather than directly in `appsettings.json`.
 
 ### Starting the Server
 
