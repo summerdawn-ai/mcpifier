@@ -36,12 +36,12 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(204, context.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task HandleMcpRequestAsync_DispatcherReturnsError_Returns400()
+    public async Task HandleMcpRequestAsync_DispatcherReturnsError_Returns200()
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
@@ -63,7 +63,7 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(400, context.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -90,7 +90,7 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(200, context.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -117,7 +117,7 @@ public class McpRouteHandlerTests
     }
 
     [Fact]
-    public async Task HandleMcpRequestAsync_InvalidJson_Returns400WithParseError()
+    public async Task HandleMcpRequestAsync_InvalidJson_Returns200WithParseError()
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
@@ -135,13 +135,13 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(400, context.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         context.Response.Body.Position = 0;
         var responseJson = await JsonSerializer.DeserializeAsync<JsonElement>(context.Response.Body);
         Assert.True(responseJson.TryGetProperty("error", out var error));
         Assert.True(error.TryGetProperty("code", out var code));
-        Assert.Equal(-32700, code.GetInt32()); // ParseError
+        Assert.Equal(JsonRpcResponse.ParseErrorCode, code.GetInt32());
 
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -165,13 +165,13 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(400, context.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         context.Response.Body.Position = 0;
         var responseJson = await JsonSerializer.DeserializeAsync<JsonElement>(context.Response.Body);
         Assert.True(responseJson.TryGetProperty("error", out var error));
         Assert.True(error.TryGetProperty("code", out var code));
-        Assert.Equal(-32600, code.GetInt32()); // InvalidRequest
+        Assert.Equal(JsonRpcResponse.InvalidRequestCode, code.GetInt32());
 
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }

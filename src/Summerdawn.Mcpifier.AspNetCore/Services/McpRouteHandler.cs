@@ -48,7 +48,8 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
             {
                 logger.LogWarning(ex, "Failed to deserialize MCP request as JSON-RPC.");
 
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status200OK;
+
                 await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.ParseError(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
 
                 return;
@@ -58,7 +59,8 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
             {
                 logger.LogWarning("Received null MCP request");
 
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status200OK;
+
                 await context.Response.WriteAsJsonAsync<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
 
                 return;
@@ -75,7 +77,7 @@ public class McpRouteHandler(IJsonRpcDispatcher dispatcher, IOptions<McpifierOpt
             }
             else if (rpcResponse.IsError())
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status200OK;
 
                 await context.Response.WriteAsJsonAsync<JsonRpcResponse>(rpcResponse, JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
             }

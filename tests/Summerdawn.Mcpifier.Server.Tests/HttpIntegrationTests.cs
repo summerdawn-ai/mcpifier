@@ -59,17 +59,8 @@ public class HttpIntegrationTests(McpifierServerFactory factory, ITestOutputHelp
         }).CreateClient();
 
         // Act
-        string actualResponse;
-
-        try
-        {
-            var response = await client.PostAsync("/", new StringContent(mcpRequest, Encoding.UTF8, "application/json"));
-            actualResponse = await response.Content.ReadAsStringAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Test '{scenario}' failed during request: {ex.Message}", ex);
-        }
+        var response = await client.PostAsync("/", new StringContent(mcpRequest, Encoding.UTF8, "application/json"));
+        string actualResponse = await response.Content.ReadAsStringAsync();
 
         actualResponse = NormalizeJson(actualResponse);
 
@@ -78,6 +69,8 @@ public class HttpIntegrationTests(McpifierServerFactory factory, ITestOutputHelp
         output.WriteLine("Expected response: {0}", expectedResponse);
         output.WriteLine("Actual response:   {0}", actualResponse);
 
+        // Assert
+        Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(expectedResponse, actualResponse);
     }
 

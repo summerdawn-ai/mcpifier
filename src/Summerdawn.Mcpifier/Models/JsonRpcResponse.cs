@@ -19,11 +19,11 @@ public sealed class JsonRpcResponse
     private static readonly JsonElement NullId = JsonDocument.Parse("null").RootElement.Clone();
 
     // JSON-RPC 2.0 error codes
-    private const int InvalidRequestCode = -32600;
-    private const int MethodNotFoundCode = -32601;
-    private const int InvalidParamsCode = -32602;
-    private const int InternalErrorCode = -32603;
-    private const int ParseErrorCode = -32700;
+    public const int InvalidRequestCode = -32600;
+    public const int MethodNotFoundCode = -32601;
+    public const int InvalidParamsCode = -32602;
+    public const int InternalErrorCode = -32603;
+    public const int ParseErrorCode = -32700;
 
     /// <summary>
     /// Gets or sets the JSON-RPC version. Always "2.0".
