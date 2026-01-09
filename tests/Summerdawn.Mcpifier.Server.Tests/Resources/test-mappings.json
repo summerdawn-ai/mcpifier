@@ -7,7 +7,7 @@
       {
         "mcp": {
           "name": "test_tool",
-          "description": "test tool",
+          "description": "Tool",
           "inputSchema": {
             "type": "object",
             "required": []
@@ -16,6 +16,29 @@
         "rest": {
           "method": "POST",
           "path": "/api/test"
+        }
+      },
+      {
+        "mcp": {
+          "name": "test_tool_arguments",
+          "description": "Tool with arguments",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "foo": {
+                "type": "string"
+              },
+              "bar": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": ["foo"]
+          }
+        },
+        "rest": {
+          "method": "POST",
+          "path": "/api/arguments"
         }
       },
       {

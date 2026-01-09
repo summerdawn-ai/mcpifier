@@ -13,10 +13,12 @@ using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.Tests;
 
+using static JsonRpcResponse;
+
 public class McpToolsCallRpcHandlerTests
 {
     [Fact]
-    public async Task Test_ToolNotFound_ReturnsJsonRpcErrorResponse()
+    public async Task Test_ToolNotFound_ReturnsInvalidParamsError()
     {
         // Arrange
         var options = CreateOptions([]);
@@ -39,12 +41,12 @@ public class McpToolsCallRpcHandlerTests
 
         // Assert
         Assert.NotNull(response.Error);
-        Assert.Equal(404, response.Error.Code);
-        Assert.Contains("not found", response.Error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(InvalidParamsCode, response.Error.Code);
+        Assert.Contains("not found", JsonSerializer.Serialize(response.Error.Data));
     }
 
     [Fact]
-    public async Task Test_InvalidArguments_ReturnsJsonRpcErrorResponse400()
+    public async Task Test_InvalidArguments_ReturnsInvalidParamsError()
     {
         // Arrange
         var tool = CreateTestTool("test_tool", requiredProperties: ["message"]);
@@ -69,7 +71,7 @@ public class McpToolsCallRpcHandlerTests
 
         // Assert
         Assert.NotNull(response.Error);
-        Assert.Equal(400, response.Error.Code);
+        Assert.Equal(InvalidParamsCode, response.Error.Code);
     }
 
     [Fact]
@@ -106,8 +108,7 @@ public class McpToolsCallRpcHandlerTests
         Assert.Null(response.Error);
         Assert.NotNull(response.Result);
 
-        var result = JsonSerializer.Deserialize<McpToolsCallResult>(
-            JsonSerializer.SerializeToElement(response.Result));
+        var result = JsonSerializer.SerializeToElement(response.Result).Deserialize<McpToolsCallResult>();
 
         Assert.NotNull(result);
         Assert.True(result.IsError);
@@ -149,8 +150,7 @@ public class McpToolsCallRpcHandlerTests
         Assert.Null(response.Error);
         Assert.NotNull(response.Result);
 
-        var result = JsonSerializer.Deserialize<McpToolsCallResult>(
-            JsonSerializer.SerializeToElement(response.Result));
+        var result = JsonSerializer.SerializeToElement(response.Result).Deserialize<McpToolsCallResult>();
 
         Assert.NotNull(result);
         Assert.False(result.IsError);

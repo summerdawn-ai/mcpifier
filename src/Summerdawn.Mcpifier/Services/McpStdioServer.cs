@@ -53,14 +53,6 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
                 // Break if the token fires or the console reader catches the Ctrl+C first
                 if (requestPayload is null) { break; }
 
-                if (string.IsNullOrWhiteSpace(requestPayload))
-                {
-                    // Treat blank/whitespace lines as InvalidRequest
-                    string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
-                    await writer.WriteLineAsync(errorJson);
-                    continue;
-                }
-
                 await HandleMcpRequestAsync(requestPayload, writer, stoppingToken);
             }
         }
@@ -85,16 +77,31 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
 
         try
         {
+            JsonElement rpcRequestId = default;
             JsonRpcRequest? rpcRequest;
             try
             {
-                rpcRequest = JsonSerializer.Deserialize<JsonRpcRequest>(requestPayload, JsonRpcAndMcpJsonContext.Default.JsonRpcRequest);
+                // Try to parse as JsonDocument first to extract id if possible.
+                using var requestDocument = JsonDocument.Parse(requestPayload);
+                if (requestDocument.RootElement.TryGetProperty("id", out var idProperty))
+                {
+                    rpcRequestId = idProperty.Clone();
+                }
+
+                // Then deserialize to request object.
+                rpcRequest = requestDocument.Deserialize<JsonRpcRequest>(JsonRpcAndMcpJsonContext.Default.JsonRpcRequest);
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
                 logger.LogWarning(ex, "Failed to deserialize MCP request as JSON-RPC.");
 
-                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.ParseError(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
+                // If we could parse JSON but deserialization failed (e.g., wrong types), it's InvalidRequest
+                // If we couldn't even parse JSON, it's ParseError
+                var errorResponse = rpcRequestId.ValueKind != JsonValueKind.Undefined
+                    ? JsonRpcResponse.InvalidRequest(rpcRequestId)
+                    : JsonRpcResponse.ParseError();
+
+                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(errorResponse, JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
                 await writer.WriteLineAsync(errorJson);
 
                 return;
@@ -104,7 +111,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
             {
                 logger.LogWarning("Received null MCP request");
 
-                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
+                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.ParseError(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
                 await writer.WriteLineAsync(errorJson);
 
                 return;

@@ -30,7 +30,7 @@ public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogge
         {
             logger.LogWarning("JSON-RPC method unknown or not supported: {Method}", rpcRequest.Method);
 
-            return JsonRpcResponse.MethodNotFound(rpcRequest.Id, rpcRequest.Method);
+            return JsonRpcResponse.MethodNotFound(rpcRequest.Id, methodName: rpcRequest.Method);
         }
 
         try
@@ -42,12 +42,12 @@ public class JsonRpcDispatcher(Func<string, IRpcHandler?> handlerFactory, ILogge
         catch (JsonException ex)
         {
             logger.LogWarning(ex, "Invalid request parameters for JSON-RPC method {Method}", rpcRequest.Method);
-            return JsonRpcResponse.InvalidParams(rpcRequest.Id, $"Invalid params: {ex.Message}");
+            return JsonRpcResponse.InvalidParams(rpcRequest.Id, errorMessage: ex.Message);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error handling JSON-RPC method {Method}", rpcRequest.Method);
-            return JsonRpcResponse.InternalError(rpcRequest.Id, $"Internal error: {ex.Message}");
+            return JsonRpcResponse.InternalError(rpcRequest.Id, errorMessage: ex.Message);
         }
     }
 }
