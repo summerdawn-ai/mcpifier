@@ -111,7 +111,7 @@ public class McpStdioServer(IStdio stdio, IJsonRpcDispatcher dispatcher, ILogger
             {
                 logger.LogWarning("Received null MCP request");
 
-                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.InvalidRequest(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
+                string errorJson = JsonSerializer.Serialize<JsonRpcResponse>(JsonRpcResponse.ParseError(), JsonRpcAndMcpJsonContext.Default.JsonRpcResponse);
                 await writer.WriteLineAsync(errorJson);
 
                 return;
