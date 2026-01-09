@@ -151,7 +151,7 @@ public class McpRouteHandlerTests
     }
 
     [Fact]
-    public async Task HandleMcpRequestAsync_NullRequest_Returns400WithParseError()
+    public async Task HandleMcpRequestAsync_NullRequest_Returns200WithParseError()
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
