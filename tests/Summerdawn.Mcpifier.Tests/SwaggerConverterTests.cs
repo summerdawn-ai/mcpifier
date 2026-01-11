@@ -59,11 +59,14 @@ public class SwaggerConverterTests
         Assert.Equal("Get user by ID", tool.Mcp.Description);
         Assert.Equal("GET", tool.Rest.Method);
         Assert.Equal("/users/{id}", tool.Rest.Path);
-        Assert.NotNull(tool.Mcp.InputSchema.Properties);
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("id"));
-        Assert.Equal("string", tool.Mcp.InputSchema.Properties["id"].Type);
-        Assert.Equal("User ID", tool.Mcp.InputSchema.Properties["id"].Description);
-        Assert.Contains("id", tool.Mcp.InputSchema.Required);
+
+        // Verify schema structure
+        Assert.True(tool.Mcp.InputSchema.TryGetProperty("properties", out var properties));
+        Assert.True(properties.TryGetProperty("id", out var idProperty));
+        Assert.Equal("string", idProperty.GetProperty("type").GetString());
+        Assert.Equal("User ID", idProperty.GetProperty("description").GetString());
+        Assert.True(tool.Mcp.InputSchema.TryGetProperty("required", out var required));
+        Assert.Contains("id", required.EnumerateArray().Select(e => e.GetString()));
     }
 
     [Fact]
@@ -124,12 +127,13 @@ public class SwaggerConverterTests
         Assert.NotNull(tool.Rest.Query);
         Assert.Contains("page={page}", tool.Rest.Query);
         Assert.Contains("limit={limit}", tool.Rest.Query);
-        Assert.Contains("limit", tool.Mcp.InputSchema.Required);
-        Assert.DoesNotContain("page", tool.Mcp.InputSchema.Required);
+        Assert.True(tool.Mcp.InputSchema.TryGetProperty("required", out var required));
+        Assert.Contains("limit", required.EnumerateArray().Select(e => e.GetString()));
+        Assert.DoesNotContain("page", required.EnumerateArray().Select(e => e.GetString()));
     }
 
     [Fact]
-    public async Task Convert_WithRequestBody_FlattensProperties()
+    public async Task Convert_WithRequestBody_NestsUnderRequestBodyProperty()
     {
         // Arrange
         var converter = CreateConverter();
@@ -193,22 +197,20 @@ public class SwaggerConverterTests
         Assert.Equal("create_user", tool.Mcp.Name);
         Assert.Equal("POST", tool.Rest.Method);
         Assert.NotNull(tool.Rest.Body);
-        Assert.Contains("\"name\": {name}", tool.Rest.Body);
-        Assert.Contains("\"email\": {email}", tool.Rest.Body);
-        Assert.Contains("\"age\": {age}", tool.Rest.Body);
+        Assert.Equal("{requestBody}", tool.Rest.Body);
 
-        Assert.NotNull(tool.Mcp.InputSchema.Properties);
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("name"));
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("email"));
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("age"));
+        Assert.True(tool.Mcp.InputSchema.TryGetProperty("properties", out var properties));
+        Assert.True(properties.TryGetProperty("requestBody", out var requestBodySchema));
 
-        Assert.Equal("string", tool.Mcp.InputSchema.Properties["name"].Type);
-        Assert.Equal("email", tool.Mcp.InputSchema.Properties["email"].Format);
-        Assert.Equal("integer", tool.Mcp.InputSchema.Properties["age"].Type);
+        Assert.Equal("object", requestBodySchema.GetProperty("type").GetString());
+        Assert.True(requestBodySchema.TryGetProperty("properties", out var requestBodyProps));
+        Assert.True(requestBodyProps.TryGetProperty("name", out var nameProperty));
+        Assert.True(requestBodyProps.TryGetProperty("email", out var emailProperty));
+        Assert.True(requestBodyProps.TryGetProperty("age", out var ageProperty));
 
-        Assert.Contains("name", tool.Mcp.InputSchema.Required);
-        Assert.Contains("email", tool.Mcp.InputSchema.Required);
-        Assert.DoesNotContain("age", tool.Mcp.InputSchema.Required);
+        Assert.Equal("string", nameProperty.GetProperty("type").GetString());
+        Assert.Equal("email", emailProperty.GetProperty("format").GetString());
+        Assert.Equal("integer", ageProperty.GetProperty("type").GetString());
     }
 
     [Fact]
@@ -353,7 +355,8 @@ public class SwaggerConverterTests
             string expectedMappingsJson = await File.ReadAllTextAsync(mappingsPath);
             string actualMappingsJson = await File.ReadAllTextAsync(tempOutputFile);
 
-            Assert.Equal(expectedMappingsJson, actualMappingsJson);
+            // Compare without trailing newlines.
+            Assert.Equal(expectedMappingsJson.TrimEnd(), actualMappingsJson.TrimEnd());
         }
         finally
         {

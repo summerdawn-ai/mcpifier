@@ -17,8 +17,7 @@ internal static class ConfigurationManagerExtensions
     /// <param name="configurationManager">The configuration manager to add the sources to.</param>
     /// <param name="noDefaultSettings">Whether to skip loading embedded default settings.</param>
     /// <param name="settingsFileNames">Array of settings file paths to load.</param>
-    /// <param name="mappingsFileName">Optional custom mappings file name to load.</param>
-    public static void AddMcpifierSettings(this ConfigurationManager configurationManager, bool noDefaultSettings, string[] settingsFileNames, string? mappingsFileName)
+    public static void AddMcpifierSettings(this ConfigurationManager configurationManager, bool noDefaultSettings, string[] settingsFileNames)
     {
         // Load embedded appsettings.json as first configuration source (unless disabled)
         if (!noDefaultSettings)
@@ -31,12 +30,6 @@ internal static class ConfigurationManagerExtensions
 
         // Load custom appsettings.json if specified
         configurationManager.AddJsonFiles(settingsFileNames);
-
-        // Load custom mappings.json if specified 
-        if (mappingsFileName is not null)
-        {
-            configurationManager.AddJsonFile(mappingsFileName, optional: false);
-        }
     }
 
     /// <summary>

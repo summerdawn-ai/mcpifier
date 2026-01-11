@@ -161,7 +161,7 @@ builder.Services.AddMcpifier(options => { /* configure */ }).AddAspNetCore()
 
 ### Adding Tools Manually
 
-For complete control, you can generate tool mappings once using the `SwaggerConverter` class or the Mcpifier CLI and modify the resulting `mappings.json` file as needed:
+For complete control, you can generate tool mappings once using the `SwaggerConverter` class or the Mcpifier command-line server and modify the resulting `mappings.json` file as needed:
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
@@ -173,7 +173,7 @@ using Summerdawn.Mcpifier.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Register Swagger converter
-builder.Services.AddMcpifier(_ => { }).AddAspNetCore();
+builder.Services.AddMcpifier(_ => { });
 
 // Get Swagger converter from DI
 var swaggerConverter = builder.Build().Services.GetRequiredService<SwaggerConverter>(); 
@@ -186,21 +186,20 @@ await swaggerConverter.LoadAndConvertAsync("https://api.example.com/swagger.json
 
 This is intended for offline or one-time generation scenarios.
 
-After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file:
+After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file by calling `AddToolsFromMappings`:
 
 ```csharp
-using Microsoft.AspNetCore.Builder;
-
 using Summerdawn.Mcpifier.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load the mappings file into the configuration
-builder.Configuration.AddJsonFile("path/to/mappings.json");
-
-// Configure Mcpifier with the resulting configuration including the tool mappings
-builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
+// Load tool mappings from file
+builder.Services
+    .AddMcpifier(options => { /* configure */ }).AddAspNetCore()
+    .AddToolsFromMappings("path/to/mappings.json");
 ```
+
+As with Swagger/OpenAPI, loading tool mappings will also **set the REST API base address** to the base address specified in the file, if the Mcpifier configuration does not already specify a base address.
 
 ### Starting the Server
 

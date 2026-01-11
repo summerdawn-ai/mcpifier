@@ -1,7 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+
+using Json.Schema;
 
 using Microsoft.OpenApi;
 
@@ -51,7 +54,9 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
                 }
             };
 
-            string mappingsJson = JsonSerializer.Serialize<MinimalOptionsWrapper>(minimalOptions, SwaggerConverterJsonContext.JsonOptions);
+            // Serialize with relaxed JSON escaping so that
+            // " and & in body and query templates are not escaped.
+            string mappingsJson = JsonSerializer.Serialize<MinimalOptionsWrapper>(minimalOptions, MinimalOptionsJsonContext.JsonOptions);
 
             await File.WriteAllTextAsync(outputFileName, mappingsJson);
 
@@ -155,17 +160,21 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     private async Task<McpifierToolMapping> ConvertOperationAsync(string path, HttpMethod type, OpenApiOperation operation)
     {
         string toolName = GenerateToolName(operation, path, type);
-        var inputSchema = await BuildInputSchemaAsync(operation);
+        var (schemaElement, schemaObject) = await BuildInputSchemaAsync(operation);
         var restConfig = BuildRestConfiguration(path, type, operation);
+
+        var tool = new McpToolDefinition
+        {
+            Name = toolName,
+            Description = operation.Summary ?? operation.Description ?? $"{type} {path}"
+        };
+
+        // Use internal method to set both efficiently
+        tool.SetInputSchema(schemaElement, schemaObject);
 
         return new McpifierToolMapping
         {
-            Mcp = new McpToolDefinition
-            {
-                Name = toolName,
-                Description = operation.Summary ?? operation.Description ?? $"{type} {path}",
-                InputSchema = inputSchema
-            },
+            Mcp = tool,
             Rest = restConfig
         };
     }
@@ -174,34 +183,36 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// Builds the input schema from operation parameters and request body.
     /// </summary>
     /// <param name="operation">The OpenAPI operation.</param>
-    /// <returns>An input schema.</returns>
-    private async Task<InputSchema> BuildInputSchemaAsync(OpenApiOperation operation)
+    /// <returns>A tuple containing the JsonElement and JsonSchema representations.</returns>
+    private async Task<(JsonElement schemaElement, JsonSchema schemaObject)> BuildInputSchemaAsync(OpenApiOperation operation)
     {
-        var inputSchema = new InputSchema();
+        // Create initial input schema.
+        var jsonBuilder = new StringBuilder();
+        jsonBuilder.Append("{\"type\":\"object\"");
 
-        // Create initial input schema based on request body, if present.
+        var properties = new List<string>();
+        var required = new List<string>();
+
+        // Add request body to input schema, if present.
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var requestBody) == true)
         {
             var schema = ResolveSchema(requestBody.Schema);
 
-            // If the request body is an object, use it as the base of the InputSchema;
-            // otherwise, add the request body as a single property "requestBody".
-            if (schema is { Type: JsonSchemaType.Object })
+            if (schema is not null)
             {
-                // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
-                // arrays for nullable types that break our deserialization.
-                string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
-                inputSchema = JsonSerializer.Deserialize<InputSchema>(json, JsonRpcAndMcpJsonContext.Default.InputSchema)!;
-            }
-            else if (schema is not null)
-            {
-                // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
-                // arrays for nullable types that break our deserialization.
-                string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
-                inputSchema.Properties = new()
+                // RequestBody has no description outside the schema.
+
+                // Serialize as JSON schema by using OpenAPI version 3.2.
+                string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+
+                // Add to input schema as "requestBody" property.
+                const string requestBodyName = "requestBody";
+
+                properties.Add($"\"{requestBodyName}\":{json}");
+                if (operation.RequestBody.Required)
                 {
-                    ["requestBody"] = JsonSerializer.Deserialize<PropertySchema>(json, JsonRpcAndMcpJsonContext.Default.PropertySchema)!
-                };
+                    required.Add($"\"{requestBodyName}\"");
+                }
             }
         }
 
@@ -215,23 +226,46 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
                 continue;
             }
 
-            // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
-            // arrays for nullable types that break our deserialization.
-            string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
-            var propertySchema = JsonSerializer.Deserialize<PropertySchema>(json, JsonRpcAndMcpJsonContext.Default.PropertySchema)!;
+            // Set description from parameter if present, overriding schema description
+            if (!string.IsNullOrEmpty(param.Description))
+            {
+                schema.Description = param.Description;
+            }
 
-            // Prefer param description over schema description.
-            propertySchema.Description = param.Description ?? propertySchema.Description;
+            // Serialize as JSON schema by using OpenAPI version 3.2.
+            string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
 
-            inputSchema.Properties ??= [];
-            inputSchema.Properties[param.Name!] = propertySchema;
+            // Add to input schema.
+            properties.Add($"\"{param.Name}\":{json}");
             if (param.Required)
             {
-                inputSchema.Required.Add(param.Name!);
+                required.Add($"\"{param.Name}\"");
             }
         }
 
-        return inputSchema;
+        // Build properties object
+        if (properties.Count > 0)
+        {
+            jsonBuilder.Append(",\"properties\":{");
+            jsonBuilder.Append(string.Join(",", properties));
+            jsonBuilder.Append('}');
+        }
+
+        // Build required array
+        if (required.Count > 0)
+        {
+            jsonBuilder.Append(",\"required\":[");
+            jsonBuilder.Append(string.Join(",", required));
+            jsonBuilder.Append(']');
+        }
+
+        jsonBuilder.Append('}');
+
+        string schemaJson = jsonBuilder.ToString();
+        var element = JsonDocument.Parse(schemaJson).RootElement.Clone();
+        var schemaObj = JsonSchema.FromText(schemaJson);
+
+        return (element, schemaObj);
     }
 
     /// <summary>
@@ -265,24 +299,9 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         {
             var schema = ResolveSchema(mediaType.Schema);
 
-            if (schema is { Type: JsonSchemaType.Object })
+            if (schema is not null)
             {
-                // Request body is object, so build body template from individual properties.
-                if (schema.Properties?.Count > 0)
-                {
-                    var bodyParts = schema.Properties.Select(prop => $"\"{prop.Key}\": {{{prop.Key}}}");
-
-                    config.Body = "{ " + string.Join(", ", bodyParts) + " }";
-                }
-                else
-                {
-                    config.Body = "{}";
-                }
-            }
-            else if (schema is not null)
-            {
-                // Otherwise, we added the body to the input schema as a
-                // single property "requestBody", so reflect that here.
+                // Always use requestBody property
                 config.Body = "{requestBody}";
             }
         }
@@ -397,7 +416,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
                 string[] propertyNames = concrete.Properties.Keys.ToArray();
                 foreach (string propertyName in propertyNames)
                 {
-                    IOpenApiSchema? resolvedProperty = ResolveSchemaTree(concrete.Properties[propertyName], visited);
+                    var resolvedProperty = ResolveSchemaTree(concrete.Properties[propertyName], visited);
                     if (resolvedProperty is null)
                     {
                         concrete.Properties.Remove(propertyName);
@@ -432,7 +451,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
 
         for (int index = 0; index < collection.Count; index++)
         {
-            IOpenApiSchema? resolvedItem = ResolveSchemaTree(collection[index], visited);
+            var resolvedItem = ResolveSchemaTree(collection[index], visited);
             if (resolvedItem is not null)
             {
                 collection[index] = resolvedItem;

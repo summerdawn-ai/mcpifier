@@ -158,7 +158,7 @@ builder.Services.AddMcpifier(options => { /* configure */ })
 
 ### Adding Tools Manually
 
-For complete control, you can generate tool mappings once using the `SwaggerConverter` class or the Mcpifier CLI and modify the resulting `mappings.json` file as needed:
+For complete control, you can generate tool mappings once using the `SwaggerConverter` class or the Mcpifier command-line server and modify the resulting `mappings.json` file as needed:
 
 ```csharp
 using Summerdawn.Mcpifier.DependencyInjection;
@@ -181,19 +181,19 @@ await swaggerConverter.LoadAndConvertAsync("https://api.example.com/swagger.json
 
 This is intended for offline or one-time generation scenarios.
 
-After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file:
+After modifying the generated `mappings.json` file as needed (e.g. changing tool descriptions and names, removing mappings), you can load tool mappings directly from the file by calling `AddToolsFromMappings`:
 
 ```csharp
 using Summerdawn.Mcpifier.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Load the mappings file into the configuration
-builder.Configuration.AddJsonFile("path/to/mappings.json");
-
-// Configure Mcpifier with the resulting configuration including the tool mappings
-builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
+// Load tool mappings from file
+builder.Services.AddMcpifier(options => { /* configure */ })
+    .AddToolsFromMappings("path/to/mappings.json");
 ```
+
+As with Swagger/OpenAPI, loading tool mappings will also **set the REST API base address** to the base address specified in the file, if the Mcpifier configuration does not already specify a base address.
 
 ### Starting the Server
 
@@ -270,26 +270,31 @@ Mcpifier's configuration maps to the `McpifierOptions` class and is structured a
         "ScopesSupported": [ "https://mcp.example.com/access" ]
       }
     },
-    // Mappings from MCP tools to REST API calls - keep in separate JSON file
+    // Mappings from MCP tools to REST API calls - loaded from separate JSON file
     "Tools": [
       {
+        // MCP tool definition
         "mcp": {
-          "name": "get_data",
-          "description": "Retrieve data from API",
+          "name": "get_user",
+          "description": "Retrieve user information by id",
+          // JSON Schema
           "inputSchema": {
             "type": "object",
             "properties": {
-              "id": {
+              "userId": {
                 "type": "string",
-                "description": "Data identifier"
+                "description": "The user's unique identifier"
               }
             },
-            "required": ["id"]
+            "required": ["userId"]
           }
         },
+        // REST endpoint definition
         "rest": {
           "method": "GET",
-          "path": "/data/{id}"
+          "path": "/users/{userId}",
+          "query": "include=profile",
+          "body": null
         }
       }
     ]
@@ -297,10 +302,11 @@ Mcpifier's configuration maps to the `McpifierOptions` class and is structured a
 }
 ```
 
-In order to keep tool mappings environment-independent and version-controllable, it is recommended that they are loaded from a separate `mappings.json` file, not included in `appsettings.json`:
+Because tool mappings support full the JSON schema syntax, they can not be bound using the configuration manager and instead must be loaded using `AddToolsFromMappings`:
 
 ```csharp
-builder.Configuration.AddJsonFile("mappings.json");
+builder.Services.AddMcpifier(options => { /* configure */ })
+    .AddToolsFromMappings("path/to/mappings.json")
 ```
 
 See the [Usage](#usage) section for instructions on how to load the configuration.
@@ -317,7 +323,7 @@ The settings in the `Rest` configuration section are related to the REST API:
 |DefaultHeaders|`Dictionary<string,string>`|Headers to include in every REST API request|{ "User-Agent": "Mcpifier/1.0" }|
 |ForwardedHeaders|`Dictionary<string,bool>`|Headers to forward from the MCP tool call (only in HTTP mode)|{ "Authorization": true }|
 
-The `BaseAddress` may be [set from a loaded Swagger/OpenAPI specification](#generating-tools-from-swagger), if available and not already specified in the configuration.
+The `BaseAddress` may be [set from a loaded Swagger/OpenAPI specification](#generating-tools-from-swagger) or [set from a mappings file](#adding-tools-manually), if available and not already specified in the configuration.
 
 It can be set to a relative URL if Mcpifier is used in HTTP mode (using [Summerdawn.Mcpifier.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpifier.AspNetCore)) alongside REST endpoints hosted in the same ASP.NET Core application. In stdio mode, it must be an absolute URL.
 
@@ -359,7 +365,7 @@ Whether tool mappings are generated from a Swagger/OpenAPI specification or load
   // MCP tool definition
   "mcp": {
     "name": "get_user",
-    "description": "Retrieve user information by ID",
+    "description": "Retrieve user information by id",
     // JSON Schema
     "inputSchema": {
       "type": "object",
@@ -392,7 +398,9 @@ The `Mcp` section of each mapping defines an MCP tool as defined in the [MCP Too
 |----|----|-----------|-------|
 |name|`string` (required)|Unique identifier for the tool|"get_user"|
 |title|`string`|Optional human-readable name of the tool for display purposes|"Retrieve user information by id"|
-|inputSchema|`InputSchema`|JSON Schema defining expected parameters|{ "type": "object", "properties": { "userId": { "type": "string", "description": "The user's unique identifier" } }, "required": ["userId"] }|
+|inputSchema|JSON Schema|JSON Schema defining expected parameters|{ "type": "object", "properties": { "userId": { "type": "string", "description": "The user's unique identifier" } }, "required": ["userId"] }|
+
+On each tool call, the provided parameters are validated against the `inputSchema` using [JsonSchema.Net](https://www.nuget.org/packages/JsonSchema.Net).
 
 Note that the `outputSchema` and `annotations` properties defined in the specification are currently not supported.
 
@@ -474,6 +482,7 @@ Request body placeholders for absent arguments are replaced with `null`, for exa
 This package has the following dependencies:
 
 - **.NET 8.0** or later
+- **JsonSchema.Net**: JSON Schema validation
 - **Microsoft.AspNetCore.Http.Abstractions**: HTTP context abstractions
 - **Microsoft.Extensions.Hosting.Abstractions**: Hosting abstractions
 - **Microsoft.Extensions.Http**: HTTP client factory

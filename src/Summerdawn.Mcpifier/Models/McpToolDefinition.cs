@@ -1,4 +1,7 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using Json.Schema;
 
 namespace Summerdawn.Mcpifier.Models;
 
@@ -7,6 +10,13 @@ namespace Summerdawn.Mcpifier.Models;
 /// </summary>
 public class McpToolDefinition
 {
+    private static readonly JsonSchema DefaultSchema = new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
+
+    private readonly object schemaSync = new();
+
+    private JsonElement inputSchema;
+    private Lazy<JsonSchema> deserializedInputSchema = new(DefaultSchema);
+
     /// <summary>
     /// Gets or sets the tool name.
     /// </summary>
@@ -27,68 +37,44 @@ public class McpToolDefinition
     /// <summary>
     /// Gets or sets the input schema for the tool.
     /// </summary>
-    public InputSchema InputSchema { get; set; } = new();
-}
+    /// <remarks>
+    /// When set, automatically creates a lazy initializer for the parsed
+    /// schema returned by <see cref="GetDeserializedInputSchema"/>.
+    /// </remarks>
+    [JsonPropertyName("inputSchema")]
+    public JsonElement InputSchema
+    {
+        get => inputSchema;
+        set
+        {
+            lock (schemaSync)
+            {
+                inputSchema = value;
 
-/// <summary>
-/// Represents a JSON Schema for tool input validation.
-/// </summary>
-public class InputSchema
-{
-    /// <summary>
-    /// Gets or sets the schema type. Typically "object".
-    /// </summary>
-    public string Type { get; set; } = "object";
-
-    /// <summary>
-    /// Gets or sets the properties of the schema.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, PropertySchema>? Properties { get; set; }
-
-    /// <summary>
-    /// Gets or sets the list of required property names.
-    /// </summary>
-    public List<string> Required { get; set; } = [];
-}
-
-/// <summary>
-/// Represents a property in a JSON Schema.
-/// </summary>
-public class PropertySchema
-{
-    /// <summary>
-    /// Gets or sets the property type.
-    /// </summary>
-    public string Type { get; set; } = "string";
+                deserializedInputSchema = value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                    ? new Lazy<JsonSchema>(DefaultSchema)
+                    : new Lazy<JsonSchema>(() => JsonSchema.FromText(value.GetRawText()), LazyThreadSafetyMode.ExecutionAndPublication);
+            }
+        }
+    }
 
     /// <summary>
-    /// Gets or sets the property description.
+    /// Gets the deserialized JSON Schema for validation.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Description { get; set; }
+    public JsonSchema GetDeserializedInputSchema() => deserializedInputSchema.Value;
 
     /// <summary>
-    /// Gets or sets the property format (e.g., date-time, int32).
+    /// Efficiently sets both representations when both are already available.
+    /// Used internally by converters and loaders.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Format { get; set; }
+    internal void SetInputSchema(JsonElement element, JsonSchema schema)
+    {
+        lock (schemaSync)
+        {
+            inputSchema = element;
 
-    /// <summary>
-    /// Gets or sets the enum values for the property.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<object>? Enum { get; set; }
-
-    /// <summary>
-    /// Gets or sets the items schema for array types.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public PropertySchema? Items { get; set; }
-
-    /// <summary>
-    /// Gets or sets nested properties for object types.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, PropertySchema>? Properties { get; set; }
+            // Use an immediate lazy initializer since we already have the schema.
+            deserializedInputSchema = new Lazy<JsonSchema>(schema);
+        }
+    }
 }

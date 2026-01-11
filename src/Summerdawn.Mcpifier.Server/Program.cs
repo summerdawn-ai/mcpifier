@@ -184,12 +184,25 @@ public class Program
                 // Loads appsettings.json from working directory if present
                 var builder = WebApplication.CreateBuilder();
 
-                // Load embedded, default and custom settings and mappings files.
-                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, mappingsFileName);
+                // Load embedded, default and custom settings.
+                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames);
 
                 // Configure HTTP MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
 
+                // Add tools from local mappings.json if present -
+                // even if explicit mappings/Swagger is specified.
+                const string localMappingsFileName = "mappings.json";
+                if (File.Exists(localMappingsFileName))
+                {
+                    mcpifierBuilder.AddToolsFromMappings(localMappingsFileName);
+                }
+
+                // Add tools from mappings or Swagger if specified.
+                if (mappingsFileName is not null)
+                {
+                    mcpifierBuilder.AddToolsFromMappings(mappingsFileName);
+                }
                 if (swaggerFileNameOrUrl is not null)
                 {
                     mcpifierBuilder.AddToolsFromSwagger(swaggerFileNameOrUrl);
@@ -229,7 +242,7 @@ public class Program
                 var builder = Host.CreateApplicationBuilder(args);
 
                 // Load embedded, default and custom settings and mappings files.
-                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, mappingsFileName);
+                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames);
 
                 // Configure stdio MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
@@ -280,7 +293,7 @@ public class Program
             var builder = Host.CreateApplicationBuilder(args);
 
             // Load embedded, default and custom settings and mappings files.
-            builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, mappingsFileName: null);
+            builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames);
 
             builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 

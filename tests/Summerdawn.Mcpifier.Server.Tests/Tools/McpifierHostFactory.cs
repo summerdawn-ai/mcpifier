@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -17,9 +16,9 @@ public class McpifierHostFactory
     {
         var builder = Host.CreateApplicationBuilder();
 
-        builder.Configuration.AddJsonFile("Resources/test-mappings.json", optional: false, reloadOnChange: false);
-
-        builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
+        // Add Mcpifier and load mappings
+        builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
+            .AddToolsFromMappings("Resources/test-mappings.json");
 
         // Set server info for testing
         builder.Services.Configure<McpifierOptions>(mcpifier =>

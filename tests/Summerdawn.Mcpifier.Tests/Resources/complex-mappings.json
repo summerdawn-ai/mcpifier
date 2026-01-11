@@ -6,8 +6,7 @@
           "name": "get_api_object",
           "description": "GET /api/object",
           "inputSchema": {
-            "type": "object",
-            "required": []
+            "type": "object"
           }
         },
         "rest": {
@@ -22,21 +21,29 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "foo": {
-                "type": "string"
-              },
-              "bar": {
-                "type": "integer",
-                "format": "int32"
+              "requestBody": {
+                "type": "object",
+                "properties": {
+                  "foo": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "bar": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                },
+                "additionalProperties": false
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
           "method": "POST",
           "path": "/api/object",
-          "body": "{ \"foo\": {foo}, \"bar\": {bar} }"
+          "body": "{requestBody}"
         }
       },
       {
@@ -52,17 +59,20 @@
                   "type": "object",
                   "properties": {
                     "foo": {
-                      "type": "string"
+                      "type": [
+                        "null",
+                        "string"
+                      ]
                     },
                     "bar": {
                       "type": "integer",
                       "format": "int32"
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -84,21 +94,24 @@
                   "type": "object",
                   "properties": {
                     "foo": {
-                      "type": "string"
+                      "type": [
+                        "null",
+                        "string"
+                      ]
                     },
                     "bar": {
                       "type": "integer",
                       "format": "int32"
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               },
               "id": {
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -121,8 +134,7 @@
                   "type": "string"
                 }
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -148,8 +160,7 @@
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -173,8 +184,7 @@
                   "format": "int32"
                 }
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -201,8 +211,7 @@
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -222,8 +231,7 @@
               "requestBody": {
                 "type": "string"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -246,8 +254,7 @@
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -264,26 +271,34 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "foo": {
-                "type": "string"
-              },
-              "bar": {
-                "type": "integer",
-                "format": "int32"
+              "requestBody": {
+                "type": "object",
+                "properties": {
+                  "foo": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "bar": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                },
+                "additionalProperties": false
               },
               "id": {
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
           "method": "POST",
           "path": "/api/objectWithQuery",
           "query": "id={id}",
-          "body": "{ \"foo\": {foo}, \"bar\": {bar} }"
+          "body": "{requestBody}"
         }
       },
       {
@@ -293,41 +308,57 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "components": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "foo": {
-                      "type": "string"
-                    },
-                    "bar": {
-                      "type": "integer",
-                      "format": "int32"
-                    }
-                  }
-                }
-              },
-              "single": {
+              "requestBody": {
                 "type": "object",
                 "properties": {
-                  "foo": {
-                    "type": "string"
+                  "components": {
+                    "type": [
+                      "null",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": [
+                            "null",
+                            "string"
+                          ]
+                        },
+                        "bar": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
                   },
-                  "bar": {
-                    "type": "integer",
-                    "format": "int32"
+                  "single": {
+                    "type": "object",
+                    "properties": {
+                      "foo": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "bar": {
+                        "type": "integer",
+                        "format": "int32"
+                      }
+                    },
+                    "additionalProperties": false
                   }
-                }
+                },
+                "additionalProperties": false
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
           "method": "POST",
           "path": "/api/NestedObject",
-          "body": "{ \"components\": {components}, \"single\": {single} }"
+          "body": "{requestBody}"
         }
       },
       {
@@ -337,46 +368,62 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "components": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "foo": {
-                      "type": "string"
-                    },
-                    "bar": {
-                      "type": "integer",
-                      "format": "int32"
-                    }
-                  }
-                }
-              },
-              "single": {
+              "requestBody": {
                 "type": "object",
                 "properties": {
-                  "foo": {
-                    "type": "string"
+                  "components": {
+                    "type": [
+                      "null",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": [
+                            "null",
+                            "string"
+                          ]
+                        },
+                        "bar": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
                   },
-                  "bar": {
-                    "type": "integer",
-                    "format": "int32"
+                  "single": {
+                    "type": "object",
+                    "properties": {
+                      "foo": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "bar": {
+                        "type": "integer",
+                        "format": "int32"
+                      }
+                    },
+                    "additionalProperties": false
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "id": {
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
           "method": "POST",
           "path": "/api/NestedObjectWithQuery",
           "query": "id={id}",
-          "body": "{ \"components\": {components}, \"single\": {single} }"
+          "body": "{requestBody}"
         }
       },
       {
@@ -392,37 +439,48 @@
                   "type": "object",
                   "properties": {
                     "components": {
-                      "type": "array",
+                      "type": [
+                        "null",
+                        "array"
+                      ],
                       "items": {
                         "type": "object",
                         "properties": {
                           "foo": {
-                            "type": "string"
+                            "type": [
+                              "null",
+                              "string"
+                            ]
                           },
                           "bar": {
                             "type": "integer",
                             "format": "int32"
                           }
-                        }
+                        },
+                        "additionalProperties": false
                       }
                     },
                     "single": {
                       "type": "object",
                       "properties": {
                         "foo": {
-                          "type": "string"
+                          "type": [
+                            "null",
+                            "string"
+                          ]
                         },
                         "bar": {
                           "type": "integer",
                           "format": "int32"
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {

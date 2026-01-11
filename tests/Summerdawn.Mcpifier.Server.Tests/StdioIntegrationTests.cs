@@ -109,7 +109,7 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
         {
             "ToolsList",
             """{"jsonrpc":"2.0","id":3,"method":"tools/list","params":{}}""",
-            """{"jsonrpc":"2.0","id":3,"result":{"tools":[{"name":"test_tool","description":"Tool","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_arguments","description":"Tool with arguments","inputSchema":{"type":"object","properties":{"bar":{"type":"integer","format":"int32"},"foo":{"type":"string"}},"required":["foo"]}},{"name":"test_tool_404","description":"Tool that returns 404","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_500","description":"Tool that returns 500","inputSchema":{"type":"object","required":[]}}]}}"""
+            """{"jsonrpc":"2.0","id":3,"result":{"tools":[{"name":"test_tool","description":"Tool","inputSchema":{"type":"object","required":[]}},{"name":"test_tool_arguments","description":"Tool with arguments","inputSchema":{"type":"object","properties":{"foo":{"type":"string"},"bar":{"type":"integer","format":"int32"}},"required":["foo"]}},{"name":"test_tool_404","description":"Tool that returns 404","inputSchema":{"type":"object"}},{"name":"test_tool_500","description":"Tool that returns 500","inputSchema":{"type":"object"}}]}}"""
         }
     };
 
@@ -184,12 +184,12 @@ public class StdioIntegrationTests(McpifierHostFactory factory, ITestOutputHelpe
         {
             "ToolCall_InvalidArguments_Missing",
             """{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"test_tool_arguments","arguments":{"bar":3}}}""",
-            """{"jsonrpc":"2.0","id":2,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Required field 'foo' is missing"}}}"""
+            """{"jsonrpc":"2.0","id":2,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Required properties [\"foo\"] are not present"}}}"""
         },
         {
             "ToolCall_InvalidArguments_WrongType",
             """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"test_tool_arguments","arguments":{"foo":{}}}}""",
-            """{"jsonrpc":"2.0","id":3,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Field 'foo' has invalid type. Expected: string"}}}"""
+            """{"jsonrpc":"2.0","id":3,"error":{"code":-32602,"message":"Invalid params","data":{"errorMessage":"Validation failed; /foo: Value is \"object\" but should be \"string\""}}}"""
         },
         {
             "ToolCall_InvalidArguments_NotObject",

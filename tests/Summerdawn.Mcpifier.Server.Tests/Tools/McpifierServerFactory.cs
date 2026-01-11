@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Summerdawn.Mcpifier.Configuration;
+using Summerdawn.Mcpifier.DependencyInjection;
 using Summerdawn.Mcpifier.Models;
 
 namespace Summerdawn.Mcpifier.Server.Tests;
@@ -17,8 +17,9 @@ public class McpifierServerFactory : WebApplicationFactory<Program>
     {
         builder.UseContentRoot(AppContext.BaseDirectory);
 
-        builder.ConfigureAppConfiguration(configuration =>
-            configuration.AddJsonFile("Resources/test-mappings.json", optional: false, reloadOnChange: false));
+        // Re-add Mcpifier to get builder and load mappings
+        builder.ConfigureServices((context, services) => services.AddMcpifier(context.Configuration.GetSection("Mcpifier")).AddAspNetCore()
+                .AddToolsFromMappings("Resources/test-mappings.json"));
 
         // Set server info for testing
         builder.ConfigureServices(services => services.Configure<McpifierOptions>(mcpifier =>
