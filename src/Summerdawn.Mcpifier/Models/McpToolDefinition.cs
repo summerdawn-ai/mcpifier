@@ -84,7 +84,7 @@ public class McpToolDefinition
             {
                 outputSchema = value;
 
-                deserializedOutputSchema = value == null || value.Value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                deserializedOutputSchema = !value.HasValue || value.Value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
                     ? null
                     : new Lazy<JsonSchema>(() => JsonSchema.FromText(value.Value.GetRawText()), LazyThreadSafetyMode.ExecutionAndPublication);
             }
