@@ -248,7 +248,7 @@ public class SwaggerConverterTests
         Assert.Single(tools);
 
         var tool = tools[0];
-        Assert.Equal("get_users_id_posts", tool.Mcp.Name);
+        Assert.Equal("get_user_posts", tool.Mcp.Name);
     }
 
     [Fact]

@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 using Json.Schema;
 
@@ -165,7 +164,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// <returns>A tool mapping.</returns>
     private async Task<McpifierToolMapping> ConvertOperationAsync(string path, HttpMethod type, OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
     {
-        string toolName = GenerateToolName(operation, path, type);
+        string toolName = ToolNameGenerator.Generate(operation, path, type);
         var (inputSchemaElement, inputSchemaObject) = await BuildInputSchemaAsync(operation, schemaCache);
         var (outputSchemaElement, outputSchemaObject) = await BuildOutputSchemaAsync(operation, schemaCache);
         var restConfig = BuildRestConfiguration(path, type, operation, schemaCache);
@@ -370,59 +369,6 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         }
 
         return config;
-    }
-
-    /// <summary>
-    /// Generates a snake_case tool name from the operation.
-    /// </summary>
-    /// <param name="operation">The OpenAPI operation.</param>
-    /// <param name="path">The API path.</param>
-    /// <param name="type">The HTTP operation type.</param>
-    /// <returns>A snake_case tool name.</returns>
-    private static string GenerateToolName(OpenApiOperation operation, string path, HttpMethod type)
-    {
-        if (!string.IsNullOrWhiteSpace(operation.OperationId))
-        {
-            return ToSnakeCase(operation.OperationId);
-        }
-
-        // Generate from method and path
-        string methodPart = type.ToString().ToLowerInvariant();
-        string pathPart = path.TrimStart('/').Replace('/', '_').Replace('{', ' ').Replace('}', ' ');
-        pathPart = Regex.Replace(pathPart, @"\s+", "_");
-        pathPart = Regex.Replace(pathPart, @"[^a-zA-Z0-9_]", "");
-
-        return ToSnakeCase($"{methodPart}_{pathPart}");
-    }
-
-    /// <summary>
-    /// Converts text to snake_case.
-    /// </summary>
-    /// <param name="text">The text to convert.</param>
-    /// <returns>The snake_case version of the text.</returns>
-    private static string ToSnakeCase(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return text;
-        }
-
-        // Insert underscores before uppercase letters (except at the start)
-        string result = Regex.Replace(text, @"([a-z0-9])([A-Z])", "$1_$2");
-
-        // Convert to lowercase
-        result = result.ToLowerInvariant();
-
-        // Replace any non-alphanumeric characters with underscores
-        result = Regex.Replace(result, @"[^a-z0-9_]", "_");
-
-        // Remove duplicate underscores
-        result = Regex.Replace(result, @"_+", "_");
-
-        // Remove leading/trailing underscores
-        result = result.Trim('_');
-
-        return result;
     }
 
     /// <summary>

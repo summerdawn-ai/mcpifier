@@ -429,6 +429,24 @@ The `Rest` section of each mapping describes how Mcpifier calls the target REST 
 
 The `path`, `query` and `body` settings all support argument interpolation as defined in the [Argument Interpolation](#argument-interpolation) section below.
 
+### Tool Name Generation
+
+When [generating tool mappings from a Swagger/OpenAPI specification](#generating-tools-from-swagger), each tool name is automatically generated from one of three sources:
+
+1. The explicit `operationId`, if defined
+2. Otherwise, the operation `summary`, if available and at most 50 characters
+3. Otherwise, the HTTP method and API path
+
+When generating a tool name from a summary or method/path, some common stop words are removed, path segments are singularized intelligently based on context, and HTTP verbs are mapped semantically, for example:
+
+|Type|Input|Generated Tool Name|
+|----|-----|-------------------|
+|operationId|"GetUserById"|`get_user_by_id`|
+|summary|"Get a user by ID"|`get_user_by_id`|
+|method+path|GET /users|`list_users`|
+|method+path|GET /users/\{id\}|`get_user`|
+|method+path|GET /users/\{id\}/posts|`get_user_posts`|
+
 ### Argument Interpolation
 
 When executing a REST API request, any placeholders in the form `{argName}` in the `path`, `query` and `body` settings are automatically populated with the corresponding argument value from the MCP tool call's `arguments` object.
@@ -488,6 +506,13 @@ Request body placeholders for absent arguments are replaced with `null`, for exa
 ```json
 { "name": "John Doe", "email": "johndoe@example.com", "tags": null }
 ```
+
+For tool mappings that were [generated from a Swagger/OpenAPI specification](#generating-tools-from-swagger), the REST request body will always be mapped to a single argument `requestBody`:
+
+```json
+"body": "{requestBody}"
+```
+
 
 ## Dependencies
 
