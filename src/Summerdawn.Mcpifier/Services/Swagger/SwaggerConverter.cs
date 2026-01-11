@@ -276,10 +276,10 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         jsonBuilder.Append('}');
 
         string schemaJson = jsonBuilder.ToString();
-        var element = JsonDocument.Parse(schemaJson).RootElement.Clone();
+        var schemaElement = JsonDocument.Parse(schemaJson).RootElement.Clone();
         var schemaObj = JsonSchema.FromText(schemaJson);
 
-        return (element, schemaObj);
+        return (schemaElement, schemaObj);
     }
 
     /// <summary>
@@ -287,7 +287,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// </summary>
     /// <param name="operation">The OpenAPI operation.</param>
     /// <param name="schemaCache">Set used to cache already resolved schemas.</param>
-    /// <returns>A tuple containing the JsonElement and JsonSchema representations, or (null, null) if no schema found.</returns>
+    /// <returns>A tuple containing the JsonElement and JsonSchema representations, or (null, null) if no complex schema found.</returns>
     private async Task<(JsonElement? schemaElement, JsonSchema? schemaObject)> BuildOutputSchemaAsync(OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
     {
         // Prefer 200, then 201
@@ -297,15 +297,33 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
                 response.Content?.TryGetValue("application/json", out var responseBody) == true)
             {
                 var schema = ResolveSchema(responseBody.Schema, schemaCache);
-                if (schema != null)
-                {
-                    // Serialize as JSON schema by using OpenAPI version 3.2.
-                    string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
-                    var element = JsonDocument.Parse(json).RootElement.Clone();
-                    var schemaObj = JsonSchema.FromText(json);
 
-                    return (element, schemaObj);
+                if (schema is null)
+                {
+                    continue;
                 }
+
+                // Serialize as JSON schema by using OpenAPI version 3.2.
+                string schemaJson = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+
+                if (schema.Type == JsonSchemaType.Object)
+                {
+                    // Use object response body as-is.
+                    var schemaElement = JsonDocument.Parse(schemaJson).RootElement.Clone();
+                    var schemaObj = JsonSchema.FromText(schemaJson);
+
+                    return (schemaElement, schemaObj);
+                }
+                if (schema.Type == JsonSchemaType.Array)
+                {
+                    // Wrap array because output schema must be of type object.
+                    schemaJson = $$"""{ "type": "object", "properties": { "results" : {{schemaJson}} } }""";
+                    var schemaElement = JsonDocument.Parse(schemaJson).RootElement.Clone();
+                    var schemaObj = JsonSchema.FromText(schemaJson);
+
+                    return (schemaElement, schemaObj);
+                }
+                // Ignore other types (too simplistic)
             }
         }
 

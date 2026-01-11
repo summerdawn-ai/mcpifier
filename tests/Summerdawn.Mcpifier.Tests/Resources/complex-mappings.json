@@ -9,22 +9,27 @@
             "type": "object"
           },
           "outputSchema": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "foo": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
-                },
-                "bar": {
-                  "type": "integer",
-                  "format": "int32"
+            "type": "object",
+            "properties": {
+              "results": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "foo": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "bar": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  },
+                  "additionalProperties": false
                 }
-              },
-              "additionalProperties": false
+              }
             }
           }
         },
