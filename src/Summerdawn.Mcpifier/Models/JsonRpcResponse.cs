@@ -131,9 +131,10 @@ public sealed class JsonRpcResponse
     /// <param name="code">The error code.</param>
     /// <param name="message">The error message.</param>
     /// <param name="dataItem">Single item to include as additional error data.</param>
-    /// <param name="dataKey">Optional custom name for <paramref name="dataItem"/>.</param>
+    /// <param name="dataKey">Name for <paramref name="dataItem"/>, captured
+    /// using <see cref="CallerArgumentExpressionAttribute"/>.</param>
     /// <returns>An error response.</returns>
-    public static JsonRpcResponse ErrorResponse(JsonElement id, int code, string message, string dataItem, [CallerArgumentExpression(nameof(dataItem))] string dataKey = "") =>
+    internal static JsonRpcResponse ErrorResponse(JsonElement id, int code, string message, string dataItem, [CallerArgumentExpression(nameof(dataItem))] string dataKey = "") =>
         ErrorResponse(id, code, message, new Dictionary<string, object?> { [dataKey] = dataItem }.AsReadOnly());
 
     /// <summary>
