@@ -17,9 +17,7 @@ internal static class ToolValidator
     /// </summary>
     [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.SerializeToElement<TValue>(TValue, JsonSerializerOptions)")]
     [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.SerializeToElement<TValue>(TValue, JsonSerializerOptions)")]
-    public static (bool isValid, string? errorMessage) ValidateArguments(
-        McpToolDefinition mcpTool,
-        Dictionary<string, JsonElement> arguments)
+    public static (bool isValid, string? errorMessage) ValidateArguments(McpToolDefinition mcpTool, Dictionary<string, JsonElement> arguments)
     {
         var argumentsJson = JsonSerializer.SerializeToElement(arguments);
         var schema = mcpTool.GetDeserializedInputSchema();
