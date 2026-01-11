@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 using Json.Schema;
@@ -15,14 +14,13 @@ internal static class ToolValidator
     /// <summary>
     /// Validates that the provided arguments match the tool's input schema.
     /// </summary>
-    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.SerializeToElement<TValue>(TValue, JsonSerializerOptions)")]
-    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.SerializeToElement<TValue>(TValue, JsonSerializerOptions)")]
     public static (bool isValid, string? errorMessage) ValidateArguments(McpToolDefinition mcpTool, Dictionary<string, JsonElement> arguments)
     {
-        var argumentsJson = JsonSerializer.SerializeToElement(arguments);
-        var schema = mcpTool.GetDeserializedInputSchema();
+        var argumentsJson = JsonSerializer.SerializeToElement(arguments, JsonRpcAndMcpJsonContext.Default.DictionaryStringJsonElement);
 
-        var validationResults = schema.Evaluate(argumentsJson, new EvaluationOptions
+        var inputSchema = mcpTool.GetDeserializedInputSchema();
+
+        var validationResults = inputSchema.Evaluate(argumentsJson, new EvaluationOptions
         {
             OutputFormat = OutputFormat.List
         });
