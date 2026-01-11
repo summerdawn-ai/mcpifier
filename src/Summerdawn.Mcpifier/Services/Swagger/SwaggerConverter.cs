@@ -18,6 +18,8 @@ namespace Summerdawn.Mcpifier.Services;
 /// </summary>
 public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<SwaggerConverter> logger)
 {
+    private static readonly string[] SuccessResponseCodes = ["200", "201"];
+
     /// <summary>
     /// Loads the specified Swagger specification, converts it into mappings, and saves them as JSON to the output file.
     /// </summary>
@@ -164,7 +166,8 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     private async Task<McpifierToolMapping> ConvertOperationAsync(string path, HttpMethod type, OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
     {
         string toolName = GenerateToolName(operation, path, type);
-        var (schemaElement, schemaObject) = await BuildInputSchemaAsync(operation, schemaCache);
+        var (inputSchemaElement, inputSchemaObject) = await BuildInputSchemaAsync(operation, schemaCache);
+        var (outputSchemaElement, outputSchemaObject) = await BuildOutputSchemaAsync(operation, schemaCache);
         var restConfig = BuildRestConfiguration(path, type, operation, schemaCache);
 
         var tool = new McpToolDefinition
@@ -173,8 +176,14 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
             Description = operation.Summary ?? operation.Description ?? $"{type} {path}"
         };
 
-        // Use internal method to set both efficiently
-        tool.SetInputSchema(schemaElement, schemaObject);
+        // Use internal method to set input schema efficiently
+        tool.SetInputSchema(inputSchemaElement, inputSchemaObject);
+
+        // Set output schema if available
+        if (outputSchemaElement is not null)
+        {
+            tool.SetOutputSchema(outputSchemaElement.Value, outputSchemaObject!);
+        }
 
         return new McpifierToolMapping
         {
@@ -267,10 +276,58 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         jsonBuilder.Append('}');
 
         string schemaJson = jsonBuilder.ToString();
-        var element = JsonDocument.Parse(schemaJson).RootElement.Clone();
+        var schemaElement = JsonDocument.Parse(schemaJson).RootElement.Clone();
         var schemaObj = JsonSchema.FromText(schemaJson);
 
-        return (element, schemaObj);
+        return (schemaElement, schemaObj);
+    }
+
+    /// <summary>
+    /// Builds the output schema from operation response definitions.
+    /// </summary>
+    /// <param name="operation">The OpenAPI operation.</param>
+    /// <param name="schemaCache">Set used to cache already resolved schemas.</param>
+    /// <returns>A tuple containing the JsonElement and JsonSchema representations, or (null, null) if no complex schema found.</returns>
+    private async Task<(JsonElement? schemaElement, JsonSchema? schemaObject)> BuildOutputSchemaAsync(OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
+    {
+        // Prefer 200, then 201
+        foreach (string code in SuccessResponseCodes)
+        {
+            if (operation.Responses?.TryGetValue(code, out var response) == true &&
+                response.Content?.TryGetValue("application/json", out var responseBody) == true)
+            {
+                var schema = ResolveSchema(responseBody.Schema, schemaCache);
+
+                if (schema is null)
+                {
+                    continue;
+                }
+
+                // Serialize as JSON schema by using OpenAPI version 3.2.
+                string schemaJson = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+
+                if (schema.Type == JsonSchemaType.Object)
+                {
+                    // Use object response body as-is.
+                    var schemaElement = JsonDocument.Parse(schemaJson).RootElement.Clone();
+                    var schemaObj = JsonSchema.FromText(schemaJson);
+
+                    return (schemaElement, schemaObj);
+                }
+                if (schema.Type == JsonSchemaType.Array)
+                {
+                    // Wrap array because output schema must be of type object.
+                    schemaJson = $$"""{ "type": "object", "properties": { "results" : {{schemaJson}} } }""";
+                    var schemaElement = JsonDocument.Parse(schemaJson).RootElement.Clone();
+                    var schemaObj = JsonSchema.FromText(schemaJson);
+
+                    return (schemaElement, schemaObj);
+                }
+                // Ignore other types (too simplistic)
+            }
+        }
+
+        return (null, null);
     }
 
     /// <summary>

@@ -17,6 +17,9 @@ public class McpToolDefinition
     private JsonElement inputSchema;
     private Lazy<JsonSchema> deserializedInputSchema = new(DefaultSchema);
 
+    private JsonElement? outputSchema;
+    private Lazy<JsonSchema>? deserializedOutputSchema;
+
     /// <summary>
     /// Gets or sets the tool name.
     /// </summary>
@@ -75,6 +78,51 @@ public class McpToolDefinition
 
             // Use an immediate lazy initializer since we already have the schema.
             deserializedInputSchema = new Lazy<JsonSchema>(schema);
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the output schema for the tool.
+    /// </summary>
+    /// <remarks>
+    /// When set, automatically creates a lazy initializer for the parsed
+    /// schema returned by <see cref="GetDeserializedOutputSchema"/>.
+    /// </remarks>
+    [JsonPropertyName("outputSchema")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? OutputSchema
+    {
+        get => outputSchema;
+        set
+        {
+            lock (schemaSync)
+            {
+                outputSchema = value;
+
+                deserializedOutputSchema = !value.HasValue || value.Value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                    ? null
+                    : new Lazy<JsonSchema>(() => JsonSchema.FromText(value.Value.GetRawText()), LazyThreadSafetyMode.ExecutionAndPublication);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the deserialized JSON Schema for output validation, if available.
+    /// </summary>
+    public JsonSchema? GetDeserializedOutputSchema() => deserializedOutputSchema?.Value;
+
+    /// <summary>
+    /// Efficiently sets both representations when both are already available.
+    /// Used internally by converters and loaders.
+    /// </summary>
+    internal void SetOutputSchema(JsonElement element, JsonSchema schema)
+    {
+        lock (schemaSync)
+        {
+            outputSchema = element;
+
+            // Use an immediate lazy initializer since we already have the schema.
+            deserializedOutputSchema = new Lazy<JsonSchema>(schema);
         }
     }
 }
