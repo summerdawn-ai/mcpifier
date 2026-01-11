@@ -164,7 +164,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// <returns>A tool mapping.</returns>
     private async Task<McpifierToolMapping> ConvertOperationAsync(string path, HttpMethod type, OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
     {
-        string toolName = GenerateToolName(operation, path, type);
+        string toolName = ToolNameGenerator.Generate(operation, path, type);
         var (inputSchemaElement, inputSchemaObject) = await BuildInputSchemaAsync(operation, schemaCache);
         var (outputSchemaElement, outputSchemaObject) = await BuildOutputSchemaAsync(operation, schemaCache);
         var restConfig = BuildRestConfiguration(path, type, operation, schemaCache);
@@ -369,32 +369,6 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         }
 
         return config;
-    }
-
-    /// <summary>
-    /// Generates a snake_case tool name from the operation.
-    /// </summary>
-    /// <param name="operation">The OpenAPI operation.</param>
-    /// <param name="path">The API path.</param>
-    /// <param name="type">The HTTP operation type.</param>
-    /// <returns>A snake_case tool name.</returns>
-    private static string GenerateToolName(OpenApiOperation operation, string path, HttpMethod type)
-    {
-        if (!string.IsNullOrWhiteSpace(operation.OperationId))
-        {
-            return ToolNameGenerator.GenerateFromOperationId(operation.OperationId);
-        }
-
-        if (!string.IsNullOrWhiteSpace(operation.Summary) && operation.Summary.Length <= 50)
-        {
-            string? name = ToolNameGenerator.GenerateFromSummary(operation.Summary);
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return name;
-            }
-        }
-
-        return ToolNameGenerator.GenerateFromPathAndType(path, type);
     }
 
     /// <summary>

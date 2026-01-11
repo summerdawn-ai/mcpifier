@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 
+using Microsoft.OpenApi;
+
 namespace Summerdawn.Mcpifier.Services;
 
 /// <summary>
@@ -8,11 +10,37 @@ namespace Summerdawn.Mcpifier.Services;
 internal static class ToolNameGenerator
 {
     /// <summary>
+    /// Generates a snake_case tool name from the operation.
+    /// </summary>
+    /// <param name="operation">The OpenAPI operation.</param>
+    /// <param name="path">The API path.</param>
+    /// <param name="type">The HTTP operation type.</param>
+    /// <returns>A snake_case tool name.</returns>
+    public static string Generate(OpenApiOperation operation, string path, HttpMethod type)
+    {
+        if (!string.IsNullOrWhiteSpace(operation.OperationId))
+        {
+            return GenerateFromOperationId(operation.OperationId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(operation.Summary) && operation.Summary.Length <= 50)
+        {
+            string? name = GenerateFromSummary(operation.Summary);
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return name;
+            }
+        }
+
+        return GenerateFromPathAndType(path, type);
+    }
+
+    /// <summary>
     /// Generates a tool name from an operation ID by converting it to snake_case.
     /// </summary>
     /// <param name="operationId">The operation ID.</param>
     /// <returns>A snake_case tool name.</returns>
-    public static string GenerateFromOperationId(string operationId)
+    internal static string GenerateFromOperationId(string operationId)
     {
         return ToSnakeCase(operationId);
     }
@@ -22,20 +50,20 @@ internal static class ToolNameGenerator
     /// </summary>
     /// <param name="summary">The operation summary.</param>
     /// <returns>A snake_case tool name, or null if extraction fails.</returns>
-    public static string? GenerateFromSummary(string summary)
+    internal static string? GenerateFromSummary(string summary)
     {
         if (string.IsNullOrWhiteSpace(summary) || summary.Length > 50)
         {
             return null;
         }
 
-        // Remove common articles and prepositions
+        // Remove common articles, but keep most prepositions
+        // because they are important for clarity.
         string cleaned = summary;
-        cleaned = Regex.Replace(cleaned, @"\b(a|an|the|by|to|from|in|on|at|for|of)\b", "", RegexOptions.IgnoreCase);
+        cleaned = Regex.Replace(cleaned, @"\b(a|an|the|on|at)\b", "", RegexOptions.IgnoreCase);
 
         // Extract remaining words
         var words = Regex.Matches(cleaned, @"\b\w+\b")
-            .Cast<Match>()
             .Select(m => m.Value)
             .Where(w => !string.IsNullOrWhiteSpace(w))
             .ToList();
@@ -56,7 +84,7 @@ internal static class ToolNameGenerator
     /// <param name="path">The API path.</param>
     /// <param name="type">The HTTP method.</param>
     /// <returns>A snake_case tool name.</returns>
-    public static string GenerateFromPathAndType(string path, HttpMethod type)
+    internal static string GenerateFromPathAndType(string path, HttpMethod type)
     {
         // Extract path segments, filtering out parameters
         var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries)
