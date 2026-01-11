@@ -12,6 +12,7 @@ public class McpToolDefinition
 {
     private JsonElement inputSchema;
     private JsonSchema? inputSchemaObject;
+    private readonly object lockObject = new();
 
     /// <summary>
     /// Gets or sets the tool name.
@@ -40,11 +41,14 @@ public class McpToolDefinition
         get => inputSchema;
         set
         {
-            inputSchema = value;
-            // Automatically parse when set
-            if (value.ValueKind != JsonValueKind.Undefined && value.ValueKind != JsonValueKind.Null)
+            lock (lockObject)
             {
-                inputSchemaObject = JsonSchema.FromText(value.GetRawText());
+                inputSchema = value;
+                // Automatically parse when set
+                if (value.ValueKind != JsonValueKind.Undefined && value.ValueKind != JsonValueKind.Null)
+                {
+                    inputSchemaObject = JsonSchema.FromText(value.GetRawText());
+                }
             }
         }
     }
@@ -54,17 +58,23 @@ public class McpToolDefinition
     /// </summary>
     public JsonSchema GetDeserializedInputSchema()
     {
-        // Lazy parse if needed
+        // Use double-checked locking pattern for thread-safe lazy initialization
         if (inputSchemaObject == null)
         {
-            if (inputSchema.ValueKind == JsonValueKind.Undefined || inputSchema.ValueKind == JsonValueKind.Null)
+            lock (lockObject)
             {
-                // Return default object schema
-                inputSchemaObject = new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
-            }
-            else
-            {
-                inputSchemaObject = JsonSchema.FromText(inputSchema.GetRawText());
+                if (inputSchemaObject == null)
+                {
+                    if (inputSchema.ValueKind == JsonValueKind.Undefined || inputSchema.ValueKind == JsonValueKind.Null)
+                    {
+                        // Return default object schema
+                        inputSchemaObject = new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
+                    }
+                    else
+                    {
+                        inputSchemaObject = JsonSchema.FromText(inputSchema.GetRawText());
+                    }
+                }
             }
         }
         return inputSchemaObject;
@@ -76,7 +86,10 @@ public class McpToolDefinition
     /// </summary>
     internal void SetInputSchema(JsonElement element, JsonSchema schema)
     {
-        inputSchema = element;
-        inputSchemaObject = schema;
+        lock (lockObject)
+        {
+            inputSchema = element;
+            inputSchemaObject = schema;
+        }
     }
 }
