@@ -6,8 +6,7 @@
           "name": "get_api_object",
           "description": "GET /api/object",
           "inputSchema": {
-            "type": "object",
-            "required": []
+            "type": "object"
           }
         },
         "rest": {
@@ -26,16 +25,17 @@
                 "type": "object",
                 "properties": {
                   "foo": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true
                   },
                   "bar": {
                     "type": "integer",
                     "format": "int32"
                   }
-                }
+                },
+                "additionalProperties": false
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -57,17 +57,18 @@
                   "type": "object",
                   "properties": {
                     "foo": {
-                      "type": "string"
+                      "type": "string",
+                      "nullable": true
                     },
                     "bar": {
                       "type": "integer",
                       "format": "int32"
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -89,21 +90,22 @@
                   "type": "object",
                   "properties": {
                     "foo": {
-                      "type": "string"
+                      "type": "string",
+                      "nullable": true
                     },
                     "bar": {
                       "type": "integer",
                       "format": "int32"
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               },
               "id": {
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -126,8 +128,7 @@
                   "type": "string"
                 }
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -153,8 +154,7 @@
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -178,8 +178,7 @@
                   "format": "int32"
                 }
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -206,8 +205,7 @@
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -227,8 +225,7 @@
               "requestBody": {
                 "type": "string"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -251,8 +248,7 @@
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -273,20 +269,21 @@
                 "type": "object",
                 "properties": {
                   "foo": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true
                   },
                   "bar": {
                     "type": "integer",
                     "format": "int32"
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "id": {
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -312,31 +309,36 @@
                       "type": "object",
                       "properties": {
                         "foo": {
-                          "type": "string"
+                          "type": "string",
+                          "nullable": true
                         },
                         "bar": {
                           "type": "integer",
                           "format": "int32"
                         }
-                      }
-                    }
+                      },
+                      "additionalProperties": false
+                    },
+                    "nullable": true
                   },
                   "single": {
                     "type": "object",
                     "properties": {
                       "foo": {
-                        "type": "string"
+                        "type": "string",
+                        "nullable": true
                       },
                       "bar": {
                         "type": "integer",
                         "format": "int32"
                       }
-                    }
+                    },
+                    "additionalProperties": false
                   }
-                }
+                },
+                "additionalProperties": false
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -361,35 +363,40 @@
                       "type": "object",
                       "properties": {
                         "foo": {
-                          "type": "string"
+                          "type": "string",
+                          "nullable": true
                         },
                         "bar": {
                           "type": "integer",
                           "format": "int32"
                         }
-                      }
-                    }
+                      },
+                      "additionalProperties": false
+                    },
+                    "nullable": true
                   },
                   "single": {
                     "type": "object",
                     "properties": {
                       "foo": {
-                        "type": "string"
+                        "type": "string",
+                        "nullable": true
                       },
                       "bar": {
                         "type": "integer",
                         "format": "int32"
                       }
-                    }
+                    },
+                    "additionalProperties": false
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "id": {
                 "type": "integer",
                 "format": "int32"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -417,32 +424,37 @@
                         "type": "object",
                         "properties": {
                           "foo": {
-                            "type": "string"
+                            "type": "string",
+                            "nullable": true
                           },
                           "bar": {
                             "type": "integer",
                             "format": "int32"
                           }
-                        }
-                      }
+                        },
+                        "additionalProperties": false
+                      },
+                      "nullable": true
                     },
                     "single": {
                       "type": "object",
                       "properties": {
                         "foo": {
-                          "type": "string"
+                          "type": "string",
+                          "nullable": true
                         },
                         "bar": {
                           "type": "integer",
                           "format": "int32"
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {

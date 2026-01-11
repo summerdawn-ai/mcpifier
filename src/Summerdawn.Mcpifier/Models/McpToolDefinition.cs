@@ -1,4 +1,7 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using Json.Schema;
 
 namespace Summerdawn.Mcpifier.Models;
 
@@ -7,6 +10,9 @@ namespace Summerdawn.Mcpifier.Models;
 /// </summary>
 public class McpToolDefinition
 {
+    private JsonElement inputSchema;
+    private JsonSchema? inputSchemaObject;
+
     /// <summary>
     /// Gets or sets the tool name.
     /// </summary>
@@ -26,69 +32,51 @@ public class McpToolDefinition
 
     /// <summary>
     /// Gets or sets the input schema for the tool.
+    /// When set, automatically parses into a JsonSchema for validation.
     /// </summary>
-    public InputSchema InputSchema { get; set; } = new();
-}
-
-/// <summary>
-/// Represents a JSON Schema for tool input validation.
-/// </summary>
-public class InputSchema
-{
-    /// <summary>
-    /// Gets or sets the schema type. Typically "object".
-    /// </summary>
-    public string Type { get; set; } = "object";
-
-    /// <summary>
-    /// Gets or sets the properties of the schema.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, PropertySchema>? Properties { get; set; }
+    [JsonPropertyName("inputSchema")]
+    public JsonElement InputSchema
+    {
+        get => inputSchema;
+        set
+        {
+            inputSchema = value;
+            // Automatically parse when set
+            if (value.ValueKind != JsonValueKind.Undefined && value.ValueKind != JsonValueKind.Null)
+            {
+                inputSchemaObject = JsonSchema.FromText(value.GetRawText());
+            }
+        }
+    }
 
     /// <summary>
-    /// Gets or sets the list of required property names.
+    /// Gets the deserialized JSON Schema for validation.
     /// </summary>
-    public List<string> Required { get; set; } = [];
-}
-
-/// <summary>
-/// Represents a property in a JSON Schema.
-/// </summary>
-public class PropertySchema
-{
-    /// <summary>
-    /// Gets or sets the property type.
-    /// </summary>
-    public string Type { get; set; } = "string";
-
-    /// <summary>
-    /// Gets or sets the property description.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// Gets or sets the property format (e.g., date-time, int32).
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Format { get; set; }
+    public JsonSchema GetDeserializedInputSchema()
+    {
+        // Lazy parse if needed
+        if (inputSchemaObject == null)
+        {
+            if (inputSchema.ValueKind == JsonValueKind.Undefined || inputSchema.ValueKind == JsonValueKind.Null)
+            {
+                // Return default object schema
+                inputSchemaObject = new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
+            }
+            else
+            {
+                inputSchemaObject = JsonSchema.FromText(inputSchema.GetRawText());
+            }
+        }
+        return inputSchemaObject;
+    }
 
     /// <summary>
-    /// Gets or sets the enum values for the property.
+    /// Efficiently sets both representations when both are already available.
+    /// Used internally by converters and loaders.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<object>? Enum { get; set; }
-
-    /// <summary>
-    /// Gets or sets the items schema for array types.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public PropertySchema? Items { get; set; }
-
-    /// <summary>
-    /// Gets or sets nested properties for object types.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, PropertySchema>? Properties { get; set; }
+    internal void SetInputSchema(JsonElement element, JsonSchema schema)
+    {
+        inputSchema = element;
+        inputSchemaObject = schema;
+    }
 }

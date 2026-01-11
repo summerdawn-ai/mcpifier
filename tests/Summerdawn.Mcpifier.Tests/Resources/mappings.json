@@ -6,8 +6,7 @@
           "name": "user_get_current_user",
           "description": "GET /me",
           "inputSchema": {
-            "type": "object",
-            "required": []
+            "type": "object"
           }
         },
         "rest": {
@@ -20,8 +19,7 @@
           "name": "user_register_user",
           "description": "Registers the current user.",
           "inputSchema": {
-            "type": "object",
-            "required": []
+            "type": "object"
           }
         },
         "rest": {
@@ -34,8 +32,7 @@
           "name": "user_link_user",
           "description": "Links the current identity to an existing user.",
           "inputSchema": {
-            "type": "object",
-            "required": []
+            "type": "object"
           }
         },
         "rest": {
@@ -58,8 +55,7 @@
                 "type": "string",
                 "format": "date"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -76,22 +72,32 @@
             "type": "object",
             "properties": {
               "requestBody": {
+                "required": [
+                  "timestampLocal",
+                  "metrics"
+                ],
                 "type": "object",
-                "description": "DTO for creating a new measurement",
                 "properties": {
                   "timestampLocal": {
+                    "minLength": 1,
                     "type": "string",
                     "description": "Local timestamp when the measurement applies (DateTimeOffset).",
                     "format": "date-time"
                   },
                   "metrics": {
+                    "minProperties": 1,
                     "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
                     "description": "Dictionary of metric names to values\nFor v0.1, should contain \"energy\" with value 1-5"
                   }
-                }
+                },
+                "additionalProperties": false,
+                "description": "DTO for creating a new measurement"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -109,16 +115,15 @@
             "properties": {
               "from": {
                 "type": "string",
-                "description": "Start date (local)",
-                "format": "date-time"
+                "format": "date-time",
+                "description": "Start date (local)"
               },
               "to": {
                 "type": "string",
-                "description": "End date (local)",
-                "format": "date-time"
+                "format": "date-time",
+                "description": "End date (local)"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {
@@ -136,11 +141,11 @@
             "properties": {
               "count": {
                 "type": "integer",
-                "description": "Number of measurements to retrieve (default: 5)",
-                "format": "int32"
+                "format": "int32",
+                "default": 5,
+                "description": "Number of measurements to retrieve (default: 5)"
               }
-            },
-            "required": []
+            }
           }
         },
         "rest": {

@@ -181,19 +181,17 @@ public class McpToolsCallRpcHandlerTests
             {
                 Name = name,
                 Description = "Test tool",
-                InputSchema = new InputSchema
+                InputSchema = JsonDocument.Parse($$"""
                 {
-                    Type = "object",
-                    Properties = new Dictionary<string, PropertySchema>
-                    {
-                        ["message"] = new PropertySchema
-                        {
-                            Type = "string",
-                            Description = "Test message"
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string",
+                            "description": "Test message"
                         }
-                    },
-                    Required = requiredProperties?.ToList() ?? []
+                    }{{(requiredProperties?.Any() == true ? $""","required": [{string.Join(",", requiredProperties.Select(p => $"\"{p}\""))}]""" : "")}}
                 }
+                """).RootElement
             },
             Rest = new RestConfiguration
             {

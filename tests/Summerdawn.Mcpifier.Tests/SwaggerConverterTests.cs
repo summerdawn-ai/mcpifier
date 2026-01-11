@@ -59,11 +59,14 @@ public class SwaggerConverterTests
         Assert.Equal("Get user by ID", tool.Mcp.Description);
         Assert.Equal("GET", tool.Rest.Method);
         Assert.Equal("/users/{id}", tool.Rest.Path);
-        Assert.NotNull(tool.Mcp.InputSchema.Properties);
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("id"));
-        Assert.Equal("string", tool.Mcp.InputSchema.Properties["id"].Type);
-        Assert.Equal("User ID", tool.Mcp.InputSchema.Properties["id"].Description);
-        Assert.Contains("id", tool.Mcp.InputSchema.Required);
+        
+        // Verify schema structure
+        Assert.True(tool.Mcp.InputSchema.TryGetProperty("properties", out var properties));
+        Assert.True(properties.TryGetProperty("id", out var idProperty));
+        Assert.Equal("string", idProperty.GetProperty("type").GetString());
+        Assert.Equal("User ID", idProperty.GetProperty("description").GetString());
+        Assert.True(tool.Mcp.InputSchema.TryGetProperty("required", out var required));
+        Assert.Contains("id", required.EnumerateArray().Select(e => e.GetString()));
     }
 
     [Fact]
@@ -124,8 +127,9 @@ public class SwaggerConverterTests
         Assert.NotNull(tool.Rest.Query);
         Assert.Contains("page={page}", tool.Rest.Query);
         Assert.Contains("limit={limit}", tool.Rest.Query);
-        Assert.Contains("limit", tool.Mcp.InputSchema.Required);
-        Assert.DoesNotContain("page", tool.Mcp.InputSchema.Required);
+        Assert.True(tool.Mcp.InputSchema.TryGetProperty("required", out var required));
+        Assert.Contains("limit", required.EnumerateArray().Select(e => e.GetString()));
+        Assert.DoesNotContain("page", required.EnumerateArray().Select(e => e.GetString()));
     }
 
     [Fact]
@@ -195,19 +199,18 @@ public class SwaggerConverterTests
         Assert.NotNull(tool.Rest.Body);
         Assert.Equal("{requestBody}", tool.Rest.Body);
 
-        Assert.NotNull(tool.Mcp.InputSchema.Properties);
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("requestBody"));
+        Assert.True(tool.Mcp.InputSchema.TryGetProperty("properties", out var properties));
+        Assert.True(properties.TryGetProperty("requestBody", out var requestBodySchema));
         
-        var requestBodySchema = tool.Mcp.InputSchema.Properties["requestBody"];
-        Assert.Equal("object", requestBodySchema.Type);
-        Assert.NotNull(requestBodySchema.Properties);
-        Assert.True(requestBodySchema.Properties.ContainsKey("name"));
-        Assert.True(requestBodySchema.Properties.ContainsKey("email"));
-        Assert.True(requestBodySchema.Properties.ContainsKey("age"));
+        Assert.Equal("object", requestBodySchema.GetProperty("type").GetString());
+        Assert.True(requestBodySchema.TryGetProperty("properties", out var requestBodyProps));
+        Assert.True(requestBodyProps.TryGetProperty("name", out var nameProperty));
+        Assert.True(requestBodyProps.TryGetProperty("email", out var emailProperty));
+        Assert.True(requestBodyProps.TryGetProperty("age", out var ageProperty));
 
-        Assert.Equal("string", requestBodySchema.Properties["name"].Type);
-        Assert.Equal("email", requestBodySchema.Properties["email"].Format);
-        Assert.Equal("integer", requestBodySchema.Properties["age"].Type);
+        Assert.Equal("string", nameProperty.GetProperty("type").GetString());
+        Assert.Equal("email", emailProperty.GetProperty("format").GetString());
+        Assert.Equal("integer", ageProperty.GetProperty("type").GetString());
     }
 
     [Fact]

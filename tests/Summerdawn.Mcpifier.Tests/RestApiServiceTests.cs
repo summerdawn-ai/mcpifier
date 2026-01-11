@@ -39,7 +39,7 @@ public class RestApiServiceTests
             {
                 Name = "test_tool",
                 Description = "Test tool",
-                InputSchema = new InputSchema()
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
             },
             Rest = new RestConfiguration
             {
@@ -86,7 +86,7 @@ public class RestApiServiceTests
             {
                 Name = "test_tool",
                 Description = "Test tool",
-                InputSchema = new InputSchema()
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
             },
             Rest = new RestConfiguration
             {
@@ -132,7 +132,7 @@ public class RestApiServiceTests
             {
                 Name = "test_tool",
                 Description = "Test tool",
-                InputSchema = new InputSchema()
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
             },
             Rest = new RestConfiguration
             {
@@ -197,7 +197,7 @@ public class RestApiServiceTests
             {
                 Name = "test_tool",
                 Description = "Test tool",
-                InputSchema = new InputSchema()
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
             },
             Rest = new RestConfiguration
             {
@@ -239,7 +239,7 @@ public class RestApiServiceTests
             {
                 Name = "test_tool",
                 Description = "Test tool",
-                InputSchema = new InputSchema()
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
             },
             Rest = new RestConfiguration
             {
@@ -288,7 +288,7 @@ public class RestApiServiceTests
             {
                 Name = "test_tool",
                 Description = "Test tool",
-                InputSchema = new InputSchema()
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
             },
             Rest = new RestConfiguration
             {
@@ -340,7 +340,7 @@ public class RestApiServiceTests
             {
                 Name = "test_tool",
                 Description = "Test tool",
-                InputSchema = new InputSchema()
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
             },
             Rest = new RestConfiguration
             {
@@ -392,7 +392,7 @@ public class RestApiServiceTests
             {
                 Name = "test_tool",
                 Description = "Test tool",
-                InputSchema = new InputSchema()
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
             },
             Rest = new RestConfiguration
             {

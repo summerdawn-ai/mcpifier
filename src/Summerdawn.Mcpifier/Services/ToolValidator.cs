@@ -1,4 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+
+using Json.Schema;
 
 using Summerdawn.Mcpifier.Models;
 
@@ -12,64 +15,46 @@ internal static class ToolValidator
     /// <summary>
     /// Validates that the provided arguments match the tool's input schema.
     /// </summary>
-    /// <param name="mcpTool">The MCP tool definition containing the input schema.</param>
-    /// <param name="arguments">The arguments to validate.</param>
-    /// <returns>A tuple indicating whether validation succeeded and an optional error message.</returns>
-    public static (bool isValid, string? errorMessage) ValidateArguments(McpToolDefinition mcpTool, Dictionary<string, JsonElement> arguments)
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.SerializeToElement<TValue>(TValue, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.SerializeToElement<TValue>(TValue, JsonSerializerOptions)")]
+    public static (bool isValid, string? errorMessage) ValidateArguments(
+        McpToolDefinition mcpTool,
+        Dictionary<string, JsonElement> arguments)
     {
-        var schema = mcpTool.InputSchema;
+        var argumentsJson = JsonSerializer.SerializeToElement(arguments);
+        var schema = mcpTool.GetDeserializedInputSchema();
 
-        if (schema.Required is { Count: > 0 })
+        var validationResults = schema.Evaluate(argumentsJson, new EvaluationOptions
         {
-            foreach (string requiredField in schema.Required)
-            {
-                if (!arguments.TryGetValue(requiredField, out var argument))
-                {
-                    return (false, $"Required field '{requiredField}' is missing");
-                }
+            OutputFormat = OutputFormat.List
+        });
 
-                if (argument.ValueKind == JsonValueKind.Null)
-                {
-                    return (false, $"Required field '{requiredField}' cannot be null");
-                }
-            }
+        if (validationResults.IsValid)
+        {
+            return (true, null);
         }
 
-        // Simple type checking if properties are defined
-        if (schema.Properties != null)
-        {
-            foreach (var arg in arguments)
-            {
-                if (schema.Properties.TryGetValue(arg.Key, out var propertySchema))
-                {
-                    if (!ValidateType(arg.Value, propertySchema.Type))
-                    {
-                        return (false, $"Field '{arg.Key}' has invalid type. Expected: {propertySchema.Type}");
-                    }
-                }
-            }
-        }
-
-        return (true, null);
+        string errorMessage = BuildErrorMessage(validationResults);
+        return (false, errorMessage);
     }
 
-    private static bool ValidateType(JsonElement value, string expectedType)
+    private static string BuildErrorMessage(EvaluationResults results)
     {
-        // Allow null or undefined unless value is required.
-        if (value is { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined })
+        var errors = results.Details
+            .Where(d => !d.IsValid)
+            .Select(d =>
+            {
+                string location = d.InstanceLocation.ToString();
+                string message = d.Errors?.FirstOrDefault().Value ?? "Validation failed";
+                return string.IsNullOrEmpty(location) ? message : $"{location}: {message}";
+            })
+            .ToList();
+
+        if (errors.Count == 0)
         {
-            return true;
+            return "Validation failed";
         }
 
-        return expectedType.ToLower() switch
-        {
-            "string" => value is { ValueKind: JsonValueKind.String },
-            "number" => value is { ValueKind: JsonValueKind.Number },
-            "integer" => value is { ValueKind: JsonValueKind.Number },
-            "boolean" => value is { ValueKind: JsonValueKind.True or JsonValueKind.False },
-            "object" => value is { ValueKind: JsonValueKind.Object },
-            "array" => value is { ValueKind: JsonValueKind.Array },
-            _ => true // Unknown types pass validation
-        };
+        return string.Join("; ", errors);
     }
 }
