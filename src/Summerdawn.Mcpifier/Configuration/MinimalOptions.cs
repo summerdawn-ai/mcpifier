@@ -1,11 +1,9 @@
 using System.Text.Json.Serialization;
 
-using Summerdawn.Mcpifier.Configuration;
-
-namespace Summerdawn.Mcpifier.Services;
+namespace Summerdawn.Mcpifier.Configuration;
 
 /// <summary>
-/// Minimal version of <see cref="McpifierOptions"/> for serialization.
+/// Minimal version of <see cref="McpifierOptions"/> for JSON (de-)serialization of mappings.json.
 /// </summary>
 internal class MinimalOptions
 {

@@ -59,7 +59,7 @@ public class SwaggerConverterTests
         Assert.Equal("Get user by ID", tool.Mcp.Description);
         Assert.Equal("GET", tool.Rest.Method);
         Assert.Equal("/users/{id}", tool.Rest.Path);
-        
+
         // Verify schema structure
         Assert.True(tool.Mcp.InputSchema.TryGetProperty("properties", out var properties));
         Assert.True(properties.TryGetProperty("id", out var idProperty));
@@ -201,7 +201,7 @@ public class SwaggerConverterTests
 
         Assert.True(tool.Mcp.InputSchema.TryGetProperty("properties", out var properties));
         Assert.True(properties.TryGetProperty("requestBody", out var requestBodySchema));
-        
+
         Assert.Equal("object", requestBodySchema.GetProperty("type").GetString());
         Assert.True(requestBodySchema.TryGetProperty("properties", out var requestBodyProps));
         Assert.True(requestBodyProps.TryGetProperty("name", out var nameProperty));
@@ -355,7 +355,8 @@ public class SwaggerConverterTests
             string expectedMappingsJson = await File.ReadAllTextAsync(mappingsPath);
             string actualMappingsJson = await File.ReadAllTextAsync(tempOutputFile);
 
-            Assert.Equal(expectedMappingsJson, actualMappingsJson);
+            // Compare without trailing newlines.
+            Assert.Equal(expectedMappingsJson.TrimEnd(), actualMappingsJson.TrimEnd());
         }
         finally
         {

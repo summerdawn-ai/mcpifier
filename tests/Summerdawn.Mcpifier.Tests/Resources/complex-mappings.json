@@ -25,8 +25,10 @@
                 "type": "object",
                 "properties": {
                   "foo": {
-                    "type": "string",
-                    "nullable": true
+                    "type": [
+                      "null",
+                      "string"
+                    ]
                   },
                   "bar": {
                     "type": "integer",
@@ -57,8 +59,10 @@
                   "type": "object",
                   "properties": {
                     "foo": {
-                      "type": "string",
-                      "nullable": true
+                      "type": [
+                        "null",
+                        "string"
+                      ]
                     },
                     "bar": {
                       "type": "integer",
@@ -90,8 +94,10 @@
                   "type": "object",
                   "properties": {
                     "foo": {
-                      "type": "string",
-                      "nullable": true
+                      "type": [
+                        "null",
+                        "string"
+                      ]
                     },
                     "bar": {
                       "type": "integer",
@@ -269,8 +275,10 @@
                 "type": "object",
                 "properties": {
                   "foo": {
-                    "type": "string",
-                    "nullable": true
+                    "type": [
+                      "null",
+                      "string"
+                    ]
                   },
                   "bar": {
                     "type": "integer",
@@ -304,13 +312,18 @@
                 "type": "object",
                 "properties": {
                   "components": {
-                    "type": "array",
+                    "type": [
+                      "null",
+                      "array"
+                    ],
                     "items": {
                       "type": "object",
                       "properties": {
                         "foo": {
-                          "type": "string",
-                          "nullable": true
+                          "type": [
+                            "null",
+                            "string"
+                          ]
                         },
                         "bar": {
                           "type": "integer",
@@ -318,15 +331,16 @@
                         }
                       },
                       "additionalProperties": false
-                    },
-                    "nullable": true
+                    }
                   },
                   "single": {
                     "type": "object",
                     "properties": {
                       "foo": {
-                        "type": "string",
-                        "nullable": true
+                        "type": [
+                          "null",
+                          "string"
+                        ]
                       },
                       "bar": {
                         "type": "integer",
@@ -358,13 +372,18 @@
                 "type": "object",
                 "properties": {
                   "components": {
-                    "type": "array",
+                    "type": [
+                      "null",
+                      "array"
+                    ],
                     "items": {
                       "type": "object",
                       "properties": {
                         "foo": {
-                          "type": "string",
-                          "nullable": true
+                          "type": [
+                            "null",
+                            "string"
+                          ]
                         },
                         "bar": {
                           "type": "integer",
@@ -372,15 +391,16 @@
                         }
                       },
                       "additionalProperties": false
-                    },
-                    "nullable": true
+                    }
                   },
                   "single": {
                     "type": "object",
                     "properties": {
                       "foo": {
-                        "type": "string",
-                        "nullable": true
+                        "type": [
+                          "null",
+                          "string"
+                        ]
                       },
                       "bar": {
                         "type": "integer",
@@ -419,13 +439,18 @@
                   "type": "object",
                   "properties": {
                     "components": {
-                      "type": "array",
+                      "type": [
+                        "null",
+                        "array"
+                      ],
                       "items": {
                         "type": "object",
                         "properties": {
                           "foo": {
-                            "type": "string",
-                            "nullable": true
+                            "type": [
+                              "null",
+                              "string"
+                            ]
                           },
                           "bar": {
                             "type": "integer",
@@ -433,15 +458,16 @@
                           }
                         },
                         "additionalProperties": false
-                      },
-                      "nullable": true
+                      }
                     },
                     "single": {
                       "type": "object",
                       "properties": {
                         "foo": {
-                          "type": "string",
-                          "nullable": true
+                          "type": [
+                            "null",
+                            "string"
+                          ]
                         },
                         "bar": {
                           "type": "integer",
