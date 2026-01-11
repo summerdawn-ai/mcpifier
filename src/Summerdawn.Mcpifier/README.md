@@ -410,9 +410,9 @@ The `Mcp` section of each mapping defines an MCP tool as defined in the [MCP Too
 |name|`string` (required)|Unique identifier for the tool|"get_user"|
 |title|`string`|Optional human-readable name of the tool for display purposes|"Retrieve user information by id"|
 |inputSchema|JSON Schema|JSON Schema defining expected input parameters|{ "type": "object", "properties": { "userId": { "type": "string", "description": "The user's unique identifier" } }, "required": ["userId"] }|
-|outputSchema|JSON Schema|Optional JSON Schema defining the expected response structure|{ "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" } } }|
+|outputSchema|JSON Schema|Optional JSON Schema defining the response content structure|{ "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" } } }|
 
-On each tool call, the provided parameters are validated against the `inputSchema` using [JsonSchema.Net](https://www.nuget.org/packages/JsonSchema.Net).
+On each tool call, the provided parameters are validated against the `inputSchema` using [JsonSchema.Net](https://www.nuget.org/packages/JsonSchema.Net). Responses, however, are not validated against the `outputSchema` and are returned as-is.
 
 Note that the `annotations` property defined in the MCP specification is currently not supported.
 
