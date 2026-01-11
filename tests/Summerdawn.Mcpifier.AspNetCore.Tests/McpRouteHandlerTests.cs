@@ -13,9 +13,8 @@ using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.AspNetCore.Tests;
 
-using static StatusCodes;
-
 using static JsonRpcResponse;
+using static StatusCodes;
 
 public class McpRouteHandlerTests
 {

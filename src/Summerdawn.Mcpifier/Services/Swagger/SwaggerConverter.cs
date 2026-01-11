@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 using Json.Schema;
 
@@ -383,46 +382,19 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     {
         if (!string.IsNullOrWhiteSpace(operation.OperationId))
         {
-            return ToSnakeCase(operation.OperationId);
+            return ToolNameGenerator.GenerateFromOperationId(operation.OperationId);
         }
 
-        // Generate from method and path
-        string methodPart = type.ToString().ToLowerInvariant();
-        string pathPart = path.TrimStart('/').Replace('/', '_').Replace('{', ' ').Replace('}', ' ');
-        pathPart = Regex.Replace(pathPart, @"\s+", "_");
-        pathPart = Regex.Replace(pathPart, @"[^a-zA-Z0-9_]", "");
-
-        return ToSnakeCase($"{methodPart}_{pathPart}");
-    }
-
-    /// <summary>
-    /// Converts text to snake_case.
-    /// </summary>
-    /// <param name="text">The text to convert.</param>
-    /// <returns>The snake_case version of the text.</returns>
-    private static string ToSnakeCase(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
+        if (!string.IsNullOrWhiteSpace(operation.Summary) && operation.Summary.Length <= 50)
         {
-            return text;
+            string? name = ToolNameGenerator.GenerateFromSummary(operation.Summary);
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return name;
+            }
         }
 
-        // Insert underscores before uppercase letters (except at the start)
-        string result = Regex.Replace(text, @"([a-z0-9])([A-Z])", "$1_$2");
-
-        // Convert to lowercase
-        result = result.ToLowerInvariant();
-
-        // Replace any non-alphanumeric characters with underscores
-        result = Regex.Replace(result, @"[^a-z0-9_]", "_");
-
-        // Remove duplicate underscores
-        result = Regex.Replace(result, @"_+", "_");
-
-        // Remove leading/trailing underscores
-        result = result.Trim('_');
-
-        return result;
+        return ToolNameGenerator.GenerateFromPathAndType(path, type);
     }
 
     /// <summary>
