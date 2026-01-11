@@ -10,9 +10,12 @@ namespace Summerdawn.Mcpifier.Models;
 /// </summary>
 public class McpToolDefinition
 {
+    private static readonly JsonSchema DefaultSchema = new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
+
+    private readonly object schemaSync = new();
+
     private JsonElement inputSchema;
-    private JsonSchema? inputSchemaObject;
-    private readonly object lockObject = new();
+    private Lazy<JsonSchema> deserializedInputSchema = new(DefaultSchema);
 
     /// <summary>
     /// Gets or sets the tool name.
@@ -33,22 +36,24 @@ public class McpToolDefinition
 
     /// <summary>
     /// Gets or sets the input schema for the tool.
-    /// When set, automatically parses into a JsonSchema for validation.
     /// </summary>
+    /// <remarks>
+    /// When set, automatically creates a lazy initializer for the parsed
+    /// schema returned by <see cref="GetDeserializedInputSchema"/>.
+    /// </remarks>
     [JsonPropertyName("inputSchema")]
     public JsonElement InputSchema
     {
         get => inputSchema;
         set
         {
-            lock (lockObject)
+            lock (schemaSync)
             {
                 inputSchema = value;
-                // Automatically parse when set
-                if (value.ValueKind != JsonValueKind.Undefined && value.ValueKind != JsonValueKind.Null)
-                {
-                    inputSchemaObject = JsonSchema.FromText(value.GetRawText());
-                }
+
+                deserializedInputSchema = value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                    ? new Lazy<JsonSchema>(DefaultSchema)
+                    : new Lazy<JsonSchema>(() => JsonSchema.FromText(value.GetRawText()), LazyThreadSafetyMode.ExecutionAndPublication);
             }
         }
     }
@@ -56,29 +61,7 @@ public class McpToolDefinition
     /// <summary>
     /// Gets the deserialized JSON Schema for validation.
     /// </summary>
-    public JsonSchema GetDeserializedInputSchema()
-    {
-        // Use double-checked locking pattern for thread-safe lazy initialization
-        if (inputSchemaObject == null)
-        {
-            lock (lockObject)
-            {
-                if (inputSchemaObject == null)
-                {
-                    if (inputSchema.ValueKind == JsonValueKind.Undefined || inputSchema.ValueKind == JsonValueKind.Null)
-                    {
-                        // Return default object schema
-                        inputSchemaObject = new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
-                    }
-                    else
-                    {
-                        inputSchemaObject = JsonSchema.FromText(inputSchema.GetRawText());
-                    }
-                }
-            }
-        }
-        return inputSchemaObject;
-    }
+    public JsonSchema GetDeserializedInputSchema() => deserializedInputSchema.Value;
 
     /// <summary>
     /// Efficiently sets both representations when both are already available.
@@ -86,10 +69,12 @@ public class McpToolDefinition
     /// </summary>
     internal void SetInputSchema(JsonElement element, JsonSchema schema)
     {
-        lock (lockObject)
+        lock (schemaSync)
         {
             inputSchema = element;
-            inputSchemaObject = schema;
+
+            // Use an immediate lazy initializer since we already have the schema.
+            deserializedInputSchema = new Lazy<JsonSchema>(schema);
         }
     }
 }
