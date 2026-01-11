@@ -8,6 +8,7 @@ namespace Summerdawn.Mcpifier.Services;
 /// JSON serializer context for AOT-compatible JSON serialization of <see cref="MinimalOptionsWrapper"/>.
 /// </summary>
 [JsonSerializable(typeof(MinimalOptionsWrapper))]
+[JsonSerializable(typeof(JsonElement))] // PropertySchema.Enum
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,
