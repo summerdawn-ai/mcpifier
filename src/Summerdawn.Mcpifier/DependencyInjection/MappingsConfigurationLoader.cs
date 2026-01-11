@@ -12,7 +12,7 @@ namespace Summerdawn.Mcpifier.DependencyInjection;
 /// </summary>
 internal class MappingsConfigurationLoader(IEnumerable<MappingsConfigurationSource> sources, ILogger<MappingsConfigurationLoader> logger) : IPostConfigureOptions<McpifierOptions>
 {
-    private int hasRun = 0;
+    private volatile int hasRun = 0;
 
     [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
     [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]

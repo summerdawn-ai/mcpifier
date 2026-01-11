@@ -9,7 +9,7 @@ namespace Summerdawn.Mcpifier.DependencyInjection;
 /// </summary>
 internal class SwaggerConfigurationLoader(IHttpClientFactory httpClientFactory, IEnumerable<SwaggerConfigurationSource> sources, SwaggerConverter converter, ILogger<SwaggerConfigurationLoader> logger) : IPostConfigureOptions<McpifierOptions>
 {
-    private int hasRun = 0;
+    private volatile int hasRun = 0;
 
     public void PostConfigure(string? name, McpifierOptions options)
     {
