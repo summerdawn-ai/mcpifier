@@ -18,6 +18,9 @@ namespace Summerdawn.Mcpifier.Services;
 /// </summary>
 public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<SwaggerConverter> logger)
 {
+    // For the output schema only consider 200, then 201
+    private static readonly string[] OutputSchemaResponseCodes = ["200", "201"];
+
     /// <summary>
     /// Loads the specified Swagger specification, converts it into mappings, and saves them as JSON to the output file.
     /// </summary>
@@ -164,7 +167,8 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     private async Task<McpifierToolMapping> ConvertOperationAsync(string path, HttpMethod type, OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
     {
         string toolName = GenerateToolName(operation, path, type);
-        var (schemaElement, schemaObject) = await BuildInputSchemaAsync(operation, schemaCache);
+        var (inputSchemaElement, inputSchemaObject) = await BuildInputSchemaAsync(operation, schemaCache);
+        var (outputSchemaElement, outputSchemaObject) = await BuildOutputSchemaAsync(operation, schemaCache);
         var restConfig = BuildRestConfiguration(path, type, operation, schemaCache);
 
         var tool = new McpToolDefinition
@@ -173,8 +177,14 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
             Description = operation.Summary ?? operation.Description ?? $"{type} {path}"
         };
 
-        // Use internal method to set both efficiently
-        tool.SetInputSchema(schemaElement, schemaObject);
+        // Use internal method to set input schema efficiently
+        tool.SetInputSchema(inputSchemaElement, inputSchemaObject);
+
+        // Set output schema if available
+        if (outputSchemaElement is not null)
+        {
+            tool.SetOutputSchema(outputSchemaElement.Value, outputSchemaObject!);
+        }
 
         return new McpifierToolMapping
         {
@@ -271,6 +281,35 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         var schemaObj = JsonSchema.FromText(schemaJson);
 
         return (element, schemaObj);
+    }
+
+    /// <summary>
+    /// Builds the output schema from operation response definitions.
+    /// </summary>
+    /// <param name="operation">The OpenAPI operation.</param>
+    /// <param name="schemaCache">Set used to cache already resolved schemas.</param>
+    /// <returns>A tuple containing the JsonElement and JsonSchema representations, or (null, null) if no schema found.</returns>
+    private async Task<(JsonElement? schemaElement, JsonSchema? schemaObject)> BuildOutputSchemaAsync(OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
+    {
+        foreach (string code in OutputSchemaResponseCodes)
+        {
+            if (operation.Responses?.TryGetValue(code, out var response) == true &&
+                response.Content?.TryGetValue("application/json", out var mediaType) == true)
+            {
+                var schema = ResolveSchema(mediaType.Schema, schemaCache);
+                if (schema != null)
+                {
+                    // Serialize as JSON schema by using OpenAPI version 3.2.
+                    string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+                    var element = JsonDocument.Parse(json).RootElement.Clone();
+                    var schemaObj = JsonSchema.FromText(json);
+
+                    return (element, schemaObj);
+                }
+            }
+        }
+
+        return (null, null);
     }
 
     /// <summary>

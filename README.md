@@ -42,7 +42,6 @@ Mcpifier acts as a gateway between MCP clients (e.g., Claude Desktop, VS Code) a
 
 - **No Streaming Support**: Responses must be complete; streaming responses are not supported
 - **No Server-Sent Events (SSE)**: Only request-response patterns are supported
-- **No OutputSchema**: Tool mappings can specify an `inputSchema`, but no `outputSchema`; however, tool call results are returned as structured JSON
 - **JSON Only**: Binary data, file uploads, and non-JSON content types are not supported
 
 ## Repository Structure

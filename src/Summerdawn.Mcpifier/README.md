@@ -398,11 +398,14 @@ The `Mcp` section of each mapping defines an MCP tool as defined in the [MCP Too
 |----|----|-----------|-------|
 |name|`string` (required)|Unique identifier for the tool|"get_user"|
 |title|`string`|Optional human-readable name of the tool for display purposes|"Retrieve user information by id"|
-|inputSchema|JSON Schema|JSON Schema defining expected parameters|{ "type": "object", "properties": { "userId": { "type": "string", "description": "The user's unique identifier" } }, "required": ["userId"] }|
+|inputSchema|JSON Schema|JSON Schema defining expected input parameters|{ "type": "object", "properties": { "userId": { "type": "string", "description": "The user's unique identifier" } }, "required": ["userId"] }|
+|outputSchema|JSON Schema|Optional JSON Schema defining the expected response structure|{ "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" } } }|
 
 On each tool call, the provided parameters are validated against the `inputSchema` using [JsonSchema.Net](https://www.nuget.org/packages/JsonSchema.Net).
 
-Note that the `outputSchema` and `annotations` properties defined in the specification are currently not supported.
+The `outputSchema` is automatically extracted from OpenAPI 200/201 response definitions when generating tool mappings from Swagger/OpenAPI specifications. It describes the structure of successful responses and enables clients to validate and parse tool results.
+
+Note that the `annotations` property defined in the MCP specification is currently not supported.
 
 #### Rest
 
