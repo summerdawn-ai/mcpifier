@@ -144,6 +144,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.event.inputs.version }}
+          target_commitish: ${{ github.sha }}
           name: Release v${{ github.event.inputs.version }}
           draft: false
           prerelease: ${{ needs.validate.outputs.is_prerelease }}
