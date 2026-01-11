@@ -75,26 +75,29 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "timestampLocal": {
-                "type": "string",
-                "description": "Local timestamp when the measurement applies (DateTimeOffset).",
-                "format": "date-time"
-              },
-              "metrics": {
+              "requestBody": {
                 "type": "object",
-                "description": "Dictionary of metric names to values\nFor v0.1, should contain \"energy\" with value 1-5"
+                "description": "DTO for creating a new measurement",
+                "properties": {
+                  "timestampLocal": {
+                    "type": "string",
+                    "description": "Local timestamp when the measurement applies (DateTimeOffset).",
+                    "format": "date-time"
+                  },
+                  "metrics": {
+                    "type": "object",
+                    "description": "Dictionary of metric names to values\nFor v0.1, should contain \"energy\" with value 1-5"
+                  }
+                }
               }
             },
-            "required": [
-              "timestampLocal",
-              "metrics"
-            ]
+            "required": []
           }
         },
         "rest": {
           "method": "POST",
           "path": "/vibe/measurements",
-          "body": "{ \"timestampLocal\": {timestampLocal}, \"metrics\": {metrics} }"
+          "body": "{requestBody}"
         }
       },
       {

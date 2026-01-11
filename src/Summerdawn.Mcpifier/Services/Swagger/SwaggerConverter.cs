@@ -184,16 +184,8 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         {
             var schema = ResolveSchema(requestBody.Schema);
 
-            // If the request body is an object, use it as the base of the InputSchema;
-            // otherwise, add the request body as a single property "requestBody".
-            if (schema is { Type: JsonSchemaType.Object })
-            {
-                // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
-                // arrays for nullable types that break our deserialization.
-                string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
-                inputSchema = JsonSerializer.Deserialize<InputSchema>(json, JsonRpcAndMcpJsonContext.Default.InputSchema)!;
-            }
-            else if (schema is not null)
+            // Always nest the request body under "requestBody" property.
+            if (schema is not null)
             {
                 // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
                 // arrays for nullable types that break our deserialization.
@@ -265,24 +257,9 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         {
             var schema = ResolveSchema(mediaType.Schema);
 
-            if (schema is { Type: JsonSchemaType.Object })
+            if (schema is not null)
             {
-                // Request body is object, so build body template from individual properties.
-                if (schema.Properties?.Count > 0)
-                {
-                    var bodyParts = schema.Properties.Select(prop => $"\"{prop.Key}\": {{{prop.Key}}}");
-
-                    config.Body = "{ " + string.Join(", ", bodyParts) + " }";
-                }
-                else
-                {
-                    config.Body = "{}";
-                }
-            }
-            else if (schema is not null)
-            {
-                // Otherwise, we added the body to the input schema as a
-                // single property "requestBody", so reflect that here.
+                // Always use requestBody property
                 config.Body = "{requestBody}";
             }
         }

@@ -22,12 +22,17 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "foo": {
-                "type": "string"
-              },
-              "bar": {
-                "type": "integer",
-                "format": "int32"
+              "requestBody": {
+                "type": "object",
+                "properties": {
+                  "foo": {
+                    "type": "string"
+                  },
+                  "bar": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
               }
             },
             "required": []
@@ -36,7 +41,7 @@
         "rest": {
           "method": "POST",
           "path": "/api/object",
-          "body": "{ \"foo\": {foo}, \"bar\": {bar} }"
+          "body": "{requestBody}"
         }
       },
       {
@@ -264,12 +269,17 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "foo": {
-                "type": "string"
-              },
-              "bar": {
-                "type": "integer",
-                "format": "int32"
+              "requestBody": {
+                "type": "object",
+                "properties": {
+                  "foo": {
+                    "type": "string"
+                  },
+                  "bar": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
               },
               "id": {
                 "type": "integer",
@@ -283,7 +293,7 @@
           "method": "POST",
           "path": "/api/objectWithQuery",
           "query": "id={id}",
-          "body": "{ \"foo\": {foo}, \"bar\": {bar} }"
+          "body": "{requestBody}"
         }
       },
       {
@@ -293,30 +303,35 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "components": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "foo": {
-                      "type": "string"
-                    },
-                    "bar": {
-                      "type": "integer",
-                      "format": "int32"
-                    }
-                  }
-                }
-              },
-              "single": {
+              "requestBody": {
                 "type": "object",
                 "properties": {
-                  "foo": {
-                    "type": "string"
+                  "components": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": "string"
+                        },
+                        "bar": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      }
+                    }
                   },
-                  "bar": {
-                    "type": "integer",
-                    "format": "int32"
+                  "single": {
+                    "type": "object",
+                    "properties": {
+                      "foo": {
+                        "type": "string"
+                      },
+                      "bar": {
+                        "type": "integer",
+                        "format": "int32"
+                      }
+                    }
                   }
                 }
               }
@@ -327,7 +342,7 @@
         "rest": {
           "method": "POST",
           "path": "/api/NestedObject",
-          "body": "{ \"components\": {components}, \"single\": {single} }"
+          "body": "{requestBody}"
         }
       },
       {
@@ -337,30 +352,35 @@
           "inputSchema": {
             "type": "object",
             "properties": {
-              "components": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "foo": {
-                      "type": "string"
-                    },
-                    "bar": {
-                      "type": "integer",
-                      "format": "int32"
-                    }
-                  }
-                }
-              },
-              "single": {
+              "requestBody": {
                 "type": "object",
                 "properties": {
-                  "foo": {
-                    "type": "string"
+                  "components": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "type": "string"
+                        },
+                        "bar": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      }
+                    }
                   },
-                  "bar": {
-                    "type": "integer",
-                    "format": "int32"
+                  "single": {
+                    "type": "object",
+                    "properties": {
+                      "foo": {
+                        "type": "string"
+                      },
+                      "bar": {
+                        "type": "integer",
+                        "format": "int32"
+                      }
+                    }
                   }
                 }
               },
@@ -376,7 +396,7 @@
           "method": "POST",
           "path": "/api/NestedObjectWithQuery",
           "query": "id={id}",
-          "body": "{ \"components\": {components}, \"single\": {single} }"
+          "body": "{requestBody}"
         }
       },
       {

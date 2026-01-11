@@ -129,7 +129,7 @@ public class SwaggerConverterTests
     }
 
     [Fact]
-    public async Task Convert_WithRequestBody_FlattensProperties()
+    public async Task Convert_WithRequestBody_NestsUnderRequestBodyProperty()
     {
         // Arrange
         var converter = CreateConverter();
@@ -193,22 +193,21 @@ public class SwaggerConverterTests
         Assert.Equal("create_user", tool.Mcp.Name);
         Assert.Equal("POST", tool.Rest.Method);
         Assert.NotNull(tool.Rest.Body);
-        Assert.Contains("\"name\": {name}", tool.Rest.Body);
-        Assert.Contains("\"email\": {email}", tool.Rest.Body);
-        Assert.Contains("\"age\": {age}", tool.Rest.Body);
+        Assert.Equal("{requestBody}", tool.Rest.Body);
 
         Assert.NotNull(tool.Mcp.InputSchema.Properties);
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("name"));
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("email"));
-        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("age"));
+        Assert.True(tool.Mcp.InputSchema.Properties.ContainsKey("requestBody"));
+        
+        var requestBodySchema = tool.Mcp.InputSchema.Properties["requestBody"];
+        Assert.Equal("object", requestBodySchema.Type);
+        Assert.NotNull(requestBodySchema.Properties);
+        Assert.True(requestBodySchema.Properties.ContainsKey("name"));
+        Assert.True(requestBodySchema.Properties.ContainsKey("email"));
+        Assert.True(requestBodySchema.Properties.ContainsKey("age"));
 
-        Assert.Equal("string", tool.Mcp.InputSchema.Properties["name"].Type);
-        Assert.Equal("email", tool.Mcp.InputSchema.Properties["email"].Format);
-        Assert.Equal("integer", tool.Mcp.InputSchema.Properties["age"].Type);
-
-        Assert.Contains("name", tool.Mcp.InputSchema.Required);
-        Assert.Contains("email", tool.Mcp.InputSchema.Required);
-        Assert.DoesNotContain("age", tool.Mcp.InputSchema.Required);
+        Assert.Equal("string", requestBodySchema.Properties["name"].Type);
+        Assert.Equal("email", requestBodySchema.Properties["email"].Format);
+        Assert.Equal("integer", requestBodySchema.Properties["age"].Type);
     }
 
     [Fact]
