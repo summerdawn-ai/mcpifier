@@ -294,9 +294,9 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         foreach (string code in SuccessResponseCodes)
         {
             if (operation.Responses?.TryGetValue(code, out var response) == true &&
-                response.Content?.TryGetValue("application/json", out var mediaType) == true)
+                response.Content?.TryGetValue("application/json", out var responseBody) == true)
             {
-                var schema = ResolveSchema(mediaType.Schema, schemaCache);
+                var schema = ResolveSchema(responseBody.Schema, schemaCache);
                 if (schema != null)
                 {
                     // Serialize as JSON schema by using OpenAPI version 3.2.

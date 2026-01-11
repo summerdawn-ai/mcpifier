@@ -67,6 +67,21 @@ public class McpToolDefinition
     public JsonSchema GetDeserializedInputSchema() => deserializedInputSchema.Value;
 
     /// <summary>
+    /// Efficiently sets both representations when both are already available.
+    /// Used internally by converters and loaders.
+    /// </summary>
+    internal void SetInputSchema(JsonElement element, JsonSchema schema)
+    {
+        lock (schemaSync)
+        {
+            inputSchema = element;
+
+            // Use an immediate lazy initializer since we already have the schema.
+            deserializedInputSchema = new Lazy<JsonSchema>(schema);
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the output schema for the tool.
     /// </summary>
     /// <remarks>
@@ -95,21 +110,6 @@ public class McpToolDefinition
     /// Gets the deserialized JSON Schema for output validation, if available.
     /// </summary>
     public JsonSchema? GetDeserializedOutputSchema() => deserializedOutputSchema?.Value;
-
-    /// <summary>
-    /// Efficiently sets both representations when both are already available.
-    /// Used internally by converters and loaders.
-    /// </summary>
-    internal void SetInputSchema(JsonElement element, JsonSchema schema)
-    {
-        lock (schemaSync)
-        {
-            inputSchema = element;
-
-            // Use an immediate lazy initializer since we already have the schema.
-            deserializedInputSchema = new Lazy<JsonSchema>(schema);
-        }
-    }
 
     /// <summary>
     /// Efficiently sets both representations when both are already available.
