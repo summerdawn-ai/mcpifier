@@ -9,7 +9,7 @@ namespace Summerdawn.Mcpifier.Models;
 /// </summary>
 [JsonSerializable(typeof(JsonRpcRequest))]
 [JsonSerializable(typeof(JsonRpcResponse))]
-[JsonSerializable(typeof(ReadOnlyDictionary<string, object?>))] // JsonRpcResponse.EmptyResult
+[JsonSerializable(typeof(ReadOnlyDictionary<string, object?>))] // JsonRpcResponse.EmptyResult or JsonRpcError.Data
 [JsonSerializable(typeof(McpInitializeParams))]
 [JsonSerializable(typeof(McpInitializeResult))]
 [JsonSerializable(typeof(McpToolDefinition))]

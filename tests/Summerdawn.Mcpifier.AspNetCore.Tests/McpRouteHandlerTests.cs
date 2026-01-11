@@ -13,6 +13,10 @@ using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.AspNetCore.Tests;
 
+using static StatusCodes;
+
+using static JsonRpcResponse;
+
 public class McpRouteHandlerTests
 {
     [Fact]
@@ -22,7 +26,7 @@ public class McpRouteHandlerTests
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
         mockDispatcher
             .Setup(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(JsonRpcResponse.Empty);
+            .ReturnsAsync(Empty);
         var mockOptions = CreateMockOptions();
         var mockLogger = new Mock<ILogger<McpRouteHandler>>();
         var handler = new McpRouteHandler(mockDispatcher.Object, mockOptions.Object, mockLogger.Object);
@@ -36,16 +40,16 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(204, context.Response.StatusCode);
+        Assert.Equal(Status204NoContent, context.Response.StatusCode);
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task HandleMcpRequestAsync_DispatcherReturnsError_Returns400()
+    public async Task HandleMcpRequestAsync_DispatcherReturnsError_Returns200()
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
-        var errorResponse = JsonRpcResponse.MethodNotFound(JsonDocument.Parse("\"test-id\"").RootElement, "test.method");
+        var errorResponse = MethodNotFound(JsonDocument.Parse("\"test-id\"").RootElement, "test.method");
         mockDispatcher
             .Setup(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(errorResponse);
@@ -63,7 +67,7 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(400, context.Response.StatusCode);
+        Assert.Equal(Status200OK, context.Response.StatusCode);
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -72,7 +76,7 @@ public class McpRouteHandlerTests
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
-        var successResponse = JsonRpcResponse.Success(JsonDocument.Parse("\"test-id\"").RootElement, new McpToolsCallResult { Content = [JsonDocument.Parse("{ \"result\": \"success\" }").RootElement] });
+        var successResponse = Success(JsonDocument.Parse("\"test-id\"").RootElement, new McpToolsCallResult { Content = [JsonDocument.Parse("{ \"result\": \"success\" }").RootElement] });
         mockDispatcher
             .Setup(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(successResponse);
@@ -90,7 +94,7 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(200, context.Response.StatusCode);
+        Assert.Equal(Status200OK, context.Response.StatusCode);
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -117,7 +121,7 @@ public class McpRouteHandlerTests
     }
 
     [Fact]
-    public async Task HandleMcpRequestAsync_InvalidJson_Returns400WithParseError()
+    public async Task HandleMcpRequestAsync_InvalidJson_Returns200WithParseError()
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
@@ -135,19 +139,19 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(400, context.Response.StatusCode);
+        Assert.Equal(Status200OK, context.Response.StatusCode);
 
         context.Response.Body.Position = 0;
         var responseJson = await JsonSerializer.DeserializeAsync<JsonElement>(context.Response.Body);
         Assert.True(responseJson.TryGetProperty("error", out var error));
         Assert.True(error.TryGetProperty("code", out var code));
-        Assert.Equal(-32700, code.GetInt32()); // ParseError
+        Assert.Equal(ParseErrorCode, code.GetInt32());
 
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task HandleMcpRequestAsync_NullRequest_Returns400WithInvalidRequest()
+    public async Task HandleMcpRequestAsync_NullRequest_Returns200WithParseError()
     {
         // Arrange
         var mockDispatcher = new Mock<IJsonRpcDispatcher>();
@@ -165,13 +169,13 @@ public class McpRouteHandlerTests
         await handler.HandleMcpRequestAsync(context);
 
         // Assert
-        Assert.Equal(400, context.Response.StatusCode);
+        Assert.Equal(Status200OK, context.Response.StatusCode);
 
         context.Response.Body.Position = 0;
         var responseJson = await JsonSerializer.DeserializeAsync<JsonElement>(context.Response.Body);
         Assert.True(responseJson.TryGetProperty("error", out var error));
         Assert.True(error.TryGetProperty("code", out var code));
-        Assert.Equal(-32600, code.GetInt32()); // InvalidRequest
+        Assert.Equal(ParseErrorCode, code.GetInt32());
 
         mockDispatcher.Verify(d => d.DispatchAsync(It.IsAny<JsonRpcRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }

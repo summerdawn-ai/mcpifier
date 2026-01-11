@@ -23,17 +23,17 @@ public sealed class McpToolsCallRpcHandler(RestApiService restApiService, IOptio
         {
             logger.LogWarning("Tool not found: {ToolName}", parameters.Name);
 
-            return JsonRpcResponse.ErrorResponse(request.Id, 404, $"Tool '{parameters.Name}' not found");
+            return JsonRpcResponse.InvalidParams(request.Id, $"Tool '{parameters.Name}' not found");
         }
 
         var (isValid, errorMessage) = ToolValidator.ValidateArguments(tool.Mcp, parameters.Arguments);
         if (!isValid)
         {
-            string message = errorMessage ?? "Invalid arguments";
+            errorMessage ??= "Invalid arguments";
 
-            logger.LogWarning("Invalid arguments for tool {ToolName}: {Error}", parameters.Name, message);
+            logger.LogWarning("Invalid arguments for tool {ToolName}: {Error}", parameters.Name, errorMessage);
 
-            return JsonRpcResponse.ErrorResponse(request.Id, 400, message);
+            return JsonRpcResponse.InvalidParams(request.Id, errorMessage);
         }
 
         var forwardedHeaders = GetForwardedHeaders(httpContextAccessor?.HttpContext?.Request);
