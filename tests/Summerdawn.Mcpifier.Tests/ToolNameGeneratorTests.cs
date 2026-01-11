@@ -19,12 +19,14 @@ public class ToolNameGeneratorTests
     }
 
     [Theory]
-    [InlineData("Get user by ID", "get_user_id")]
+    [InlineData("Get user by ID", "get_user_by_id")]
     [InlineData("List all users", "list_all_users")]
     [InlineData("Create a new user", "create_new_user")]
     [InlineData("Delete user", "delete_user")]
     [InlineData("Fetch user details", "fetch_user_details")]
-    public void GenerateFromSummary_WithValidSummaries_ExtractsName(string summary, string expected)
+    [InlineData("Fetch user details.", "fetch_user_details")]
+    [InlineData("Links the current identity to another user", "links_current_identity_to_another_user")]
+    public void GenerateFromSummary_WithValidSummaries_ExtractsName(string summary, string? expected)
     {
         // Act
         string? result = ToolNameGenerator.GenerateFromSummary(summary);
@@ -32,6 +34,10 @@ public class ToolNameGeneratorTests
         // Assert
         Assert.Equal(expected, result);
     }
+
+    [Fact]
+    public void GenerateFromSummary_WithTooLongSummary_ReturnsNull() =>
+        GenerateFromSummary_WithValidSummaries_ExtractsName("Links the current user identity to another existing user.", null);
 
     [Theory]
     [InlineData("/users", "GET", "list_users")]

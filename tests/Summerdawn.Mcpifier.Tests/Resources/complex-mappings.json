@@ -3,7 +3,7 @@
     "Tools": [
       {
         "mcp": {
-          "name": "get_api_object",
+          "name": "get_object",
           "description": "GET /api/object",
           "inputSchema": {
             "type": "object"
@@ -40,7 +40,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_object",
+          "name": "create_object",
           "description": "POST /api/object",
           "inputSchema": {
             "type": "object",
@@ -72,7 +72,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_object_array",
+          "name": "create_object_array",
           "description": "POST /api/objectArray",
           "inputSchema": {
             "type": "object",
@@ -107,7 +107,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_object_array_with_query",
+          "name": "create_object_array_with_query",
           "description": "POST /api/objectArrayWithQuery",
           "inputSchema": {
             "type": "object",
@@ -147,7 +147,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_string_array",
+          "name": "create_string_array",
           "description": "POST /api/stringArray",
           "inputSchema": {
             "type": "object",
@@ -169,7 +169,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_string_array_with_query",
+          "name": "create_string_array_with_query",
           "description": "POST /api/stringArrayWithQuery",
           "inputSchema": {
             "type": "object",
@@ -196,7 +196,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_int_array",
+          "name": "create_int_array",
           "description": "POST /api/intArray",
           "inputSchema": {
             "type": "object",
@@ -219,7 +219,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_int_array_with_query",
+          "name": "create_int_array_with_query",
           "description": "POST /api/intArrayWithQuery",
           "inputSchema": {
             "type": "object",
@@ -247,7 +247,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_string",
+          "name": "create_string",
           "description": "POST /api/string",
           "inputSchema": {
             "type": "object",
@@ -266,7 +266,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_string_with_query",
+          "name": "create_string_with_query",
           "description": "POST /api/stringWithQuery",
           "inputSchema": {
             "type": "object",
@@ -290,7 +290,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_object_with_query",
+          "name": "create_object_with_query",
           "description": "POST /api/objectWithQuery",
           "inputSchema": {
             "type": "object",
@@ -327,7 +327,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_nested_object",
+          "name": "create_nested_object",
           "description": "POST /api/NestedObject",
           "inputSchema": {
             "type": "object",
@@ -387,7 +387,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_nested_object_with_query",
+          "name": "create_nested_object_with_query",
           "description": "POST /api/NestedObjectWithQuery",
           "inputSchema": {
             "type": "object",
@@ -452,7 +452,7 @@
       },
       {
         "mcp": {
-          "name": "post_api_nested_object_array",
+          "name": "create_nested_object_array",
           "description": "POST /api/NestedObjectArray",
           "inputSchema": {
             "type": "object",

@@ -10,6 +10,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "GetObject",
         "responses": {
           "200": {
             "description": "OK",
@@ -46,6 +47,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateObject",
         "requestBody": {
           "content": {
             "application/json": {
@@ -77,6 +79,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateObjectArray",
         "requestBody": {
           "content": {
             "application/json": {
@@ -117,6 +120,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateObjectArrayWithQuery",
         "parameters": [
           {
             "name": "id",
@@ -167,6 +171,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateStringArray",
         "requestBody": {
           "content": {
             "application/json": {
@@ -207,6 +212,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateStringArrayWithQuery",
         "parameters": [
           {
             "name": "id",
@@ -257,6 +263,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateIntArray",
         "requestBody": {
           "content": {
             "application/json": {
@@ -300,6 +307,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateIntArrayWithQuery",
         "parameters": [
           {
             "name": "id",
@@ -353,6 +361,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateString",
         "requestBody": {
           "content": {
             "application/json": {
@@ -384,6 +393,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateStringWithQuery",
         "parameters": [
           {
             "name": "id",
@@ -425,6 +435,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateObjectWithQuery",
         "parameters": [
           {
             "name": "id",
@@ -466,6 +477,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateNestedObject",
         "requestBody": {
           "content": {
             "application/json": {
@@ -497,6 +509,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateNestedObjectWithQuery",
         "parameters": [
           {
             "name": "id",
@@ -538,6 +551,7 @@
         "tags": [
           "Test"
         ],
+        "operationId": "CreateNestedObjectArray",
         "requestBody": {
           "content": {
             "application/json": {
