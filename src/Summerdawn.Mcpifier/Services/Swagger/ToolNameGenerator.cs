@@ -109,14 +109,10 @@ internal static class ToolNameGenerator
         {
             segments[0] = Singularize(segments[0]);
         }
-        else if (type.Method.ToUpperInvariant() is "POST" or "PUT" or "PATCH" or "DELETE")
+        else if (type.Method.ToUpperInvariant() is "POST" or "PUT" or "PATCH" or "DELETE" && segments.Count > 0)
         {
-            if (segments.Count > 0)
-            {
-                segments[^1] = Singularize(segments[^1]);
-            }
+            segments[^1] = Singularize(segments[^1]);
         }
-
         // Build the tool name
         string pathPart = string.Join("_", segments);
         return ToSnakeCase($"{action}_{pathPart}");
@@ -156,9 +152,17 @@ internal static class ToolNameGenerator
             return word[..^3] + "y";
         }
 
-        // -ves → -f (wolves → wolf)
+        // -ves → -f / -fe (wolves → wolf, knives → knife, lives → life)
         if (word.EndsWith("ves") && word.Length > 3)
         {
+            // Heuristic: many -fe words pluralize to -ives (knife → knives, life → lives).
+            // If the character before "ves" is 'i', assume the singular ends with "fe".
+            if (word.Length > 4 && word[^4] == 'i')
+            {
+                return word[..^3] + "fe";
+            }
+
+            // Default: treat as -f (wolf → wolves, leaf → leaves, shelf → shelves, etc.)
             return word[..^3] + "f";
         }
 

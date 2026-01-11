@@ -36,8 +36,14 @@ public class ToolNameGeneratorTests
     }
 
     [Fact]
-    public void GenerateFromSummary_WithTooLongSummary_ReturnsNull() =>
-        GenerateFromSummary_WithValidSummaries_ExtractsName("Links the current user identity to another existing user.", null);
+    public void GenerateFromSummary_WithTooLongSummary_ReturnsNull()
+    {
+        // Act
+        string? result = ToolNameGenerator.GenerateFromSummary("Links the current user identity to another existing user.");
+
+        // Assert
+        Assert.Null(result);
+    }
 
     [Theory]
     [InlineData("/users", "GET", "list_users")]
