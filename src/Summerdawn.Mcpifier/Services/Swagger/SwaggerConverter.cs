@@ -103,6 +103,9 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
             throw new InvalidOperationException($"Failed to read or parse OpenAPI document: {ex.Message}", ex);
         }
 
+        // Create schema resolution cache once for the entire document conversion.
+        var schemaCache = new HashSet<IOpenApiSchema>(SchemaReferenceEqualityComparer.Instance);
+
         var tools = new List<McpifierToolMapping>();
 
         foreach (var pathItem in document.Paths)
@@ -114,7 +117,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
             {
                 try
                 {
-                    var tool = await ConvertOperationAsync(path, operation.Key, operation.Value);
+                    var tool = await ConvertOperationAsync(path, operation.Key, operation.Value, schemaCache);
                     tools.Add(tool);
                     logger.LogDebug("Converted operation: {Method} {Path} -> {ToolName}", operation.Key, path, tool.Mcp.Name);
                 }
@@ -151,12 +154,13 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// <param name="path">The API path.</param>
     /// <param name="type">The HTTP operation type.</param>
     /// <param name="operation">The OpenAPI operation.</param>
+    /// <param name="schemaCache">Set used to cache already resolved schemas.</param>
     /// <returns>A tool mapping.</returns>
-    private async Task<McpifierToolMapping> ConvertOperationAsync(string path, HttpMethod type, OpenApiOperation operation)
+    private async Task<McpifierToolMapping> ConvertOperationAsync(string path, HttpMethod type, OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
     {
         string toolName = GenerateToolName(operation, path, type);
-        var inputSchema = await BuildInputSchemaAsync(operation);
-        var restConfig = BuildRestConfiguration(path, type, operation);
+        var inputSchema = await BuildInputSchemaAsync(operation, schemaCache);
+        var restConfig = BuildRestConfiguration(path, type, operation, schemaCache);
 
         return new McpifierToolMapping
         {
@@ -174,15 +178,16 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// Builds the input schema from operation parameters and request body.
     /// </summary>
     /// <param name="operation">The OpenAPI operation.</param>
+    /// <param name="schemaCache">Set used to cache already resolved schemas.</param>
     /// <returns>An input schema.</returns>
-    private async Task<InputSchema> BuildInputSchemaAsync(OpenApiOperation operation)
+    private async Task<InputSchema> BuildInputSchemaAsync(OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
     {
         var inputSchema = new InputSchema();
 
         // Create initial input schema based on request body, if present.
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var requestBody) == true)
         {
-            var schema = ResolveSchema(requestBody.Schema);
+            var schema = ResolveSchema(requestBody.Schema, schemaCache);
 
             // If the request body is an object, use it as the base of the InputSchema;
             // otherwise, add the request body as a single property "requestBody".
@@ -207,7 +212,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
 
         foreach (var param in operation.Parameters ?? [])
         {
-            var schema = ResolveSchema(param.Schema);
+            var schema = ResolveSchema(param.Schema, schemaCache);
 
             if (schema is null)
             {
@@ -240,8 +245,9 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// <param name="path">The API path.</param>
     /// <param name="type">The HTTP operation type.</param>
     /// <param name="operation">The OpenAPI operation.</param>
+    /// <param name="schemaCache">Set used to cache already resolved schemas.</param>
     /// <returns>A REST configuration.</returns>
-    private RestConfiguration BuildRestConfiguration(string path, HttpMethod type, OpenApiOperation operation)
+    private RestConfiguration BuildRestConfiguration(string path, HttpMethod type, OpenApiOperation operation, HashSet<IOpenApiSchema> schemaCache)
     {
         var config = new RestConfiguration
         {
@@ -263,7 +269,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         // Build request body template
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var mediaType) == true)
         {
-            var schema = ResolveSchema(mediaType.Schema);
+            var schema = ResolveSchema(mediaType.Schema, schemaCache);
 
             if (schema is { Type: JsonSchemaType.Object })
             {
@@ -366,38 +372,56 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// <summary>
     /// Resolves any references (including nested) in the specified schema.
     /// </summary>
-    private static IOpenApiSchema? ResolveSchema(IOpenApiSchema? schema)
+    /// <param name="schema">The schema to resolve.</param>
+    /// <param name="cache">Set used to cache already resolved schemas.</param>
+    private static IOpenApiSchema? ResolveSchema(IOpenApiSchema? schema, HashSet<IOpenApiSchema> cache)
     {
-        return ResolveSchemaTree(schema, new HashSet<IOpenApiSchema>(SchemaReferenceEqualityComparer.Instance));
+        return ResolveSchemaTree(schema, cache, new HashSet<IOpenApiSchema>(SchemaReferenceEqualityComparer.Instance));
     }
 
     /// <summary>
     /// Recursively resolves references throughout a schema subtree while avoiding cycles.
     /// </summary>
     /// <param name="schema">The schema to resolve.</param>
-    /// <param name="visited">Set used to track visited schemas.</param>
-    /// <returns>The resolved schema, or null if none.</returns>
-    private static IOpenApiSchema? ResolveSchemaTree(IOpenApiSchema? schema, HashSet<IOpenApiSchema> visited)
+    /// <param name="cache">Set used to cache already resolved schemas.</param>
+    /// <param name="ancestors">Set used to track schemas in the current path.</param>
+    /// <returns>The resolved schema, or null if none or circular reference.</returns>
+    private static IOpenApiSchema? ResolveSchemaTree(IOpenApiSchema? schema, HashSet<IOpenApiSchema> cache, HashSet<IOpenApiSchema> ancestors)
     {
         schema = UnwrapReference(schema);
 
-        if (schema is null || !visited.Add(schema))
+        if (schema is null)
+        {
+            return schema;
+        }
+
+        // If this schema is an ancestor in the current path, it's a circular reference - prune it.
+        if (ancestors.Contains(schema))
+        {
+            return null;
+        }
+
+        // If we've already fully processed this schema, return it as-is (allows reuse across branches).
+        if (cache.Contains(schema))
         {
             return schema;
         }
 
         if (schema is OpenApiSchema concrete)
         {
-            concrete.Items = ResolveSchemaTree(concrete.Items, visited);
-            concrete.Not = ResolveSchemaTree(concrete.Not, visited);
-            concrete.AdditionalProperties = ResolveSchemaTree(concrete.AdditionalProperties, visited);
+            // Add to ancestors while processing this schema's children.
+            ancestors.Add(schema);
+
+            concrete.Items = ResolveSchemaTree(concrete.Items, cache, ancestors);
+            concrete.Not = ResolveSchemaTree(concrete.Not, cache, ancestors);
+            concrete.AdditionalProperties = ResolveSchemaTree(concrete.AdditionalProperties, cache, ancestors);
 
             if (concrete.Properties is not null && concrete.Properties.Count > 0)
             {
                 string[] propertyNames = concrete.Properties.Keys.ToArray();
                 foreach (string propertyName in propertyNames)
                 {
-                    IOpenApiSchema? resolvedProperty = ResolveSchemaTree(concrete.Properties[propertyName], visited);
+                    var resolvedProperty = ResolveSchemaTree(concrete.Properties[propertyName], cache, ancestors);
                     if (resolvedProperty is null)
                     {
                         concrete.Properties.Remove(propertyName);
@@ -409,12 +433,17 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
                 }
             }
 
-            ResolveSchemaCollection(concrete.AllOf, visited);
-            ResolveSchemaCollection(concrete.AnyOf, visited);
-            ResolveSchemaCollection(concrete.OneOf, visited);
+            ResolveSchemaCollection(concrete.AllOf, cache, ancestors);
+            ResolveSchemaCollection(concrete.AnyOf, cache, ancestors);
+            ResolveSchemaCollection(concrete.OneOf, cache, ancestors);
+
+            // Remove from ancestors after processing.
+            ancestors.Remove(schema);
         }
 
-        visited.Remove(schema);
+        // Cache the schema once fully processed.
+        cache.Add(schema);
+
         return schema;
     }
 
@@ -422,8 +451,9 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// Resolves references for every schema within a collection.
     /// </summary>
     /// <param name="collection">The schema collection to process.</param>
-    /// <param name="visited">Set used to track visited schemas.</param>
-    private static void ResolveSchemaCollection(IList<IOpenApiSchema>? collection, HashSet<IOpenApiSchema> visited)
+    /// <param name="cache">Set used to cache already resolved schemas.</param>
+    /// <param name="ancestors">Set used to track schemas in the current path.</param>
+    private static void ResolveSchemaCollection(IList<IOpenApiSchema>? collection, HashSet<IOpenApiSchema> cache, HashSet<IOpenApiSchema> ancestors)
     {
         if (collection is null)
         {
@@ -432,7 +462,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
 
         for (int index = 0; index < collection.Count; index++)
         {
-            IOpenApiSchema? resolvedItem = ResolveSchemaTree(collection[index], visited);
+            var resolvedItem = ResolveSchemaTree(collection[index], cache, ancestors);
             if (resolvedItem is not null)
             {
                 collection[index] = resolvedItem;
