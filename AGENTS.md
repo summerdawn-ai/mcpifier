@@ -36,6 +36,10 @@
   // ...
   ```
 
+## XML Documentation Comments
+
+Follow the XML documentation comment conventions defined in [CONTRIBUTING.md](CONTRIBUTING.md#xml-documentation-comments). In short: document public and central APIs concisely, use the standard wording conventions for each member kind, write in third-person present tense, and do not duplicate inherited documentation.
+
 ## Agentic working
 
 - When you get a task, DO be diligent about it and do a build, run tests, get a code review etc. if appropriate.
