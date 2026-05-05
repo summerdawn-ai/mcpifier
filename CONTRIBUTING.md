@@ -82,9 +82,19 @@ Run this before committing to ensure your code adheres to the project's formatti
 ## Documentation
 
 - Update README files if adding new features
-- Add XML documentation comments for public APIs
+- Add XML documentation comments for public APIs (see below)
 - Update relevant documentation in `/docs` if applicable
 - Keep code examples up to date
+
+### XML Documentation Comments
+
+Follow these conventions when writing XML documentation comments:
+
+- **Scope:** Document public types and members when doing so improves clarity. Document non-public members only when they are especially central, reused, or non-obvious.
+- **Wording by member kind:** Data and model types should usually use `Represents ...`; enums should usually use `Specifies ...` or `Indicates ...`; mutable properties should usually use `Gets or sets the ...`; read-only properties should usually use `Gets the ...`; methods and behavioral types should use a concise verb that matches their role.
+- **Style:** Write in third-person, present tense, complete sentences. Describe purpose rather than implementation. Avoid repeating the member name or stating obvious type information.
+- **Supplemental tags:** Use `<param>`, `<returns>`, and other supplemental tags only when they add meaningful value. Avoid documenting parameters on non-public members unless especially useful, and avoid documenting exceptions unless they are particularly relevant to callers.
+- **Inherited documentation:** Do not duplicate inherited documentation. Prefer automatic inheritance where available, and use `<inheritdoc/>` only when required by build warnings or tooling.
 
 ## Questions and Help
 
