@@ -8,26 +8,11 @@
     <!-- Enable documentation file generation to enable IDE0005 (unused usings) warnings -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Ignore CS1591 warnings about missing XML comments triggered by `GenerateDocumentationFile` -->
-    <NoWarn>$(NoWarn);1701;1702;CS1591</NoWarn>
-  </PropertyGroup>
+    <!-- Ignore xUnit2013 suggestions about Assert.Empty vs Assert.Equal -->
+    <NoWarn>$(NoWarn);1701;1702;CS1591;xUnit2013</NoWarn>
 
-  <PropertyGroup>
-    <!-- Shared NuGet package metadata -->
-    <Authors>summerdawn.ai</Authors>
-    <Company>summerdawn.ai</Company>
-    <Copyright>Copyright (c) 2025 summerdawn.ai</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/summerdawn-ai/mcpifier</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/summerdawn-ai/mcpifier</PackageProjectUrl>
-    <PackageTags>mcp;model-context-protocol;mcpify;rest;rest-api;proxy;gateway</PackageTags>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Include PDBs in authored .nupkg -->
-    <DebugSymbols>true</DebugSymbols>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <!-- Disable publishing by default; opt in per project with <IsPublishable>true</IsPublishable> -->
+    <IsPublishable>false</IsPublishable>
   </PropertyGroup>
 
 </Project>

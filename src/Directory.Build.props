@@ -1,0 +1,25 @@
+<Project>
+
+  <!-- Import shared build configuration from repository root -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Shared NuGet package metadata -->
+    <Authors>summerdawn.ai</Authors>
+    <Company>summerdawn.ai</Company>
+    <Copyright>Copyright (c) 2025 summerdawn.ai</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/summerdawn-ai/mcpifier</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/summerdawn-ai/mcpifier</PackageProjectUrl>
+    <PackageTags>mcp;model-context-protocol;mcpify;rest;rest-api;proxy;gateway</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Include PDBs in authored .nupkg -->
+    <DebugSymbols>true</DebugSymbols>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+
+</Project>
