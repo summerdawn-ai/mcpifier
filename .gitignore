@@ -410,6 +410,10 @@ FodyWeavers.xsd
 # Built Visual Studio Code Extensions
 *.vsix
 
+# Bicep compiled output files
+infra/**/main.json
+infra/**/modules/*.json
+
 # Windows Installer files from build outputs
 *.cab
 *.msi
