@@ -48,7 +48,7 @@
 
 ### XML documentation comments
 
-- DO add XML documentation to public types and public members when it improves clarity; document non-public members only when they are especially central, reused, or non-obvious.
+- DO add XML documentation to public types and public members when it improves clarity; document non-public members when they are especially central, reused, non-obvious, or implement substantial domain logic.
 - DO use multi-line XML doc tags with the opening and closing tags on their own lines:
   ```csharp
   /// <summary>
@@ -70,7 +70,8 @@
 ### Inline comments
 
 - DO use inline comments inside method bodies to explain *intent*, *rationale*, invariants, and non-obvious protocol decisions - not to restate what the code already says clearly.
-- DO add inline comments in larger methods to delineate logical phases or steps (e.g. `// --- Phase 1: read snapshots ---`).
+- DO add inline comments in larger methods to delineate logical phases or steps (e.g. `// --- Phase 1: read snapshots ---`), especially in service, builder, orchestration, or heuristic-heavy code.
+- DO add a brief leading comment or XML doc to non-public methods when the overall purpose would otherwise have to be inferred from a long implementation.
 - DO NOT add comments that simply repeat the method name or the type of statement being executed.
 
 ### General comments
