@@ -258,6 +258,19 @@ public class Program
                 // Configure stdio MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
+                // Add tools from local mappings.json if present -
+                // even if explicit mappings/Swagger is specified.
+                const string localMappingsFileName = "mappings.json";
+                if (File.Exists(localMappingsFileName))
+                {
+                    mcpifierBuilder.AddToolsFromMappings(localMappingsFileName);
+                }
+
+                // Add tools from mappings or Swagger if specified.
+                if (mappingsFileName is not null)
+                {
+                    mcpifierBuilder.AddToolsFromMappings(mappingsFileName);
+                }
                 if (swaggerFileNameOrUrl is not null)
                 {
                     mcpifierBuilder.AddToolsFromSwagger(swaggerFileNameOrUrl);
