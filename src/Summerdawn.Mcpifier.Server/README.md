@@ -117,6 +117,7 @@ mcpifier --mode <http|stdio> [OPTIONS]
 - `--mappings` (optional): The path to a tool mappings JSON file from which to load tool mappings
 - `--settings` (optional): The path to any additional configuration JSON file to load (can be specified multiple times)
 - `--no-default-settings` (optional): Skip loading default settings
+- `--verbose` (optional): Enable verbose logging
 
 See the [Configuration](#configuration) and [Tool Mapping](#tool-mapping) sections for information about settings and mappings that the command-line server defines by default or loads automatically.
 
@@ -152,6 +153,7 @@ mcpifier generate --swagger <file-or-url> [OPTIONS]
 - `--output`, `-o` (optional): The output path for the generated mapping file [default: mappings.json]
 - `--settings` (optional): The path to any additional configuration JSON file to load (can be specified multiple times)
 - `--no-default-settings` (optional): Skip loading default settings
+- `--verbose` (optional): Enable verbose logging
 
 See the [Configuration](#configuration) section for information about settings that the command-line server defines by default or loads automatically.
 
@@ -354,10 +356,11 @@ For more details about authorization, refer to the corresponding section in the 
 
 The Mcpifier command-line server uses [.NET Configuration providers](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration) to load configuration settings from multiple sources in a specific order, with later sources overriding earlier ones:
 
-1. **Embedded default settings** - Built-in defaults compiled into the executable, unless skipped with `--no-default-settings`
-2. **Local configuration file** - Local `appsettings.json` file in content directory, if present
+1. **Embedded default settings** - Built-in defaults embedded in the application, unless skipped with `--no-default-settings`
+2. **Content-directory settings files** - `appsettings.json` and `mappings.json` in the content directory, if present
 3. **Environment variables** - System or process environment variables
-4. **Command-line options** - Additional configuration files specified with the `--settings` option
+4. **Explicit settings files** - Additional settings files specified with the `--settings` option, in argument order
+5. **Verbose logging settings** - Embedded logging settings, when `--verbose` is specified
 
 By default, the content directory is the current working directory, but this can be overridden by setting the `DOTNET_CONTENTROOT` environment variable to point to a different directory.
 

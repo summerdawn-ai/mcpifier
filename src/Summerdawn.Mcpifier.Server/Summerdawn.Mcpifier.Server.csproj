@@ -39,9 +39,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Embed appsettings.json as a resource and prevent it from being copied as content -->
+    <!-- Embed appsettings files as resources and prevent them from being copied as content -->
     <Content Remove="appsettings.json" />
+    <Content Remove="appsettings.Verbose.json" />
     <EmbeddedResource Include="appsettings.json" />
+    <EmbeddedResource Include="appsettings.Verbose.json" />
     <!-- Exclude appsettings.*.json from packing and publishing -->
     <Content Update="appsettings.*.json" CopyToOutputDirectory="PreserveNewest" Pack="false" CopyToPublishDirectory="Never" />
     <!-- Include README.md in packing and publishing -->
