@@ -11,10 +11,10 @@ using Summerdawn.Mcpifier.Configuration;
 using Summerdawn.Mcpifier.Models;
 using Summerdawn.Mcpifier.Services;
 
-namespace Summerdawn.Mcpifier.AspNetCore.Tests;
+using static Microsoft.AspNetCore.Http.StatusCodes;
+using static Summerdawn.Mcpifier.Models.JsonRpcResponse;
 
-using static JsonRpcResponse;
-using static StatusCodes;
+namespace Summerdawn.Mcpifier.AspNetCore.Tests;
 
 public class McpRouteHandlerTests
 {

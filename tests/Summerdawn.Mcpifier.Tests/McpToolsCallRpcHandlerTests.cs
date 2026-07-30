@@ -11,9 +11,9 @@ using Summerdawn.Mcpifier.Handlers;
 using Summerdawn.Mcpifier.Models;
 using Summerdawn.Mcpifier.Services;
 
-namespace Summerdawn.Mcpifier.Tests;
+using static Summerdawn.Mcpifier.Models.JsonRpcResponse;
 
-using static JsonRpcResponse;
+namespace Summerdawn.Mcpifier.Tests;
 
 public class McpToolsCallRpcHandlerTests
 {
@@ -34,7 +34,7 @@ public class McpToolsCallRpcHandlerTests
             mockHandlerLogger.Object,
             null);
 
-        var request = CreateRequest("nonexistent_tool", new Dictionary<string, JsonElement>());
+        var request = CreateRequest("nonexistent_tool", []);
 
         // Act
         var response = await handler.HandleAsync(request);
@@ -64,7 +64,7 @@ public class McpToolsCallRpcHandlerTests
             null);
 
         // Missing required "message" argument
-        var request = CreateRequest("test_tool", new Dictionary<string, JsonElement>());
+        var request = CreateRequest("test_tool", []);
 
         // Act
         var response = await handler.HandleAsync(request);
