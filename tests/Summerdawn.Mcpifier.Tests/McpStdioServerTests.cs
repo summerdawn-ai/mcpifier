@@ -8,9 +8,9 @@ using Summerdawn.Mcpifier.Abstractions;
 using Summerdawn.Mcpifier.Models;
 using Summerdawn.Mcpifier.Services;
 
-namespace Summerdawn.Mcpifier.Tests;
+using static Summerdawn.Mcpifier.Models.JsonRpcResponse;
 
-using static JsonRpcResponse;
+namespace Summerdawn.Mcpifier.Tests;
 
 public class McpStdioServerTests
 {
