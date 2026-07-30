@@ -44,11 +44,17 @@ public class Program
             Arity = ArgumentArity.Zero,
         };
 
+        var verboseOption = new Option<bool>("--verbose")
+        {
+            Description = "Enable verbose logging",
+            Arity = ArgumentArity.Zero,
+        };
+
         // Create "serve" command
-        var serveCommand = CreateServeCommand(settingsOption, noDefaultSettingsOption, args);
+        var serveCommand = CreateServeCommand(settingsOption, noDefaultSettingsOption, verboseOption, args);
 
         // Create "generate" command
-        var generateCommand = CreateGenerateCommand(settingsOption, noDefaultSettingsOption, args);
+        var generateCommand = CreateGenerateCommand(settingsOption, noDefaultSettingsOption, verboseOption, args);
 
         // Create root command
         var rootCommand = new RootCommand("Mcpifier - an MCP-to-REST gateway that can run in HTTP or stdio mode")
@@ -75,7 +81,7 @@ public class Program
         }
     }
 
-    private static Command CreateServeCommand(Option<string[]> settingsOption, Option<bool> noDefaultSettingsOption, string[] args)
+    private static Command CreateServeCommand(Option<string[]> settingsOption, Option<bool> noDefaultSettingsOption, Option<bool> verboseOption, string[] args)
     {
         var modeOption = new Option<string>("--mode", "-m")
         {
@@ -101,7 +107,8 @@ public class Program
             swaggerOption,
             mappingsOption,
             settingsOption,
-            noDefaultSettingsOption
+            noDefaultSettingsOption,
+            verboseOption
         };
 
         serveCommand.Validators.Add(parseResult =>
@@ -123,14 +130,15 @@ public class Program
             string? mappingsFileName = parseResult.GetValue(mappingsOption);
             string[] settingsFileNames = parseResult.GetValue(settingsOption)!;
             bool noDefaultSettings = parseResult.GetValue(noDefaultSettingsOption);
+            bool verboseSettings = parseResult.GetValue(verboseOption);
 
-            await ServeAsync(mode, swaggerFileNameOrUrl, mappingsFileName, settingsFileNames, noDefaultSettings, args);
+            await ServeAsync(mode, swaggerFileNameOrUrl, mappingsFileName, settingsFileNames, noDefaultSettings, verboseSettings, args);
         });
 
         return serveCommand;
     }
 
-    private static Command CreateGenerateCommand(Option<string[]> settingsOption, Option<bool> noDefaultSettingsOption, string[] args)
+    private static Command CreateGenerateCommand(Option<string[]> settingsOption, Option<bool> noDefaultSettingsOption, Option<bool> verboseOption, string[] args)
     {
         var swaggerOption = new Option<string>("--swagger")
         {
@@ -150,7 +158,8 @@ public class Program
             swaggerOption,
             outputOption,
             settingsOption,
-            noDefaultSettingsOption
+            noDefaultSettingsOption,
+            verboseOption
         };
 
         generateCommand.SetAction(async parseResult =>
@@ -159,8 +168,9 @@ public class Program
             string? outputFileName = parseResult.GetValue(outputOption);
             string[] settingsFileNames = parseResult.GetValue(settingsOption)!;
             bool noDefaultSettings = parseResult.GetValue(noDefaultSettingsOption);
+            bool verboseSettings = parseResult.GetValue(verboseOption);
 
-            await GenerateAsync(swaggerFileNameOrUrl, outputFileName, settingsFileNames, noDefaultSettings, args);
+            await GenerateAsync(swaggerFileNameOrUrl, outputFileName, settingsFileNames, noDefaultSettings, verboseSettings, args);
         });
         return generateCommand;
     }
@@ -173,8 +183,9 @@ public class Program
     /// <param name="mappingsFileName">The optional value for the `--mappings` option.</param>
     /// <param name="settingsFileNames">The optional values for the `--settings` option.</param>
     /// <param name="noDefaultSettings">The value for the `--no-default-settings` option.</param>
+    /// <param name="verboseSettings">The value for the `--verbose` option.</param>
     /// <param name="args">The collection of command-line arguments.</param>
-    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string? mappingsFileName, string[] settingsFileNames, bool noDefaultSettings, string[] args)
+    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string? mappingsFileName, string[] settingsFileNames, bool noDefaultSettings, bool verboseSettings, string[] args)
     {
         if (mode == "http")
         {
@@ -185,7 +196,7 @@ public class Program
                 var builder = WebApplication.CreateBuilder();
 
                 // Load embedded, default and custom settings.
-                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames);
+                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, verboseSettings);
 
                 // Configure HTTP MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
@@ -242,7 +253,7 @@ public class Program
                 var builder = Host.CreateApplicationBuilder(args);
 
                 // Load embedded, default and custom settings and mappings files.
-                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames);
+                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, verboseSettings);
 
                 // Configure stdio MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
@@ -285,15 +296,16 @@ public class Program
     /// <param name="outputFileName">The optional value for the `--output` option.</param>
     /// <param name="settingsFileNames">The optional values for the `--settings` option.</param>
     /// <param name="noDefaultSettings">The value for the `--no-default-settings` option.</param>
+    /// <param name="verboseSettings">The value for the `--verbose` option.</param>
     /// <param name="args">The collection of command-line arguments.</param>
-    private static async Task GenerateAsync(string swaggerFileNameOrUrl, string? outputFileName, string[] settingsFileNames, bool noDefaultSettings, string[] args)
+    private static async Task GenerateAsync(string swaggerFileNameOrUrl, string? outputFileName, string[] settingsFileNames, bool noDefaultSettings, bool verboseSettings, string[] args)
     {
         try
         {
             var builder = Host.CreateApplicationBuilder(args);
 
             // Load embedded, default and custom settings and mappings files.
-            builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames);
+            builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, verboseSettings);
 
             builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
