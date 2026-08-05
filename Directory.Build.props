@@ -11,8 +11,6 @@
     <!-- Ignore xUnit2013 suggestions about Assert.Empty vs Assert.Equal -->
     <NoWarn>$(NoWarn);1701;1702;CS1591;xUnit2013</NoWarn>
 
-    <!-- Disable publishing by default; opt in per project with <IsPublishable>true</IsPublishable> -->
-    <IsPublishable>false</IsPublishable>
   </PropertyGroup>
 
 </Project>
