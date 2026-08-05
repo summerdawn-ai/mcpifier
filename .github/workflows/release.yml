@@ -95,7 +95,7 @@ jobs:
           - rid: linux-x64
             os: ubuntu-latest
           - rid: linux-arm64
-            os: ubuntu-latest
+            os: ubuntu-24.04-arm # not ubuntu-lates, that is x64 only!
           - rid: osx-x64
             os: macos-latest
           - rid: osx-arm64
@@ -109,9 +109,10 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      # Restore the target RID so Native AOT runtime packs resolve before ILCompiler runs.
+      # Restore the target RID explicitly and with AOT enabled so the assets file contains
+      # the native AOT/ILCompiler graph required by the following publish command.
       - name: Restore Native AOT dependencies for ${{ matrix.rid }}
-        run: dotnet restore src/Summerdawn.Mcpifier.Server/Summerdawn.Mcpifier.Server.csproj -r ${{ matrix.rid }}
+        run: dotnet restore src/Summerdawn.Mcpifier.Server/Summerdawn.Mcpifier.Server.csproj -r ${{ matrix.rid }} -p:PublishAot=true
 
       - name: Build Server for ${{ matrix.rid }}
         run: dotnet publish src/Summerdawn.Mcpifier.Server/Summerdawn.Mcpifier.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained --no-restore -p:PublishAot=true -p:DebugSymbols=false -p:GenerateDocumentationFile=false -p:NoWarn=IDE0005 -p:IncludeNativeLibrariesForSelfExtract=true -p:StaticWebAssetsEnabled=false -p:IsTransformWebConfigDisabled=true -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
