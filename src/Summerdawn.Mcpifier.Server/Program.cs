@@ -192,10 +192,10 @@ public class Program
             WebApplication app;
             try
             {
-                // Loads appsettings.json from working directory if present
+                // Load appsettings.json from working directory if present
                 var builder = WebApplication.CreateBuilder();
 
-                // Load embedded, default and custom settings.
+                // Load embedded default and custom settings.
                 builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, verboseSettings);
 
                 // Configure HTTP MCP gateway.
