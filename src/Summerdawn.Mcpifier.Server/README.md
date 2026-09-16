@@ -358,8 +358,8 @@ The Mcpifier command-line server uses [.NET Configuration providers](https://lea
 
 1. **Embedded default settings** - Built-in defaults embedded in the application, unless skipped with `--no-default-settings`
 2. **Content-directory settings files** - `appsettings.json` and `mappings.json` in the content directory, if present
-3. **Environment variables** - System or process environment variables
-4. **Explicit settings files** - Additional settings files specified with the `--settings` option, in argument order
+3. **Explicit settings files** - Additional settings files specified with the `--settings` option, in argument order
+4. **Environment variables** - System or process environment variables
 5. **Verbose logging settings** - Embedded logging settings, when `--verbose` is specified
 
 By default, the content directory is the current working directory, but this can be overridden by setting the `DOTNET_CONTENTROOT` environment variable to point to a different directory.
@@ -482,7 +482,7 @@ mcpifier serve --mode http --settings base.json --settings dev.json
 mcpifier serve --mode http --settings custom.json --swagger https://api.example.com/swagger.json
 ```
 
-Custom settings files use the same JSON structure as `appsettings.json`.
+Custom settings files use the same JSON structure as `appsettings.json`. Environment variables override values from all settings files, including files supplied with `--settings`.
 
 #### Skip Default Settings with --no-default-settings
 
