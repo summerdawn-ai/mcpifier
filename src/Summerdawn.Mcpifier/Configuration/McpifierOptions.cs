@@ -49,6 +49,11 @@ public class McpifierRestSection
     public string BaseAddress { get; set; } = "";
 
     /// <summary>
+    /// Gets or sets query parameters to include in every REST API request.
+    /// </summary>
+    public string? DefaultQuery { get; set; }
+
+    /// <summary>
     /// Gets or sets default HTTP headers to include in all REST API requests.
     /// </summary>
     public Dictionary<string, string> DefaultHeaders { get; set; } = [];
