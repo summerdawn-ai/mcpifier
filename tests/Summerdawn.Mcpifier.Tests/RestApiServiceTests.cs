@@ -158,6 +158,59 @@ public class RestApiServiceTests
     }
 
     [Theory]
+    [InlineData("/search", null, "?token=secret%20value")]
+    [InlineData("/search", "limit={limit}", "?token=secret%20value&limit=10")]
+    [InlineData("/search?existing=yes", null, "?token=secret%20value&existing=yes")]
+    public async Task ExecuteToolAsync_PrependsDefaultQuery(string path, string? query, string expectedQuery)
+    {
+        // Arrange
+        string? capturedQuery = null;
+        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) =>
+        {
+            capturedQuery = request.RequestUri?.Query;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"result\":\"ok\"}")
+            });
+        });
+
+        var defaultQueryHandler = new DefaultQueryHandler("token=secret%20value")
+        {
+            InnerHandler = mockHandler
+        };
+        var httpClient = new HttpClient(defaultQueryHandler) { BaseAddress = new Uri("http://example.com") };
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
+
+        var tool = new McpifierToolMapping
+        {
+            Mcp = new McpToolDefinition
+            {
+                Name = "test_tool",
+                Description = "Test tool",
+                InputSchema = JsonDocument.Parse("{\"type\":\"object\"}").RootElement
+            },
+            Rest = new RestConfiguration
+            {
+                Method = "GET",
+                Path = path,
+                Query = query
+            }
+        };
+
+        var arguments = new Dictionary<string, JsonElement>
+        {
+            ["limit"] = JsonSerializer.SerializeToElement(10)
+        };
+
+        // Act
+        await service.ExecuteToolAsync(tool, arguments, []);
+
+        // Assert
+        Assert.Equal(expectedQuery, capturedQuery);
+    }
+
+    [Theory]
     [InlineData("q={query}", new[] { "query" }, "?q=query")]
     [InlineData("q={query}&sort={sortBy}", new[] { "query" }, "?q=query")]
     [InlineData("q={search}&limit={limit}", new[] { "search" }, "?q=search")]

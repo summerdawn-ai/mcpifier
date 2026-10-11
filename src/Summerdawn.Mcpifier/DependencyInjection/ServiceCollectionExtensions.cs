@@ -73,6 +73,11 @@ public static class ServiceCollectionExtensions
             {
                 client.DefaultRequestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
+        }).AddHttpMessageHandler(static provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<McpifierOptions>>();
+
+            return new DefaultQueryHandler(options.Value.Rest.DefaultQuery);
         });
 
         // Add JSON-RPC dispatcher, handlers and factory.

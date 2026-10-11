@@ -76,6 +76,7 @@ builder.Services
     .AddMcpifier(options =>
     {
         options.Rest.BaseAddress = "https://api.example.com";
+        options.Rest.DefaultQuery = "token=your-api-key";
         options.Rest.DefaultHeaders = new() { ["Authorization"] = "Bearer 123...abc" };
         options.ServerInfo = new() { Name = "my-mcp-server" };
         // etc.
@@ -217,8 +218,10 @@ MCP Authorization does not apply to stdio transport. In order to use Mcpifier in
   "Mcpifier": {
     "Rest": {
       "BaseAddress": "https://api.example.com",
+      // API key in query
+      "DefaultQuery": "token=your-api-key",
       "DefaultHeaders": {
-        // API key
+        // API key in header
         "X-API-Key": "your-api-key-here",
         // Or bearer token
         "Authorization": "Bearer 123...abc"
@@ -245,6 +248,7 @@ Mcpifier's configuration maps to the `McpifierOptions` class and is structured a
     // Rest API configuration
     "Rest": {
       "BaseAddress": "https://api.example.com",
+      "DefaultQuery": "token=your-api-key",
       "DefaultHeaders": { 
           "User-Agent": "Mcpifier/1.0" 
       },
@@ -320,6 +324,7 @@ The settings in the `Rest` configuration section are related to the REST API:
 |Name|Type|Description|Example|
 |----|----|-----------|-------|
 |BaseAddress|`string` (required)|The Base URL for the target REST API - all REST API requests will be made relative to this URL|"https://api.example.com",<br>"/api" (only in HTTP mode)|
+|DefaultQuery|`string`|Query parameters prepended to every REST API request|"token=your-api-key"|
 |DefaultHeaders|`Dictionary<string,string>`|Headers to include in every REST API request|{ "User-Agent": "Mcpifier/1.0" }|
 |ForwardedHeaders|`Dictionary<string,bool>`|Headers to forward from the MCP tool call (only in HTTP mode)|{ "Authorization": true }|
 
