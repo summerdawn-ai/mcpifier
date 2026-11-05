@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Net;
 
 using Summerdawn.Mcpifier.DependencyInjection;
 using Summerdawn.Mcpifier.Services;
@@ -63,8 +64,9 @@ public class Program
             generateCommand
         };
 
-        // Make "serve" the default command by adding its options to root and setting the same action.
+        // Make "serve" the default command by sharing its options, validators and action.
         foreach (var option in serveCommand.Options) { rootCommand.Options.Add(option); }
+        foreach (var validator in serveCommand.Validators) { rootCommand.Validators.Add(validator); }
         rootCommand.Action = serveCommand.Action;
 
         // Add custom help text to root and all child commands.
@@ -89,6 +91,11 @@ public class Program
             Required = true
         }.AcceptOnlyFromAmong("http", "stdio");
 
+        var portOption = new Option<int?>("--port")
+        {
+            Description = "The localhost HTTP port to use (0-65535); defaults to the first available port starting at 5157"
+        };
+
         var swaggerOption = new Option<string>("--swagger")
         {
             Description = "The path or URL of a Swagger/OpenAPI specification JSON file from which to generate tool mappings",
@@ -104,6 +111,7 @@ public class Program
         var serveCommand = new Command("serve", "Start the Mcpifier server in HTTP or stdio mode")
         {
             modeOption,
+            portOption,
             swaggerOption,
             mappingsOption,
             settingsOption,
@@ -121,18 +129,38 @@ public class Program
             {
                 parseResult.AddError("Cannot use both --swagger and --mappings options together");
             }
+
+            // Validate --port only if it is specified and valid
+            var portResult = parseResult.GetResult(portOption);
+            if (portResult is null || portResult.Tokens.Count != 1 || !int.TryParse(portResult.Tokens[0].Value, out int port))
+            {
+                return;
+            }
+
+            if (parseResult.GetValue(modeOption) != "http")
+            {
+                parseResult.AddError("--port can only be used with --mode http.");
+                return;
+            }
+
+            if (port is < IPEndPoint.MinPort or > IPEndPoint.MaxPort)
+            {
+                parseResult.AddError("The HTTP port must be between 0 and 65535.");
+                return;
+            }
         });
 
         serveCommand.SetAction(async parseResult =>
         {
             string mode = parseResult.GetValue(modeOption)!;
+            int? port = parseResult.GetValue(portOption);
             string? swaggerFileNameOrUrl = parseResult.GetValue(swaggerOption);
             string? mappingsFileName = parseResult.GetValue(mappingsOption);
             string[] settingsFileNames = parseResult.GetValue(settingsOption)!;
             bool noDefaultSettings = parseResult.GetValue(noDefaultSettingsOption);
             bool verboseSettings = parseResult.GetValue(verboseOption);
 
-            await ServeAsync(mode, swaggerFileNameOrUrl, mappingsFileName, settingsFileNames, noDefaultSettings, verboseSettings, args);
+            await ServeAsync(mode, port, swaggerFileNameOrUrl, mappingsFileName, settingsFileNames, noDefaultSettings, verboseSettings, args);
         });
 
         return serveCommand;
@@ -179,24 +207,42 @@ public class Program
     /// Starts the Mcpifier server in the specified mode.
     /// </summary>
     /// <param name="mode">The value for the `--mode` option.</param>
+    /// <param name="port">The optional value for the `--port` option.</param>
     /// <param name="swaggerFileNameOrUrl">The optional value for the `--swagger` option.</param>
     /// <param name="mappingsFileName">The optional value for the `--mappings` option.</param>
     /// <param name="settingsFileNames">The optional values for the `--settings` option.</param>
     /// <param name="noDefaultSettings">The value for the `--no-default-settings` option.</param>
     /// <param name="verboseSettings">The value for the `--verbose` option.</param>
     /// <param name="args">The collection of command-line arguments.</param>
-    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string? mappingsFileName, string[] settingsFileNames, bool noDefaultSettings, bool verboseSettings, string[] args)
+    private static async Task ServeAsync(string mode, int? port, string? swaggerFileNameOrUrl, string? mappingsFileName, string[] settingsFileNames, bool noDefaultSettings, bool verboseSettings, string[] args)
     {
         if (mode == "http")
         {
             WebApplication app;
             try
             {
-                // Load appsettings.json from working directory if present
+                // Load appsettings.json from the content directory if present.
                 var builder = WebApplication.CreateBuilder();
 
                 // Load embedded default and custom settings.
                 builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, verboseSettings);
+
+                bool hasConfiguredEndpoints = builder.Configuration.GetSection("Kestrel:Endpoints").GetChildren().Any();
+                if (hasConfiguredEndpoints && port.HasValue)
+                {
+                    throw new InvalidOperationException("--port cannot be used with configured Kestrel:Endpoints.");
+                }
+
+                if (!hasConfiguredEndpoints)
+                {
+                    string listenerUrl = $"http://localhost:{ServerPortSelector.Select(port)}";
+                    builder.WebHost.UseUrls(listenerUrl);
+                }
+                else
+                {
+                    // Configured endpoints take precedence over host URL settings.
+                    builder.Configuration[WebHostDefaults.PreferHostingUrlsKey] = "false";
+                }
 
                 // Configure HTTP MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
@@ -225,7 +271,6 @@ public class Program
 
                 app = builder.Build();
 
-                app.UseHttpsRedirection();
                 app.UseRouting();
                 app.UseCors();
 
