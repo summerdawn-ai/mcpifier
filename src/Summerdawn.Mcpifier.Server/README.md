@@ -113,6 +113,7 @@ mcpifier --mode <http|stdio> [OPTIONS]
 **Options:**
 
 - `--mode`, `-m` (required): The server mode to use - `http` or `stdio`
+- `--port` (optional, HTTP only): Listen on this port (0–65535). Without it, the server selects the first available localhost port starting at 5157.
 - `--swagger` (optional): The path or URL of a Swagger/OpenAPI specification JSON file from which to generate tool mappings
 - `--mappings` (optional): The path to a tool mappings JSON file from which to load tool mappings
 - `--settings` (optional): The path to any additional configuration JSON file to load (can be specified multiple times)
@@ -126,6 +127,9 @@ See the [Configuration](#configuration) and [Tool Mapping](#tool-mapping) sectio
 ```bash
 # HTTP mode with Swagger specification
 mcpifier serve --mode http --swagger https://api.example.com/swagger.json
+
+# HTTP mode with a fixed localhost port
+mcpifier serve --mode http --port 5999 --swagger https://api.example.com/swagger.json
 
 # stdio mode with local Swagger specification
 mcpifier serve --mode stdio --swagger path/to/swagger.json
@@ -252,7 +256,7 @@ To connect to a running Mcpifier command-line server in HTTP mode, add the follo
   "servers": {
     "my-http-mcpifier": {
       "type": "http",
-      "url": "https://localhost:7025",
+      "url": "http://localhost:5157",
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config"
       }
@@ -261,7 +265,7 @@ To connect to a running Mcpifier command-line server in HTTP mode, add the follo
 }
 ```
 
-By default, the Mcpifier command-line server is configured to listen on `https://0.0.0.0:7025` and `http://0.0.0.0:5157` in HTTP mode. You can change this by modifying the server configuration as explained in the [Configuration](#configuration) section.
+By default, the Mcpifier command-line server is configured to listen on `http://localhost:5157` (or the first available subsequent port if 5157 is in use) in HTTP mode. You can use `--port` to specify a fixed port, or configure [custom Kestrel endpoints](#configuration-examples) for other interfaces or HTTPS.
 
 ## Authorization
 
@@ -290,7 +294,7 @@ Instead of using a configuration file, you can also [configure the setting using
   "servers": {
     "my-http-mcpifier": {
       "type": "http",
-      "url": "https://localhost:7025",
+      "url": "http://localhost:5157",
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config",
         "MCPIFIER__REST__DEFAULTHEADERS__AUTHORIZATION": "Bearer 123...abc"
@@ -309,7 +313,7 @@ Some MCP clients support configuring request headers for HTTP mode MCP servers:
   "servers": {
     "my-http-mcpifier": {
       "type": "http",
-      "url": "https://localhost:5001",
+      "url": "http://localhost:5157",
       "headers": {
         "Authorization": "Bearer 123...abc"
       }
@@ -377,16 +381,6 @@ The Mcpifier command-line server includes embedded default settings that provide
     }
   },
   "AllowedHosts": "*",
-  "Kestrel": {
-    "Endpoints": {
-      "Http": {
-        "Url": "http://0.0.0.0:5157"
-      },
-      "Https": {
-        "Url": "https://0.0.0.0:7025"
-      }
-    }
-  },
   "Mcpifier": {
     "Rest": {
       "DefaultHeaders": {
@@ -446,8 +440,8 @@ export MCPIFIER__REST__BASEADDRESS=https://api.example.com
 # Add an authorization header
 export MCPIFIER__REST__DEFAULTHEADERS__AUTHORIZATION="Bearer my-token"
 
-# Change the HTTP port
-export KESTREL__ENDPOINTS__HTTP__URL=http://0.0.0.0:8080
+# Change the HTTP host
+export KESTREL__ENDPOINTS__HTTP__URL=http://0.0.0.0:5157
 ```
 
 Environment variables are particularly useful when running Mcpifier in MCP clients:
@@ -497,13 +491,6 @@ Example `clean.json` that starts from scratch:
 
 ```json
 {
-  "Kestrel": {
-    "Endpoints": {
-      "Http": {
-        "Url": "http://0.0.0.0:5157"
-      }
-    }
-  },
   "Mcpifier": {
     "Rest": {
       "BaseAddress": "https://api.example.com"
@@ -514,24 +501,7 @@ Example `clean.json` that starts from scratch:
 
 ### Configuration Examples
 
-**Example 1: Change HTTP ports**
-
-```json
-{
-  "Kestrel": {
-    "Endpoints": {
-      "Http": {
-        "Url": "http://0.0.0.0:8080"
-      },
-      "Https": {
-        "Url": "https://0.0.0.0:8443"
-      }
-    }
-  }
-}
-```
-
-**Example 2: Add custom headers and base address**
+**Example 1: Add custom headers and base address**
 
 ```json
 {
@@ -547,7 +517,7 @@ Example `clean.json` that starts from scratch:
 }
 ```
 
-**Example 3: Disable authorization forwarding**
+**Example 2: Disable authorization forwarding**
 
 ```json
 {
@@ -560,6 +530,22 @@ Example `clean.json` that starts from scratch:
   }
 }
 ```
+
+**Example 3: Use custom Kestrel host**
+
+```json
+{
+  "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://0.0.0.0:5157"
+      }
+    }
+  }
+}
+```
+
+In this example, `0.0.0.0` exposes the listener beyond localhost. For HTTPS, certificates, and further configuration, see the [Kestrel endpoint documentation](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/endpoints).
 
 **Example 4: Environment-specific configuration**
 
@@ -660,7 +646,7 @@ Use the `--no-default-settings` option if you need to completely override defaul
 - Check firewall rules
 
 **Problem**: Cannot connect to server in HTTP mode<br>
-**Solution**: Connect to the default ports 5157 (HTTP) or 7025 (HTTPS), or change them in the configuration.
+**Solution**: Check the address logged at startup and connect to that address, use `--port` for a fixed localhost port, or configure Kestrel endpoints.
 
 ### Authentication Issues
 
